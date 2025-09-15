@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Utensils, Target, Calculator } from "lucide-react";
+import { ArrowLeft, Utensils, Target, Calculator, Home } from "lucide-react";
 import { calculateMacroTargets, generateMealPlan } from "@/lib/nutrition";
 import { MacroTarget, MenuPlan } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
@@ -95,16 +95,16 @@ export default function MenuPage() {
       return;
     }
 
-    // If we have existing menu and no category selected, use existing menu
-    if (existingMenu && !selectedCategory) {
-      return;
-    }
-
-    // If category is selected or no existing menu, generate new menu
-    if (selectedCategory || (!existingMenu && !menuError)) {
+    // Only generate if category is selected (from URL params) and no existing menu
+    if (selectedCategory && !generatingMenu && !existingMenu) {
       generateMenuPlan();
     }
-  }, [calculation, bodyMetrics, existingMenu, selectedCategory, user, calculationLoading, metricsLoading, menuLoading]);
+    
+    // If no category selected and no existing menu, redirect to results
+    if (!selectedCategory && !existingMenu && !menuLoading && !menuError) {
+      navigate('/results');
+    }
+  }, [calculation, bodyMetrics, selectedCategory, user, calculationLoading, metricsLoading, generatingMenu, existingMenu, menuLoading, menuError]);
 
   const generateMenuPlan = async () => {
     if (!calculation || !bodyMetrics) return;
@@ -158,14 +158,17 @@ export default function MenuPage() {
       // Save to server
       await saveMenuMutation.mutateAsync(menuData);
 
-      // Invalidate cache to fetch updated menu
-      queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
+      // Invalidate cache to fetch updated menu - wait for invalidation
+      await queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
 
       toast({
         title: "Cardápio gerado!",
         description: "Seu cardápio personalizado foi criado com sucesso.",
       });
+
+      // Clear the category parameter from URL to prevent re-generation
+      navigate('/menu', { replace: true });
 
     } catch (error) {
       console.error('Error generating menu:', error);
@@ -190,6 +193,10 @@ export default function MenuPage() {
     queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
     queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
     navigate("/calculator");
+  };
+
+  const handleGoToDashboard = () => {
+    navigate('/dashboard');
   };
 
   if (!user || isLoading) {
@@ -381,6 +388,14 @@ export default function MenuPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button 
+            onClick={handleGoToDashboard}
+            variant="outline"
+            data-testid="button-dashboard"
+          >
+            <Home className="w-4 h-4 mr-2" />
+            Dashboard
+          </Button>
           <Button 
             onClick={handleGoBack}
             variant="outline"

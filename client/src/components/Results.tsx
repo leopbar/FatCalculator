@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, RotateCcw, Info, Flame, Target, ChefHat } from "lucide-react";
+import { TrendingUp, RotateCcw, Info, Flame, Target, ChefHat, Home } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface ResultsProps {
@@ -14,6 +14,10 @@ interface ResultsProps {
 
 export default function Results({ bodyFatPercentage, tmb, category, categoryColor, onRecalculate }: ResultsProps) {
   const [, navigate] = useLocation();
+  
+  const handleGoToDashboard = () => {
+    navigate('/dashboard');
+  };
   
   const getCategoryVariant = (color: string) => {
     switch (color) {
@@ -224,16 +228,28 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
           </CardContent>
         </Card>
 
-        {/* Recalculate Button */}
-        <Button
-          onClick={onRecalculate}
-          className="w-full py-3 text-lg font-semibold"
-          size="lg"
-          data-testid="button-recalculate"
-        >
-          <RotateCcw className="w-5 h-5 mr-2" />
-          Refazer cálculo
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <Button
+            onClick={handleGoToDashboard}
+            variant="outline"
+            className="flex-1 py-3 text-lg font-semibold"
+            size="lg"
+            data-testid="button-dashboard"
+          >
+            <Home className="w-5 h-5 mr-2" />
+            Dashboard
+          </Button>
+          <Button
+            onClick={onRecalculate}
+            className="flex-1 py-3 text-lg font-semibold"
+            size="lg"
+            data-testid="button-recalculate"
+          >
+            <RotateCcw className="w-5 h-5 mr-2" />
+            Refazer cálculo
+          </Button>
+        </div>
       </div>
     </div>
   );

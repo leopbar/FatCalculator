@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calculator, RotateCcw, LogOut } from "lucide-react";
+import { Calculator, RotateCcw, LogOut, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -313,6 +313,10 @@ export default function BodyFatCalculator() {
     logoutMutation.mutate();
   };
 
+  const handleGoToDashboard = () => {
+    navigate('/dashboard');
+  };
+
   return (
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-md mx-auto space-y-6">
@@ -330,17 +334,29 @@ export default function BodyFatCalculator() {
             <p className="text-sm text-muted-foreground mb-2">
               Olá, {user?.username}
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              disabled={logoutMutation.isPending}
-              data-testid="button-logout"
-              className="flex items-center gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              {logoutMutation.isPending ? "Saindo..." : "Sair"}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGoToDashboard}
+                data-testid="button-dashboard"
+                className="flex items-center gap-2"
+              >
+                <Home className="h-4 w-4" />
+                Dashboard
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                disabled={logoutMutation.isPending}
+                data-testid="button-logout"
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                {logoutMutation.isPending ? "Saindo..." : "Sair"}
+              </Button>
+            </div>
           </div>
         </div>
 
