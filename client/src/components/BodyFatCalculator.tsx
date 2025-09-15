@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calculator, RotateCcw, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import GenderSelection from "./GenderSelection";
 import MeasurementInput from "./MeasurementInput";
 
@@ -33,6 +35,21 @@ export default function BodyFatCalculator() {
   const { toast } = useToast();
   const { user, logoutMutation } = useAuth();
   const [, navigate] = useLocation();
+
+  // Mutations for saving data to server
+  const saveBodyMetricsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/body-metrics", data);
+      return response.json();
+    },
+  });
+
+  const saveCalculationMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/calculation", data);
+      return response.json();
+    },
+  });
   const [formData, setFormData] = useState<FormData>({
     gender: "male",
     age: "",
@@ -98,7 +115,7 @@ export default function BodyFatCalculator() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const calculateBodyFat = () => {
+  const calculateBodyFat = async () => {
     if (!validateForm()) {
       toast({
         title: "Erro de validação",
@@ -113,7 +130,15 @@ export default function BodyFatCalculator() {
     const weight = parseFloat(formData.weight);
     const neck = parseFloat(formData.neck);
     const waist = parseFloat(formData.waist);
-    const hip = formData.gender === "female" ? parseFloat(formData.hip) : 0;
+    const hip = formData.gender === "female" ? parseFloat(formData.hip) : null;
+
+    // Map activity levels to Portuguese values expected by the API
+    const activityLevelMap: Record<string, string> = {
+      'sedentary': 'sedentario',
+      'light': 'leve',
+      'moderate': 'moderado',
+      'intense': 'intenso'
+    };
 
     let bodyFatPercentage: number;
 
@@ -122,7 +147,8 @@ export default function BodyFatCalculator() {
       bodyFatPercentage = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
     } else {
       // US Navy formula for females: 495 / (1.29579 - 0.35004 * log10(waist + hip - neck) + 0.22100 * log10(height)) - 450
-      bodyFatPercentage = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+      const hipValue = hip || 0; // Handle null case
+      bodyFatPercentage = 495 / (1.29579 - 0.35004 * Math.log10(waist + hipValue - neck) + 0.22100 * Math.log10(height)) - 450;
     }
 
     // Determine category and color
@@ -205,25 +231,51 @@ export default function BodyFatCalculator() {
       return;
     }
 
-    // Store result and form data in localStorage and navigate to results page
-    const resultData = {
-      bodyFatPercentage: Math.max(0, Math.min(50, bodyFatPercentage)), // Clamp between 0-50%
-      tmb, // Taxa Metabólica Basal (calorias por dia)
-      category,
-      categoryColor,
-    };
-    
-    // Also store form data for menu generation
-    localStorage.setItem("calculatorFormData", JSON.stringify(formData));
-    localStorage.setItem('bodyFatResult', JSON.stringify(resultData));
-    
-    toast({
-      title: "Cálculo realizado!",
-      description: "Redirecionando para o resultado...",
-    });
-    
-    // Navigate to results page
-    navigate('/results');
+    try {
+      // Save body metrics to server
+      const bodyMetricsData = {
+        gender: formData.gender === "male" ? "masculino" : "feminino",
+        age,
+        height,
+        weight,
+        neck,
+        waist,
+        hip,
+        activityLevel: activityLevelMap[formData.activityLevel] || 'sedentario'
+      };
+
+      await saveBodyMetricsMutation.mutateAsync(bodyMetricsData);
+
+      // Save calculation results to server
+      const calculationData = {
+        bodyFatPercent: Math.max(0, Math.min(50, bodyFatPercentage)), // Clamp between 0-50%
+        category,
+        bmr,
+        tdee: tmb
+      };
+
+      await saveCalculationMutation.mutateAsync(calculationData);
+
+      // Invalidate dashboard cache to update summary - wait for cache update
+      await queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/calculation'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/body-metrics'] });
+
+      toast({
+        title: "Cálculo realizado!",
+        description: "Dados salvos com sucesso. Redirecionando...",
+      });
+
+      // Navigate to results page
+      navigate('/results');
+    } catch (error) {
+      console.error('Error saving data:', error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar os dados. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   const resetForm = () => {
@@ -238,9 +290,11 @@ export default function BodyFatCalculator() {
       activityLevel: "",
     });
     setErrors({});
-    // Clear any stored data
-    localStorage.removeItem('bodyFatResult');
-    localStorage.removeItem('formData');
+    // Clear any cached data
+    queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/calculation'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/body-metrics'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
     toast({
       title: "Formulário limpo",
       description: "Todos os campos foram resetados.",
@@ -415,10 +469,11 @@ export default function BodyFatCalculator() {
               <Button
                 onClick={calculateBodyFat}
                 className="flex-1"
+                disabled={saveBodyMetricsMutation.isPending || saveCalculationMutation.isPending}
                 data-testid="button-calculate"
               >
                 <Calculator className="w-4 h-4 mr-2" />
-                Calcular
+                {(saveBodyMetricsMutation.isPending || saveCalculationMutation.isPending) ? "Salvando..." : "Calcular"}
               </Button>
               <Button
                 onClick={resetForm}

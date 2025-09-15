@@ -52,10 +52,10 @@ export const macroTargetSchema = z.object({
 export const menuPlanSchema = z.object({
   category: z.enum(['suave', 'moderado', 'restritivo']),
   tdee: z.number(),
-  target_calories: z.number(),
-  macro_target: macroTargetSchema,
+  targetCalories: z.number(),
+  macroTarget: macroTargetSchema,
   meals: z.array(mealSchema),
-  daily_totals: z.object({
+  dailyTotals: z.object({
     protein: z.number(),
     carb: z.number(),
     fat: z.number(),

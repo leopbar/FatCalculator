@@ -1,72 +1,90 @@
 import { useLocation } from "wouter";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { queryClient } from "@/lib/queryClient";
 import Results from "@/components/Results";
 
-interface ResultData {
-  bodyFatPercentage: number;
-  tmb: number;
+interface CalculationData {
+  bodyFatPercent: number;
   category: string;
-  categoryColor: 'success' | 'warning' | 'destructive';
+  bmr: number;
+  tdee: number;
 }
 
 export default function ResultsPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  // Get result data from localStorage
-  const resultData = localStorage.getItem('bodyFatResult');
-  let parsedResult: ResultData | null = null;
-  
-  try {
-    parsedResult = resultData ? JSON.parse(resultData) : null;
-    
-    // Validate the parsed result
-    if (parsedResult && (
-      typeof parsedResult.bodyFatPercentage !== 'number' ||
-      !isFinite(parsedResult.bodyFatPercentage) ||
-      isNaN(parsedResult.bodyFatPercentage) ||
-      typeof parsedResult.tmb !== 'number' ||
-      !isFinite(parsedResult.tmb) ||
-      isNaN(parsedResult.tmb) ||
-      !parsedResult.category ||
-      !parsedResult.categoryColor
-    )) {
-      parsedResult = null;
-    }
-  } catch (error) {
-    parsedResult = null;
-  }
+  // Fetch calculation data from server
+  const { data: calculation, isLoading, error } = useQuery<CalculationData>({
+    queryKey: ['/api/calculation'],
+    enabled: !!user,
+  });
 
-  // Redirect to home if no valid result data
+  // Redirect to calculator if no calculation data or user not logged in
   useEffect(() => {
-    if (!parsedResult) {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    if (!isLoading && (!calculation || error)) {
       toast({
-        title: "Erro nos dados",
-        description: "Dados de resultado inválidos. Redirecionando para o formulário.",
+        title: "Nenhum cálculo encontrado",
+        description: "Realize o cálculo primeiro. Redirecionando...",
         variant: "destructive",
       });
-      navigate('/');
+      navigate('/calculator');
     }
-  }, [parsedResult, navigate, toast]);
+  }, [calculation, isLoading, error, user, navigate, toast]);
 
   const handleRecalculate = () => {
-    // Clear all stored data and redirect to home
-    localStorage.removeItem('bodyFatResult');
-    localStorage.removeItem('formData');
-    navigate('/');
+    // Invalidate cache and redirect to calculator
+    queryClient.invalidateQueries({ queryKey: ['/api/calculation'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/body-metrics'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
+    navigate('/calculator');
   };
 
-  if (!parsedResult) {
-    return null; // Will redirect to home
+  if (!user || isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando seus resultados...</p>
+      </div>
+    );
+  }
+
+  if (!calculation || error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Redirecionando...</p>
+      </div>
+    );
+  }
+
+  // Map category to color based on the original logic
+  let categoryColor: 'success' | 'warning' | 'destructive';
+  const bodyFatPercentage = calculation.bodyFatPercent;
+  
+  if (calculation.category === "Essencial") {
+    categoryColor = "warning";
+  } else if (calculation.category === "Atlético" || calculation.category === "Fitness") {
+    categoryColor = "success";
+  } else if (calculation.category === "Aceitável") {
+    categoryColor = "warning";
+  } else {
+    categoryColor = "destructive";
   }
 
   return (
     <Results
-      bodyFatPercentage={parsedResult.bodyFatPercentage}
-      tmb={parsedResult.tmb}
-      category={parsedResult.category}
-      categoryColor={parsedResult.categoryColor}
+      bodyFatPercentage={calculation.bodyFatPercent}
+      tmb={calculation.bmr}
+      category={calculation.category}
+      categoryColor={categoryColor}
       onRecalculate={handleRecalculate}
     />
   );

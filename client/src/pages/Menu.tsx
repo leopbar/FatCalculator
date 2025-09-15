@@ -1,52 +1,129 @@
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Utensils, Target, Calculator } from "lucide-react";
 import { calculateMacroTargets, generateMealPlan } from "@/lib/nutrition";
 import { MacroTarget, MenuPlan } from "@shared/schema";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+
+interface CalculationData {
+  bodyFatPercent: number;
+  category: string;
+  bmr: number;
+  tdee: number;
+}
+
+interface BodyMetricsData {
+  gender: string;
+  age: number;
+  height: number;
+  weight: number;
+  neck: number;
+  waist: number;
+  hip: number | null;
+  activityLevel: string;
+}
+
+interface MenuPlanData {
+  category: string;
+  tdee: number;
+  targetCalories: number;
+  macroTarget: MacroTarget;
+  meals: any[];
+  dailyTotals: any;
+}
 
 export default function MenuPage() {
   const [, navigate] = useLocation();
-  const [menuPlan, setMenuPlan] = useState<MenuPlan | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [generatingMenu, setGeneratingMenu] = useState(false);
 
+  // Get category from URL params (if coming from results page selection)
+  const params = new URLSearchParams(window.location.search);
+  const selectedCategory = params.get('cat') as 'suave' | 'moderado' | 'restritivo' | null;
+
+  // Fetch user's calculation data
+  const { data: calculation, isLoading: calculationLoading } = useQuery<CalculationData>({
+    queryKey: ['/api/calculation'],
+    enabled: !!user,
+  });
+
+  // Fetch user's body metrics
+  const { data: bodyMetrics, isLoading: metricsLoading } = useQuery<BodyMetricsData>({
+    queryKey: ['/api/body-metrics'],
+    enabled: !!user,
+  });
+
+  // Fetch existing menu plan
+  const { data: existingMenu, isLoading: menuLoading, error: menuError } = useQuery<MenuPlanData>({
+    queryKey: ['/api/menu'],
+    enabled: !!user,
+  });
+
+  // Mutation to save menu plan
+  const saveMenuMutation = useMutation({
+    mutationFn: async (menuData: any) => {
+      const response = await apiRequest("POST", "/api/menu", menuData);
+      return response.json();
+    },
+  });
+
+  const isLoading = calculationLoading || metricsLoading || menuLoading || generatingMenu;
+
+  // Generate menu plan if needed
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const category = params.get('cat') as 'suave' | 'moderado' | 'restritivo';
-    const calories = params.get('cal');
-    const tdee = params.get('tdee');
-    const weight = params.get('weight');
-    const bodyFat = params.get('bf');
-
-    if (!category || !calories || !tdee || !weight || !bodyFat) {
-      setError("Parâmetros inválidos. Retorne à tela de resultados.");
-      setLoading(false);
+    if (!user) {
+      navigate('/auth');
       return;
     }
 
-    try {
-      const targetCalories = parseInt(calories);
-      const tdeeValue = parseInt(tdee);
-      const bodyWeight = parseFloat(weight);
-      const bodyFatPercentage = parseFloat(bodyFat);
-
-      // Validate numeric values
-      if (!Number.isFinite(targetCalories) || !Number.isFinite(tdeeValue) || 
-          !Number.isFinite(bodyWeight) || !Number.isFinite(bodyFatPercentage) ||
-          targetCalories <= 0 || tdeeValue <= 0 || bodyWeight <= 0 || 
-          bodyFatPercentage < 0 || bodyFatPercentage > 50) {
-        throw new Error("Invalid numeric parameters");
+    if (!calculation || !bodyMetrics) {
+      if (!calculationLoading && !metricsLoading) {
+        toast({
+          title: "Dados não encontrados",
+          description: "Realize o cálculo primeiro. Redirecionando...",
+          variant: "destructive",
+        });
+        navigate('/calculator');
       }
+      return;
+    }
+
+    // If we have existing menu and no category selected, use existing menu
+    if (existingMenu && !selectedCategory) {
+      return;
+    }
+
+    // If category is selected or no existing menu, generate new menu
+    if (selectedCategory || (!existingMenu && !menuError)) {
+      generateMenuPlan();
+    }
+  }, [calculation, bodyMetrics, existingMenu, selectedCategory, user, calculationLoading, metricsLoading, menuLoading]);
+
+  const generateMenuPlan = async () => {
+    if (!calculation || !bodyMetrics) return;
+
+    setGeneratingMenu(true);
+    try {
+      // Use selected category or default to 'moderado'
+      const category = selectedCategory || 'moderado';
+      
+      // Calculate target calories based on category
+      const calorieReductions = { suave: 200, moderado: 400, restritivo: 600 };
+      const targetCalories = calculation.tdee - calorieReductions[category];
 
       // Calculate macro targets
       const macroTarget = calculateMacroTargets(
-        tdeeValue,
+        calculation.tdee,
         targetCalories,
-        bodyWeight,
-        bodyFatPercentage,
+        bodyMetrics.weight,
+        calculation.bodyFatPercent,
         category
       );
 
@@ -64,13 +141,13 @@ export default function MenuPage() {
         { protein: 0, carb: 0, fat: 0, kcal: 0 }
       );
 
-      const plan: MenuPlan = {
+      const menuData = {
         category,
-        tdee: tdeeValue,
-        target_calories: targetCalories,
-        macro_target: macroTarget,
+        tdee: calculation.tdee,
+        targetCalories,
+        macroTarget,
         meals,
-        daily_totals: {
+        dailyTotals: {
           protein: Math.round(dailyTotals.protein * 10) / 10,
           carb: Math.round(dailyTotals.carb * 10) / 10,
           fat: Math.round(dailyTotals.fat * 10) / 10,
@@ -78,44 +155,66 @@ export default function MenuPage() {
         },
       };
 
-      setMenuPlan(plan);
-    } catch (err) {
-      setError("Erro ao gerar o cardápio. Tente novamente.");
-      console.error(err);
+      // Save to server
+      await saveMenuMutation.mutateAsync(menuData);
+
+      // Invalidate cache to fetch updated menu
+      queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
+
+      toast({
+        title: "Cardápio gerado!",
+        description: "Seu cardápio personalizado foi criado com sucesso.",
+      });
+
+    } catch (error) {
+      console.error('Error generating menu:', error);
+      toast({
+        title: "Erro ao gerar cardápio",
+        description: "Não foi possível gerar o cardápio. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false);
+      setGeneratingMenu(false);
     }
-  }, []);
+  };
 
   const handleGoBack = () => {
     navigate("/results");
   };
 
   const handleRecalculate = () => {
-    localStorage.removeItem("bodyFatResult");
-    localStorage.removeItem("calculatorFormData");
-    navigate("/");
+    // Invalidate cache and redirect to calculator
+    queryClient.invalidateQueries({ queryKey: ['/api/calculation'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/body-metrics'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
+    navigate("/calculator");
   };
 
-  if (loading) {
+  if (!user || isLoading) {
     return (
       <div className="min-h-screen bg-background py-8 px-4 flex items-center justify-center">
         <Card className="border-primary/20 bg-accent/30">
           <CardContent className="p-8 text-center">
             <Calculator className="w-8 h-8 text-primary mx-auto mb-4 animate-spin" />
-            <p className="text-foreground">Gerando seu cardápio personalizado...</p>
+            <p className="text-foreground">
+              {generatingMenu ? "Gerando seu cardápio personalizado..." : "Carregando..."}
+            </p>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  if (error || !menuPlan) {
+  if (!existingMenu || !calculation) {
     return (
       <div className="min-h-screen bg-background py-8 px-4 flex items-center justify-center">
         <Card className="border-destructive/20 bg-destructive/5">
           <CardContent className="p-8 text-center space-y-4">
-            <p className="text-destructive">{error}</p>
+            <p className="text-destructive">
+              {!calculation ? "Nenhum cálculo encontrado." : "Erro ao carregar cardápio."}
+            </p>
             <Button onClick={handleGoBack} data-testid="button-back-to-results">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar aos Resultados
@@ -125,6 +224,15 @@ export default function MenuPage() {
       </div>
     );
   }
+
+  const menuPlan: MenuPlan = {
+    category: existingMenu.category as 'suave' | 'moderado' | 'restritivo',
+    tdee: existingMenu.tdee,
+    targetCalories: existingMenu.targetCalories,
+    macroTarget: existingMenu.macroTarget,
+    meals: existingMenu.meals,
+    dailyTotals: existingMenu.dailyTotals,
+  };
 
   const getCategoryBadgeVariant = (cat: string) => {
     switch (cat) {
@@ -165,27 +273,27 @@ export default function MenuPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary" data-testid="text-target-calories">
-                  {menuPlan.macro_target.calories}
+                  {menuPlan.macroTarget.calories}
                 </div>
                 <p className="text-xs text-muted-foreground">Calorias</p>
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold text-foreground" data-testid="text-target-protein">
-                  {menuPlan.macro_target.protein_g}g
+                  {menuPlan.macroTarget.protein_g}g
                 </div>
-                <p className="text-xs text-muted-foreground">Proteína ({menuPlan.macro_target.protein_percent}%)</p>
+                <p className="text-xs text-muted-foreground">Proteína ({menuPlan.macroTarget.protein_percent}%)</p>
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold text-foreground" data-testid="text-target-carb">
-                  {menuPlan.macro_target.carb_g}g
+                  {menuPlan.macroTarget.carb_g}g
                 </div>
-                <p className="text-xs text-muted-foreground">Carboidratos ({menuPlan.macro_target.carb_percent}%)</p>
+                <p className="text-xs text-muted-foreground">Carboidratos ({menuPlan.macroTarget.carb_percent}%)</p>
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold text-foreground" data-testid="text-target-fat">
-                  {menuPlan.macro_target.fat_g}g
+                  {menuPlan.macroTarget.fat_g}g
                 </div>
-                <p className="text-xs text-muted-foreground">Gorduras ({menuPlan.macro_target.fat_percent}%)</p>
+                <p className="text-xs text-muted-foreground">Gorduras ({menuPlan.macroTarget.fat_percent}%)</p>
               </div>
             </div>
           </CardContent>
@@ -245,25 +353,25 @@ export default function MenuPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold text-primary" data-testid="text-total-calories">
-                  {menuPlan.daily_totals.kcal}
+                  {menuPlan.dailyTotals.kcal}
                 </div>
                 <p className="text-xs text-muted-foreground">Calorias</p>
               </div>
               <div>
                 <div className="text-xl font-bold text-foreground" data-testid="text-total-protein">
-                  {menuPlan.daily_totals.protein}g
+                  {menuPlan.dailyTotals.protein}g
                 </div>
                 <p className="text-xs text-muted-foreground">Proteína</p>
               </div>
               <div>
                 <div className="text-xl font-bold text-foreground" data-testid="text-total-carb">
-                  {menuPlan.daily_totals.carb}g
+                  {menuPlan.dailyTotals.carb}g
                 </div>
                 <p className="text-xs text-muted-foreground">Carboidratos</p>
               </div>
               <div>
                 <div className="text-xl font-bold text-foreground" data-testid="text-total-fat">
-                  {menuPlan.daily_totals.fat}g
+                  {menuPlan.dailyTotals.fat}g
                 </div>
                 <p className="text-xs text-muted-foreground">Gorduras</p>
               </div>
