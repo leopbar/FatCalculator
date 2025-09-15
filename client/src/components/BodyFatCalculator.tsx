@@ -1,11 +1,11 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calculator, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import GenderSelection from "./GenderSelection";
 import MeasurementInput from "./MeasurementInput";
-import ResultDisplay from "./ResultDisplay";
 
 interface FormData {
   gender: string;
@@ -26,6 +26,7 @@ interface FormErrors {
 
 export default function BodyFatCalculator() {
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const [formData, setFormData] = useState<FormData>({
     gender: "male",
     height: "",
@@ -36,29 +37,44 @@ export default function BodyFatCalculator() {
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
-  const [result, setResult] = useState<{
-    bodyFatPercentage: number;
-    category: string;
-    categoryColor: 'success' | 'warning' | 'destructive';
-  } | null>(null);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
     
-    if (!formData.height || parseFloat(formData.height) <= 0) {
+    const height = parseFloat(formData.height);
+    const weight = parseFloat(formData.weight);
+    const neck = parseFloat(formData.neck);
+    const waist = parseFloat(formData.waist);
+    const hip = formData.gender === "female" ? parseFloat(formData.hip) : 0;
+    
+    if (!formData.height || height <= 0) {
       newErrors.height = "Altura é obrigatória e deve ser maior que 0";
     }
-    if (!formData.weight || parseFloat(formData.weight) <= 0) {
+    if (!formData.weight || weight <= 0) {
       newErrors.weight = "Peso é obrigatório e deve ser maior que 0";
     }
-    if (!formData.neck || parseFloat(formData.neck) <= 0) {
+    if (!formData.neck || neck <= 0) {
       newErrors.neck = "Medida do pescoço é obrigatória e deve ser maior que 0";
     }
-    if (!formData.waist || parseFloat(formData.waist) <= 0) {
+    if (!formData.waist || waist <= 0) {
       newErrors.waist = "Medida da cintura é obrigatória e deve ser maior que 0";
     }
-    if (formData.gender === "female" && (!formData.hip || parseFloat(formData.hip) <= 0)) {
+    if (formData.gender === "female" && (!formData.hip || hip <= 0)) {
       newErrors.hip = "Medida do quadril é obrigatória para mulheres e deve ser maior que 0";
+    }
+
+    // Critical validation for US Navy formula
+    if (formData.gender === "male") {
+      if (waist <= neck) {
+        newErrors.waist = "Para homens, a cintura deve ser maior que o pescoço";
+        newErrors.neck = "Para homens, o pescoço deve ser menor que a cintura";
+      }
+    } else if (formData.gender === "female") {
+      if (waist + hip <= neck) {
+        newErrors.waist = "Para mulheres, cintura + quadril deve ser maior que o pescoço";
+        newErrors.hip = "Para mulheres, cintura + quadril deve ser maior que o pescoço";
+        newErrors.neck = "Para mulheres, o pescoço deve ser menor que cintura + quadril";
+      }
     }
 
     setErrors(newErrors);
@@ -130,16 +146,32 @@ export default function BodyFatCalculator() {
       }
     }
 
-    setResult({
+    // Validate calculation result
+    if (!isFinite(bodyFatPercentage) || isNaN(bodyFatPercentage)) {
+      toast({
+        title: "Erro no cálculo",
+        description: "Não foi possível calcular o resultado com os valores fornecidos. Verifique os dados inseridos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Store result in localStorage and navigate to results page
+    const resultData = {
       bodyFatPercentage: Math.max(0, Math.min(50, bodyFatPercentage)), // Clamp between 0-50%
       category,
       categoryColor,
-    });
-
+    };
+    
+    localStorage.setItem('bodyFatResult', JSON.stringify(resultData));
+    
     toast({
       title: "Cálculo realizado!",
-      description: "Seu percentual de gordura corporal foi calculado com sucesso.",
+      description: "Redirecionando para o resultado...",
     });
+    
+    // Navigate to results page
+    navigate('/results');
   };
 
   const resetForm = () => {
@@ -152,7 +184,9 @@ export default function BodyFatCalculator() {
       hip: "",
     });
     setErrors({});
-    setResult(null);
+    // Clear any stored data
+    localStorage.removeItem('bodyFatResult');
+    localStorage.removeItem('formData');
     toast({
       title: "Formulário limpo",
       description: "Todos os campos foram resetados.",
@@ -269,14 +303,6 @@ export default function BodyFatCalculator() {
           </CardContent>
         </Card>
 
-        {/* Result */}
-        {result && (
-          <ResultDisplay
-            bodyFatPercentage={result.bodyFatPercentage}
-            category={result.category}
-            categoryColor={result.categoryColor}
-          />
-        )}
       </div>
     </div>
   );
