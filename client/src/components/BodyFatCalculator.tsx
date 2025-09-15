@@ -10,6 +10,7 @@ import ResultDisplay from "./ResultDisplay";
 interface FormData {
   gender: string;
   height: string;
+  weight: string;
   neck: string;
   waist: string;
   hip: string;
@@ -17,6 +18,7 @@ interface FormData {
 
 interface FormErrors {
   height?: string;
+  weight?: string;
   neck?: string;
   waist?: string;
   hip?: string;
@@ -27,6 +29,7 @@ export default function BodyFatCalculator() {
   const [formData, setFormData] = useState<FormData>({
     gender: "male",
     height: "",
+    weight: "",
     neck: "",
     waist: "",
     hip: "",
@@ -44,6 +47,9 @@ export default function BodyFatCalculator() {
     
     if (!formData.height || parseFloat(formData.height) <= 0) {
       newErrors.height = "Altura é obrigatória e deve ser maior que 0";
+    }
+    if (!formData.weight || parseFloat(formData.weight) <= 0) {
+      newErrors.weight = "Peso é obrigatório e deve ser maior que 0";
     }
     if (!formData.neck || parseFloat(formData.neck) <= 0) {
       newErrors.neck = "Medida do pescoço é obrigatória e deve ser maior que 0";
@@ -140,6 +146,7 @@ export default function BodyFatCalculator() {
     setFormData({
       gender: "male",
       height: "",
+      weight: "",
       neck: "",
       waist: "",
       hip: "",
@@ -196,6 +203,16 @@ export default function BodyFatCalculator() {
                 placeholder="Ex: 175"
                 unit="cm"
                 error={errors.height}
+              />
+
+              <MeasurementInput
+                id="weight"
+                label="Peso"
+                value={formData.weight}
+                onChange={updateFormData('weight')}
+                placeholder="Ex: 70"
+                unit="kg"
+                error={errors.weight}
               />
 
               <MeasurementInput
