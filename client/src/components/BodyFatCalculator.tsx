@@ -203,7 +203,7 @@ export default function BodyFatCalculator() {
       return;
     }
 
-    // Store result in localStorage and navigate to results page
+    // Store result and form data in localStorage and navigate to results page
     const resultData = {
       bodyFatPercentage: Math.max(0, Math.min(50, bodyFatPercentage)), // Clamp between 0-50%
       tmb, // Taxa Metabólica Basal (calorias por dia)
@@ -211,6 +211,8 @@ export default function BodyFatCalculator() {
       categoryColor,
     };
     
+    // Also store form data for menu generation
+    localStorage.setItem("calculatorFormData", JSON.stringify(formData));
     localStorage.setItem('bodyFatResult', JSON.stringify(resultData));
     
     toast({

@@ -1,7 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, RotateCcw, Info, Flame, Target } from "lucide-react";
+import { TrendingUp, RotateCcw, Info, Flame, Target, ChefHat } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface ResultsProps {
   bodyFatPercentage: number;
@@ -12,6 +13,8 @@ interface ResultsProps {
 }
 
 export default function Results({ bodyFatPercentage, tmb, category, categoryColor, onRecalculate }: ResultsProps) {
+  const [, navigate] = useLocation();
+  
   const getCategoryVariant = (color: string) => {
     switch (color) {
       case 'success': return 'default';
@@ -19,6 +22,31 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
       case 'destructive': return 'destructive';
       default: return 'default';
     }
+  };
+
+  // Get stored form data for menu generation
+  const getStoredFormData = () => {
+    const storedData = localStorage.getItem("calculatorFormData");
+    return storedData ? JSON.parse(storedData) : null;
+  };
+
+  const handleSelectCategory = (selectedCategory: 'suave' | 'moderado' | 'restritivo', calories: number) => {
+    const formData = getStoredFormData();
+    if (!formData) {
+      console.error("Form data not found");
+      return;
+    }
+
+    // Navigate to menu with parameters
+    const params = new URLSearchParams({
+      cat: selectedCategory,
+      cal: calories.toString(),
+      tdee: tmb.toString(),
+      weight: formData.weight.toString(),
+      bf: bodyFatPercentage.toString()
+    });
+    
+    navigate(`/menu?${params.toString()}`);
   };
 
   // Calculate weight loss recommendations based on TDEE
@@ -119,10 +147,21 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
             <Target className="w-6 h-6 text-primary" />
             <h3 className="text-lg font-semibold text-foreground">Recomendações para Emagrecimento</h3>
           </div>
+          <p className="text-center text-sm text-muted-foreground">
+            Selecione uma categoria para gerar seu cardápio personalizado
+          </p>
           
           <div className="grid gap-4 md:grid-cols-3">
             {weightLossRecommendations.map((rec, index) => (
-              <Card key={rec.category} className="border-primary/20 bg-accent/30" data-testid={`card-weight-loss-${rec.category.toLowerCase()}`}>
+              <Card 
+                key={rec.category} 
+                className="border-primary/20 bg-accent/30 hover-elevate cursor-pointer transition-all" 
+                data-testid={`card-weight-loss-${rec.category.toLowerCase()}`}
+                onClick={() => handleSelectCategory(
+                  rec.category.toLowerCase() as 'suave' | 'moderado' | 'restritivo', 
+                  rec.dailyCalories
+                )}
+              >
                 <CardContent className="p-4 space-y-3">
                   <div className="text-center">
                     <Badge 
@@ -147,6 +186,17 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
                       </div>
                       <p className="text-xs text-muted-foreground">perda por semana</p>
                     </div>
+                  </div>
+                  
+                  <div className="text-center pt-2">
+                    <Button 
+                      size="sm" 
+                      className="w-full"
+                      data-testid={`button-select-${rec.category.toLowerCase()}`}
+                    >
+                      <ChefHat className="w-4 h-4 mr-2" />
+                      Gerar Cardápio
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

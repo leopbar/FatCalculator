@@ -1,0 +1,211 @@
+[
+  {
+    "id": "protein_chicken_breast",
+    "name": "Peito de frango sem pele",
+    "category": "protein",
+    "protein_per_100g": 31.0,
+    "carb_per_100g": 0.0,
+    "fat_per_100g": 3.6,
+    "kcal_per_100g": 165,
+    "fiber_per_100g": 0.0,
+    "energy_density": 1.65
+  },
+  {
+    "id": "protein_eggs",
+    "name": "Ovos",
+    "category": "protein",
+    "protein_per_100g": 13.0,
+    "carb_per_100g": 1.1,
+    "fat_per_100g": 9.5,
+    "kcal_per_100g": 155,
+    "fiber_per_100g": 0.0,
+    "energy_density": 1.55
+  },
+  {
+    "id": "protein_greek_yogurt",
+    "name": "Iogurte grego natural",
+    "category": "protein",
+    "protein_per_100g": 10.0,
+    "carb_per_100g": 3.6,
+    "fat_per_100g": 0.4,
+    "kcal_per_100g": 59,
+    "fiber_per_100g": 0.0,
+    "energy_density": 0.59
+  },
+  {
+    "id": "protein_tilapia",
+    "name": "Tilápia",
+    "category": "protein",
+    "protein_per_100g": 26.0,
+    "carb_per_100g": 0.0,
+    "fat_per_100g": 2.7,
+    "kcal_per_100g": 129,
+    "fiber_per_100g": 0.0,
+    "energy_density": 1.29
+  },
+  {
+    "id": "protein_cottage_cheese",
+    "name": "Queijo cottage",
+    "category": "protein",
+    "protein_per_100g": 11.1,
+    "carb_per_100g": 3.4,
+    "fat_per_100g": 4.3,
+    "kcal_per_100g": 98,
+    "fiber_per_100g": 0.0,
+    "energy_density": 0.98
+  },
+  {
+    "id": "carb_brown_rice",
+    "name": "Arroz integral cozido",
+    "category": "carb",
+    "protein_per_100g": 2.6,
+    "carb_per_100g": 23.0,
+    "fat_per_100g": 0.9,
+    "kcal_per_100g": 111,
+    "fiber_per_100g": 1.8,
+    "energy_density": 1.11
+  },
+  {
+    "id": "carb_oats",
+    "name": "Aveia em flocos",
+    "category": "carb",
+    "protein_per_100g": 16.9,
+    "carb_per_100g": 66.3,
+    "fat_per_100g": 6.9,
+    "kcal_per_100g": 389,
+    "fiber_per_100g": 10.6,
+    "energy_density": 3.89
+  },
+  {
+    "id": "carb_sweet_potato",
+    "name": "Batata doce cozida",
+    "category": "carb",
+    "protein_per_100g": 2.0,
+    "carb_per_100g": 20.1,
+    "fat_per_100g": 0.1,
+    "kcal_per_100g": 90,
+    "fiber_per_100g": 3.0,
+    "energy_density": 0.90
+  },
+  {
+    "id": "carb_banana",
+    "name": "Banana",
+    "category": "carb",
+    "protein_per_100g": 1.1,
+    "carb_per_100g": 22.8,
+    "fat_per_100g": 0.3,
+    "kcal_per_100g": 89,
+    "fiber_per_100g": 2.6,
+    "energy_density": 0.89
+  },
+  {
+    "id": "carb_bread_whole",
+    "name": "Pão integral",
+    "category": "carb",
+    "protein_per_100g": 13.4,
+    "carb_per_100g": 41.3,
+    "fat_per_100g": 4.2,
+    "kcal_per_100g": 247,
+    "fiber_per_100g": 6.0,
+    "energy_density": 2.47
+  },
+  {
+    "id": "fat_olive_oil",
+    "name": "Azeite de oliva",
+    "category": "fat",
+    "protein_per_100g": 0.0,
+    "carb_per_100g": 0.0,
+    "fat_per_100g": 100.0,
+    "kcal_per_100g": 884,
+    "fiber_per_100g": 0.0,
+    "energy_density": 8.84
+  },
+  {
+    "id": "fat_almonds",
+    "name": "Amêndoas",
+    "category": "fat",
+    "protein_per_100g": 21.2,
+    "carb_per_100g": 21.6,
+    "fat_per_100g": 49.9,
+    "kcal_per_100g": 579,
+    "fiber_per_100g": 12.5,
+    "energy_density": 5.79
+  },
+  {
+    "id": "fat_avocado",
+    "name": "Abacate",
+    "category": "fat",
+    "protein_per_100g": 2.0,
+    "carb_per_100g": 8.5,
+    "fat_per_100g": 14.7,
+    "kcal_per_100g": 160,
+    "fiber_per_100g": 6.7,
+    "energy_density": 1.60
+  },
+  {
+    "id": "fat_peanut_butter",
+    "name": "Pasta de amendoim",
+    "category": "fat",
+    "protein_per_100g": 25.8,
+    "carb_per_100g": 20.0,
+    "fat_per_100g": 50.4,
+    "kcal_per_100g": 588,
+    "fiber_per_100g": 8.5,
+    "energy_density": 5.88
+  },
+  {
+    "id": "vegetable_broccoli",
+    "name": "Brócolis cozido",
+    "category": "vegetable",
+    "protein_per_100g": 2.8,
+    "carb_per_100g": 7.0,
+    "fat_per_100g": 0.4,
+    "kcal_per_100g": 35,
+    "fiber_per_100g": 3.8,
+    "energy_density": 0.35
+  },
+  {
+    "id": "vegetable_spinach",
+    "name": "Espinafre",
+    "category": "vegetable",
+    "protein_per_100g": 2.9,
+    "carb_per_100g": 3.6,
+    "fat_per_100g": 0.4,
+    "kcal_per_100g": 23,
+    "fiber_per_100g": 2.2,
+    "energy_density": 0.23
+  },
+  {
+    "id": "vegetable_lettuce",
+    "name": "Alface",
+    "category": "vegetable",
+    "protein_per_100g": 1.4,
+    "carb_per_100g": 2.9,
+    "fat_per_100g": 0.2,
+    "kcal_per_100g": 15,
+    "fiber_per_100g": 1.3,
+    "energy_density": 0.15
+  },
+  {
+    "id": "vegetable_tomato",
+    "name": "Tomate",
+    "category": "vegetable",
+    "protein_per_100g": 0.9,
+    "carb_per_100g": 3.9,
+    "fat_per_100g": 0.2,
+    "kcal_per_100g": 18,
+    "fiber_per_100g": 1.2,
+    "energy_density": 0.18
+  },
+  {
+    "id": "vegetable_cucumber",
+    "name": "Pepino",
+    "category": "vegetable",
+    "protein_per_100g": 0.7,
+    "carb_per_100g": 3.6,
+    "fat_per_100g": 0.1,
+    "kcal_per_100g": 16,
+    "fiber_per_100g": 0.5,
+    "energy_density": 0.16
+  }
+]
