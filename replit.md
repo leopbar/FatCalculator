@@ -1,6 +1,12 @@
 # Overview
 
-This is a US Navy Body Fat Calculator web application that allows users to calculate their body fat percentage using the official US Navy method. The application features a clean, medical calculator-inspired interface with a dedicated results flow. Users input their gender, height, weight, neck circumference, waist circumference, and hip circumference (for females) on the main form, then navigate to a dedicated results screen showing their body fat percentage calculation and fitness category classification. A "Refazer cálculo" button allows users to reset and start over.
+This is a US Navy Body Fat Calculator web application that allows users to calculate their body fat percentage using the official US Navy method. The application features a clean, medical calculator-inspired interface with a comprehensive results flow. Users input their gender, height, weight, neck circumference, waist circumference, hip circumference (for females), age, and physical activity level on the main form, then navigate to a dedicated results screen showing:
+
+- Body fat percentage calculation and fitness category classification
+- Daily energy expenditure (TDEE) based on Mifflin-St Jeor formula with activity level multipliers
+- Weight loss recommendations with three categories (Suave, Moderado, Restritivo) showing daily calorie targets and estimated weekly weight loss
+
+A "Refazer cálculo" button allows users to reset and start over.
 
 # User Preferences
 
@@ -20,12 +26,12 @@ The application uses a modern React stack with TypeScript:
 - **Form Handling**: React Hook Form with Zod validation for type-safe form management
 
 The component architecture follows a modular approach with reusable UI components:
-- `BodyFatCalculator` - Main calculator component with form logic and navigation to results
+- `BodyFatCalculator` - Main calculator component with form logic including age, activity level, and navigation to results
 - `GenderSelection` - Radio group for gender selection with icons
 - `MeasurementInput` - Reusable input component for body measurements  
-- `Results` - Dedicated results component for elegant percentage display
+- `Results` - Comprehensive results component displaying body fat percentage, TDEE, and weight loss recommendations
 - **Pages**: `Home` (form), `Results` (dedicated results screen)
-- **Flow**: Form submission → localStorage storage → navigation to /results → prominent display → reset option
+- **Flow**: Form submission → localStorage storage → navigation to /results → comprehensive display → reset option
 
 ## Backend Architecture
 
