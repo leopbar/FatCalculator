@@ -28,20 +28,7 @@ export default function AuthPage() {
   const [, navigate] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
 
-  // Redirect if already authenticated using useEffect to avoid side effects during render
-  useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
-  }, [user, navigate]);
-
-  // Show loading state while redirecting
-  if (user) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">
-      <p className="text-muted-foreground">Redirecionando...</p>
-    </div>;
-  }
-
+  // Always call all hooks first before any conditional logic
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -58,6 +45,20 @@ export default function AuthPage() {
       confirmPassword: "",
     },
   });
+
+  // Redirect if already authenticated using useEffect to avoid side effects during render
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
+  // Show loading state while redirecting - but AFTER all hooks are called
+  if (user) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">
+      <p className="text-muted-foreground">Redirecionando...</p>
+    </div>;
+  }
 
   const onLogin = (data: LoginFormData) => {
     loginMutation.mutate(data, {
