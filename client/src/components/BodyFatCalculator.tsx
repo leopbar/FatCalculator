@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calculator, RotateCcw } from "lucide-react";
+import { Calculator, RotateCcw, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import GenderSelection from "./GenderSelection";
 import MeasurementInput from "./MeasurementInput";
 
@@ -30,6 +31,7 @@ interface FormErrors {
 
 export default function BodyFatCalculator() {
   const { toast } = useToast();
+  const { user, logoutMutation } = useAuth();
   const [, navigate] = useLocation();
   const [formData, setFormData] = useState<FormData>({
     gender: "male",
@@ -253,17 +255,39 @@ export default function BodyFatCalculator() {
     }
   };
 
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
+
   return (
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-md mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-foreground">
-            Calculadora de Gordura Corporal
-          </h1>
-          <p className="text-muted-foreground">
-            Método oficial da Marinha dos EUA
-          </p>
+        {/* Header with Logout */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="text-center flex-1">
+            <h1 className="text-2xl font-bold text-foreground">
+              Calculadora de Gordura Corporal
+            </h1>
+            <p className="text-muted-foreground">
+              Método oficial da Marinha dos EUA
+            </p>
+          </div>
+          <div className="flex flex-col items-end">
+            <p className="text-sm text-muted-foreground mb-2">
+              Olá, {user?.username}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              disabled={logoutMutation.isPending}
+              data-testid="button-logout"
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              {logoutMutation.isPending ? "Saindo..." : "Sair"}
+            </Button>
+          </div>
         </div>
 
         {/* Main Form */}

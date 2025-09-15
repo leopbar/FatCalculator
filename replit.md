@@ -15,6 +15,17 @@ From the results screen, users can select a weight loss category to generate a p
 
 A "Refazer cálculo" button allows users to reset and start over from any screen.
 
+## Authentication System
+
+The application now includes a complete authentication system for authorized access:
+
+- **Login/Registration**: Two-column layout with form and hero section explaining the app
+- **Session Management**: Uses passport.js with express-session for secure authentication
+- **Protected Routes**: All calculator and menu pages require authentication
+- **User Interface**: Login/logout functionality with user greeting and logout button
+- **Security**: Password hashing with scrypt, session storage, and secure credential validation
+- **Portuguese Interface**: All authentication messages and forms are in Portuguese
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -38,8 +49,9 @@ The component architecture follows a modular approach with reusable UI component
 - `MeasurementInput` - Reusable input component for body measurements  
 - `Results` - Comprehensive results component displaying body fat percentage, TDEE, weight loss recommendations with category selection
 - `Menu` - Personalized meal plan component displaying macronutrient targets and daily meal schedule
-- **Pages**: `Home` (form), `Results` (dedicated results screen), `Menu` (personalized meal plan)
-- **Flow**: Form submission → localStorage storage → /results → category selection → /menu → meal plan display → reset option
+- **Pages**: `Home` (form), `Results` (dedicated results screen), `Menu` (personalized meal plan), `AuthPage` (login/registration)
+- **Flow**: Authentication → Form submission → localStorage storage → /results → category selection → /menu → meal plan display → reset option
+- **Authentication**: All pages protected by login requirement with logout functionality in main calculator
 
 ## Nutrition System
 

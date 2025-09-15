@@ -31,7 +31,9 @@ export default function AuthPage() {
   // Redirect if already authenticated
   if (user) {
     navigate("/");
-    return null;
+    return <div className="min-h-screen bg-background flex items-center justify-center">
+      <p className="text-muted-foreground">Redirecionando...</p>
+    </div>;
   }
 
   const loginForm = useForm<LoginFormData>({
