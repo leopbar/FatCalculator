@@ -9,19 +9,23 @@ import MeasurementInput from "./MeasurementInput";
 
 interface FormData {
   gender: string;
+  age: string;
   height: string;
   weight: string;
   neck: string;
   waist: string;
   hip: string;
+  activityLevel: string;
 }
 
 interface FormErrors {
+  age?: string;
   height?: string;
   weight?: string;
   neck?: string;
   waist?: string;
   hip?: string;
+  activityLevel?: string;
 }
 
 export default function BodyFatCalculator() {
@@ -29,11 +33,13 @@ export default function BodyFatCalculator() {
   const [, navigate] = useLocation();
   const [formData, setFormData] = useState<FormData>({
     gender: "male",
+    age: "",
     height: "",
     weight: "",
     neck: "",
     waist: "",
     hip: "",
+    activityLevel: "",
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
@@ -41,12 +47,16 @@ export default function BodyFatCalculator() {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
     
+    const age = parseFloat(formData.age);
     const height = parseFloat(formData.height);
     const weight = parseFloat(formData.weight);
     const neck = parseFloat(formData.neck);
     const waist = parseFloat(formData.waist);
     const hip = formData.gender === "female" ? parseFloat(formData.hip) : 0;
     
+    if (!formData.age || age <= 0 || age > 120) {
+      newErrors.age = "Idade é obrigatória e deve estar entre 1 e 120 anos";
+    }
     if (!formData.height || height <= 0) {
       newErrors.height = "Altura é obrigatória e deve ser maior que 0";
     }
@@ -61,6 +71,9 @@ export default function BodyFatCalculator() {
     }
     if (formData.gender === "female" && (!formData.hip || hip <= 0)) {
       newErrors.hip = "Medida do quadril é obrigatória para mulheres e deve ser maior que 0";
+    }
+    if (!formData.activityLevel) {
+      newErrors.activityLevel = "Nível de atividade física é obrigatório";
     }
 
     // Critical validation for US Navy formula
@@ -177,11 +190,13 @@ export default function BodyFatCalculator() {
   const resetForm = () => {
     setFormData({
       gender: "male",
+      age: "",
       height: "",
       weight: "",
       neck: "",
       waist: "",
       hip: "",
+      activityLevel: "",
     });
     setErrors({});
     // Clear any stored data
@@ -229,6 +244,16 @@ export default function BodyFatCalculator() {
             />
 
             <div className="space-y-4">
+              <MeasurementInput
+                id="age"
+                label="Idade"
+                value={formData.age}
+                onChange={updateFormData('age')}
+                placeholder="Ex: 30"
+                unit="anos"
+                error={errors.age}
+              />
+
               <MeasurementInput
                 id="height"
                 label="Altura"
@@ -279,6 +304,49 @@ export default function BodyFatCalculator() {
                   unit="cm"
                   error={errors.hip}
                 />
+              )}
+            </div>
+
+            {/* Activity Level Selection */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-foreground">
+                Qual seu nível de atividade física?
+              </h3>
+              <div className="space-y-2">
+                {[
+                  { value: "sedentary", label: "Sedentário", description: "pouco ou nenhum exercício" },
+                  { value: "light", label: "Leve", description: "exercício leve 1–3 dias/semana" },
+                  { value: "moderate", label: "Moderado", description: "exercício moderado 3–5 dias/semana" },
+                  { value: "intense", label: "Intenso", description: "exercício pesado 6–7 dias/semana" }
+                ].map((level) => (
+                  <label
+                    key={level.value}
+                    className={`flex items-start space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      formData.activityLevel === level.value
+                        ? "border-primary bg-primary/5"
+                        : "border-input hover:bg-muted/50"
+                    }`}
+                    data-testid={`radio-activity-${level.value}`}
+                  >
+                    <input
+                      type="radio"
+                      name="activityLevel"
+                      value={level.value}
+                      checked={formData.activityLevel === level.value}
+                      onChange={(e) => updateFormData('activityLevel')(e.target.value)}
+                      className="mt-1 w-4 h-4 text-primary"
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium text-sm text-foreground">{level.label}</div>
+                      <div className="text-xs text-muted-foreground">({level.description})</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              {errors.activityLevel && (
+                <p className="text-sm text-destructive mt-1" data-testid="error-activityLevel">
+                  {errors.activityLevel}
+                </p>
               )}
             </div>
 
