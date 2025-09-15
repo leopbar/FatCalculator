@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, real, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -75,10 +75,76 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
 });
 
+// Body metrics table - stores user measurements
+export const bodyMetrics = pgTable("body_metrics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  gender: text("gender", { enum: ["masculino", "feminino"] }).notNull(),
+  age: integer("age").notNull(),
+  height: real("height").notNull(), // cm
+  weight: real("weight").notNull(), // kg
+  neck: real("neck").notNull(), // cm
+  waist: real("waist").notNull(), // cm
+  hip: real("hip"), // cm (optional for males)
+  activityLevel: text("activity_level", { 
+    enum: ["sedentario", "leve", "moderado", "intenso", "muito_intenso"] 
+  }).notNull(),
+});
+
+// Calculation results table - stores body fat, BMR, TDEE calculations
+export const calculations = pgTable("calculations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  bodyFatPercent: real("body_fat_percent").notNull(),
+  category: text("category").notNull(), // fitness category
+  bmr: real("bmr").notNull(), // basal metabolic rate
+  tdee: real("tdee").notNull(), // total daily energy expenditure
+});
+
+// Menu plans table - stores generated meal plans
+export const menuPlans = pgTable("menu_plans", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  category: text("category", { enum: ["suave", "moderado", "restritivo"] }).notNull(),
+  tdee: real("tdee").notNull(),
+  targetCalories: real("target_calories").notNull(),
+  macroTarget: json("macro_target").$type<MacroTarget>().notNull(),
+  meals: json("meals").$type<Meal[]>().notNull(),
+  dailyTotals: json("daily_totals").$type<{
+    protein: number;
+    carb: number;
+    fat: number;
+    kcal: number;
+  }>().notNull(),
+});
+
+// Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
 });
 
+export const insertBodyMetricsSchema = createInsertSchema(bodyMetrics).omit({
+  id: true,
+  userId: true,
+});
+
+export const insertCalculationSchema = createInsertSchema(calculations).omit({
+  id: true,
+  userId: true,
+});
+
+export const insertMenuPlanSchema = createInsertSchema(menuPlans).omit({
+  id: true,
+  userId: true,
+});
+
+// Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type BodyMetrics = typeof bodyMetrics.$inferSelect;
+export type InsertBodyMetrics = z.infer<typeof insertBodyMetricsSchema>;
+export type Calculation = typeof calculations.$inferSelect;
+export type InsertCalculation = z.infer<typeof insertCalculationSchema>;
+export type MenuPlanData = typeof menuPlans.$inferSelect;
+export type InsertMenuPlan = z.infer<typeof insertMenuPlanSchema>;
