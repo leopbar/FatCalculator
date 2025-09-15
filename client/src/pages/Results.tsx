@@ -5,6 +5,7 @@ import Results from "@/components/Results";
 
 interface ResultData {
   bodyFatPercentage: number;
+  tmb: number;
   category: string;
   categoryColor: 'success' | 'warning' | 'destructive';
 }
@@ -25,6 +26,9 @@ export default function ResultsPage() {
       typeof parsedResult.bodyFatPercentage !== 'number' ||
       !isFinite(parsedResult.bodyFatPercentage) ||
       isNaN(parsedResult.bodyFatPercentage) ||
+      typeof parsedResult.tmb !== 'number' ||
+      !isFinite(parsedResult.tmb) ||
+      isNaN(parsedResult.tmb) ||
       !parsedResult.category ||
       !parsedResult.categoryColor
     )) {
@@ -60,6 +64,7 @@ export default function ResultsPage() {
   return (
     <Results
       bodyFatPercentage={parsedResult.bodyFatPercentage}
+      tmb={parsedResult.tmb}
       category={parsedResult.category}
       categoryColor={parsedResult.categoryColor}
       onRecalculate={handleRecalculate}

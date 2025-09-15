@@ -74,6 +74,8 @@ export default function BodyFatCalculator() {
     }
     if (!formData.activityLevel) {
       newErrors.activityLevel = "Nível de atividade física é obrigatório";
+    } else if (!['sedentary', 'light', 'moderate', 'intense'].includes(formData.activityLevel)) {
+      newErrors.activityLevel = "Nível de atividade física inválido";
     }
 
     // Critical validation for US Navy formula
@@ -104,7 +106,9 @@ export default function BodyFatCalculator() {
       return;
     }
 
+    const age = parseFloat(formData.age);
     const height = parseFloat(formData.height);
+    const weight = parseFloat(formData.weight);
     const neck = parseFloat(formData.neck);
     const waist = parseFloat(formData.waist);
     const hip = formData.gender === "female" ? parseFloat(formData.hip) : 0;
@@ -159,8 +163,38 @@ export default function BodyFatCalculator() {
       }
     }
 
-    // Validate calculation result
-    if (!isFinite(bodyFatPercentage) || isNaN(bodyFatPercentage)) {
+    // Calculate BMR using Mifflin-St Jeor equation
+    let bmr: number;
+    if (formData.gender === "male") {
+      // Male: BMR = (10 × weight) + (6.25 × height) - (5 × age) + 5
+      bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+    } else {
+      // Female: BMR = (10 × weight) + (6.25 × height) - (5 × age) - 161
+      bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+    }
+
+    // Apply activity level factor to get TDEE (Total Daily Energy Expenditure)
+    const activityFactors = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.55,
+      intense: 1.725
+    };
+    
+    const activityFactor = activityFactors[formData.activityLevel as keyof typeof activityFactors];
+    if (!activityFactor) {
+      toast({
+        title: "Erro no cálculo",
+        description: "Nível de atividade física inválido.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const tmb = Math.round(bmr * activityFactor);
+
+    // Validate calculation results
+    if (!isFinite(bodyFatPercentage) || isNaN(bodyFatPercentage) || !isFinite(tmb) || isNaN(tmb)) {
       toast({
         title: "Erro no cálculo",
         description: "Não foi possível calcular o resultado com os valores fornecidos. Verifique os dados inseridos.",
@@ -172,6 +206,7 @@ export default function BodyFatCalculator() {
     // Store result in localStorage and navigate to results page
     const resultData = {
       bodyFatPercentage: Math.max(0, Math.min(50, bodyFatPercentage)), // Clamp between 0-50%
+      tmb, // Taxa Metabólica Basal (calorias por dia)
       category,
       categoryColor,
     };
