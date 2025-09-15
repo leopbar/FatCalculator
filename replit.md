@@ -1,6 +1,6 @@
 # Overview
 
-This is a US Navy Body Fat Calculator web application that allows users to calculate their body fat percentage using the official US Navy method. The application is built as a single-page React application with a clean, medical calculator-inspired interface. Users input their gender, height, weight, neck circumference, waist circumference, and hip circumference (for females) to receive an accurate body fat percentage calculation along with a fitness category classification.
+This is a US Navy Body Fat Calculator web application that allows users to calculate their body fat percentage using the official US Navy method. The application features a clean, medical calculator-inspired interface with a dedicated results flow. Users input their gender, height, weight, neck circumference, waist circumference, and hip circumference (for females) on the main form, then navigate to a dedicated results screen showing their body fat percentage calculation and fitness category classification. A "Refazer cálculo" button allows users to reset and start over.
 
 # User Preferences
 
@@ -20,10 +20,12 @@ The application uses a modern React stack with TypeScript:
 - **Form Handling**: React Hook Form with Zod validation for type-safe form management
 
 The component architecture follows a modular approach with reusable UI components:
-- `BodyFatCalculator` - Main calculator component with form logic
+- `BodyFatCalculator` - Main calculator component with form logic and navigation to results
 - `GenderSelection` - Radio group for gender selection with icons
-- `MeasurementInput` - Reusable input component for body measurements
-- `ResultDisplay` - Component to display calculated results with category badges
+- `MeasurementInput` - Reusable input component for body measurements  
+- `Results` - Dedicated results component for elegant percentage display
+- **Pages**: `Home` (form), `Results` (dedicated results screen)
+- **Flow**: Form submission → localStorage storage → navigation to /results → prominent display → reset option
 
 ## Backend Architecture
 
@@ -38,20 +40,21 @@ The server includes middleware for request logging and error handling, with a cl
 
 ## Data Storage
 
-The application uses a flexible data storage approach:
+The application uses a client-side storage approach optimized for the calculator functionality:
 
-- **ORM**: Drizzle ORM for type-safe database operations
-- **Database**: PostgreSQL with Neon serverless configuration
-- **Schema Management**: Drizzle Kit for migrations and schema management
-- **Current Implementation**: In-memory storage for development with interface ready for database integration
+- **Primary Storage**: localStorage for calculation results and form state
+- **Session Flow**: Form data → calculation → localStorage → results screen → reset
+- **No Persistence**: Calculator is session-based with no user accounts or data retention
+- **Validation**: Critical domain validation prevents invalid calculations (waist > neck for males, waist + hip > neck for females)
+- **Error Handling**: Robust validation and error handling for edge cases and malformed data
 
-The schema includes a basic user table structure, though the current calculator functionality is primarily client-side.
+The application includes database infrastructure (Drizzle ORM, PostgreSQL) for potential future features but currently operates entirely client-side.
 
 ## Design System
 
 The application implements a comprehensive design system:
 
-- **Color Palette**: Green-based theme inspired by medical applications
+- **Color Palette**: Custom green theme (#0b9c40) inspired by medical applications
 - **Typography**: Inter font family with Roboto fallback
 - **Component Variants**: Consistent styling using class-variance-authority
 - **Responsive Design**: Mobile-first approach with Tailwind breakpoints
