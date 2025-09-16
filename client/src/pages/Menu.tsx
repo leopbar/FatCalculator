@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Utensils, Target, Calculator, Home } from "lucide-react";
-import { calculateMacroTargets, generateMealPlan } from "@/lib/nutrition";
-import { MacroTarget, MenuPlan } from "@shared/schema";
+import { calculateMacroTargets, generateMealPlan, validateMealPlan } from "@/lib/nutrition";
+import { MacroTarget, MenuPlan, AlimentoHispano, mapAlimentosToFoodItems } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -67,6 +67,12 @@ export default function MenuPage() {
     enabled: !!user,
   });
 
+  // Fetch alimentos from database
+  const { data: alimentosData, isLoading: alimentosLoading } = useQuery<AlimentoHispano[]>({
+    queryKey: ['/api/alimentos'],
+    enabled: !!user,
+  });
+
   // Mutation to save menu plan
   const saveMenuMutation = useMutation({
     mutationFn: async (menuData: any) => {
@@ -75,7 +81,7 @@ export default function MenuPage() {
     },
   });
 
-  const isLoading = calculationLoading || metricsLoading || menuLoading || generatingMenu;
+  const isLoading = calculationLoading || metricsLoading || menuLoading || alimentosLoading || generatingMenu;
 
   // Generate menu plan if needed
   useEffect(() => {
@@ -84,8 +90,8 @@ export default function MenuPage() {
       return;
     }
 
-    if (!calculation || !bodyMetrics) {
-      if (!calculationLoading && !metricsLoading) {
+    if (!calculation || !bodyMetrics || !alimentosData) {
+      if (!calculationLoading && !metricsLoading && !alimentosLoading) {
         toast({
           title: "Dados não encontrados",
           description: "Realize o cálculo primeiro. Redirecionando...",
@@ -97,7 +103,7 @@ export default function MenuPage() {
     }
 
     // Only generate if category is selected (from URL params) and no existing menu
-    if (selectedCategory && !generatingMenu && !existingMenu) {
+    if (selectedCategory && !generatingMenu && !existingMenu && alimentosData) {
       generateMenuPlan();
     }
     
@@ -105,10 +111,10 @@ export default function MenuPage() {
     if (!selectedCategory && !existingMenu && !menuLoading && !menuError) {
       navigate('/results');
     }
-  }, [calculation, bodyMetrics, selectedCategory, user, calculationLoading, metricsLoading, generatingMenu, existingMenu, menuLoading, menuError]);
+  }, [calculation, bodyMetrics, selectedCategory, user, calculationLoading, metricsLoading, alimentosData, alimentosLoading, generatingMenu, existingMenu, menuLoading, menuError]);
 
   const generateMenuPlan = async () => {
-    if (!calculation || !bodyMetrics) return;
+    if (!calculation || !bodyMetrics || !alimentosData) return;
 
     setGeneratingMenu(true);
     try {
@@ -134,8 +140,11 @@ export default function MenuPage() {
         category
       );
 
-      // Generate meal plan
-      const meals = generateMealPlan(macroTarget, category);
+      // Map database foods to FoodItem format
+      const foods = mapAlimentosToFoodItems(alimentosData);
+
+      // Generate meal plan using foods from database
+      const meals = generateMealPlan(macroTarget, category, foods);
 
       // Calculate daily totals
       const dailyTotals = meals.reduce(
@@ -147,6 +156,21 @@ export default function MenuPage() {
         }),
         { protein: 0, carb: 0, fat: 0, kcal: 0 }
       );
+
+      // Validate meal plan doesn't exceed targets
+      const isValid = validateMealPlan(meals, macroTarget);
+      
+      if (!isValid) {
+        console.warn('Generated meal plan exceeds macro targets', {
+          dailyTotals,
+          macroTarget
+        });
+        toast({
+          title: "Aviso sobre o cardápio",
+          description: "O cardápio gerado pode ter pequenas variações nas metas nutricionais.",
+          variant: "default",
+        });
+      }
 
       const menuData = {
         category,
