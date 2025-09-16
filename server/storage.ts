@@ -50,6 +50,9 @@ export interface IStorage {
     hasMenu: boolean;
   }>;
   
+  // Clear all user data
+  clearAllUserData(userId: string): Promise<void>;
+  
   sessionStore: any; // Using any for compatibility with express-session types
 }
 
@@ -178,6 +181,13 @@ export class DatabaseStorage implements IStorage {
       hasMenu: !!userMenu,
     };
   }
+
+  async clearAllUserData(userId: string): Promise<void> {
+    // Delete all user data in the correct order (due to foreign key constraints)
+    await db.delete(menuPlans).where(eq(menuPlans.userId, userId));
+    await db.delete(calculations).where(eq(calculations.userId, userId));
+    await db.delete(bodyMetrics).where(eq(bodyMetrics.userId, userId));
+  }
 }
 
 // Keep MemStorage for fallback if needed
@@ -268,6 +278,12 @@ export class MemStorage implements IStorage {
       hasCalculation: this.calculations.has(userId),
       hasMenu: this.menuPlans.has(userId),
     };
+  }
+
+  async clearAllUserData(userId: string): Promise<void> {
+    this.bodyMetrics.delete(userId);
+    this.calculations.delete(userId);
+    this.menuPlans.delete(userId);
   }
 }
 

@@ -119,6 +119,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear all user data (for recalculation)
+  app.delete("/api/clear-data", requireAuth, async (req: any, res) => {
+    try {
+      await storage.clearAllUserData(req.user.id);
+      res.json({ message: "Todos os dados foram limpos com sucesso" });
+    } catch (error) {
+      console.error("Error clearing user data:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

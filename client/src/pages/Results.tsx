@@ -1,9 +1,9 @@
 import { useLocation } from "wouter";
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import Results from "@/components/Results";
 
 interface CalculationData {
@@ -41,12 +41,42 @@ export default function ResultsPage() {
     }
   }, [calculation, isLoading, error, user, navigate, toast]);
 
+  // Mutation to clear all user data
+  const clearDataMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/clear-data', {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to clear data');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidate cache after clearing data
+      queryClient.invalidateQueries({ queryKey: ['/api/calculation'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/body-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
+      
+      toast({
+        title: "Dados limpos com sucesso",
+        description: "Agora você pode fazer um novo cálculo.",
+      });
+      
+      navigate('/calculator');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao limpar dados",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleRecalculate = () => {
-    // Invalidate cache and redirect to calculator
-    queryClient.invalidateQueries({ queryKey: ['/api/calculation'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/body-metrics'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
-    navigate('/calculator');
+    clearDataMutation.mutate();
   };
 
   if (!user || isLoading) {
