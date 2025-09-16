@@ -7,13 +7,16 @@ import {
   type InsertCalculation,
   type MenuPlanData,
   type InsertMenuPlan,
+  type Food,
+  type InsertFood,
   users,
   bodyMetrics,
   calculations,
-  menuPlans
+  menuPlans,
+  foods
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -52,6 +55,11 @@ export interface IStorage {
   
   // Clear all user data
   clearAllUserData(userId: string): Promise<void>;
+  
+  // Food methods
+  getFoods(filters?: { category?: string; macro_class?: string; limit?: number }): Promise<Food[]>;
+  seedFoods(foods: InsertFood[]): Promise<void>;
+  getFoodsByMacroClass(macro_class: string, limit?: number): Promise<Food[]>;
   
   sessionStore: any; // Using any for compatibility with express-session types
 }
@@ -188,6 +196,58 @@ export class DatabaseStorage implements IStorage {
     await db.delete(calculations).where(eq(calculations.userId, userId));
     await db.delete(bodyMetrics).where(eq(bodyMetrics.userId, userId));
   }
+
+  async getFoods(filters?: { category?: string; macro_class?: string; limit?: number }): Promise<Food[]> {
+    if (!filters || (!filters.category && !filters.macro_class)) {
+      // Simple case - no filters
+      const query = db.select().from(foods);
+      return filters?.limit ? await query.limit(filters.limit) : await query;
+    }
+    
+    // Complex case - with filters
+    if (filters.category && filters.macro_class) {
+      const query = db.select().from(foods)
+        .where(and(
+          eq(foods.category, filters.category),
+          eq(foods.macro_class, filters.macro_class as any)
+        ));
+      return filters.limit ? await query.limit(filters.limit) : await query;
+    }
+    
+    if (filters.category) {
+      const query = db.select().from(foods).where(eq(foods.category, filters.category));
+      return filters.limit ? await query.limit(filters.limit) : await query;
+    }
+    
+    if (filters.macro_class) {
+      const query = db.select().from(foods).where(eq(foods.macro_class, filters.macro_class as any));
+      return filters.limit ? await query.limit(filters.limit) : await query;
+    }
+    
+    return [];
+  }
+
+  async seedFoods(foodList: InsertFood[]): Promise<void> {
+    // Use batch insert with conflict resolution
+    if (foodList.length === 0) return;
+    
+    // Insert in batches to avoid hitting query limits
+    const batchSize = 100;
+    for (let i = 0; i < foodList.length; i += batchSize) {
+      const batch = foodList.slice(i, i + batchSize);
+      await db.insert(foods).values(batch).onConflictDoNothing({
+        target: [foods.name, foods.category]
+      });
+    }
+  }
+
+  async getFoodsByMacroClass(macro_class: string, limit = 20): Promise<Food[]> {
+    return await db
+      .select()
+      .from(foods)
+      .where(eq(foods.macro_class, macro_class as any))
+      .limit(limit);
+  }
 }
 
 // Keep MemStorage for fallback if needed
@@ -196,6 +256,7 @@ export class MemStorage implements IStorage {
   private bodyMetrics: Map<string, BodyMetrics>; // keyed by userId
   private calculations: Map<string, Calculation>; // keyed by userId
   private menuPlans: Map<string, MenuPlanData>; // keyed by userId
+  private foods: Map<string, Food>; // keyed by food id
   sessionStore: any; // Using any for compatibility with express-session types
 
   constructor() {
@@ -203,6 +264,7 @@ export class MemStorage implements IStorage {
     this.bodyMetrics = new Map();
     this.calculations = new Map();
     this.menuPlans = new Map();
+    this.foods = new Map();
     // Based on javascript_auth_all_persistance blueprint
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
@@ -284,6 +346,40 @@ export class MemStorage implements IStorage {
     this.bodyMetrics.delete(userId);
     this.calculations.delete(userId);
     this.menuPlans.delete(userId);
+  }
+
+  async getFoods(filters?: { category?: string; macro_class?: string; limit?: number }): Promise<Food[]> {
+    let result = Array.from(this.foods.values());
+    
+    if (filters?.category) {
+      result = result.filter(f => f.category === filters.category);
+    }
+    if (filters?.macro_class) {
+      result = result.filter(f => f.macro_class === filters.macro_class);
+    }
+    if (filters?.limit) {
+      result = result.slice(0, filters.limit);
+    }
+    
+    return result;
+  }
+
+  async seedFoods(foodList: InsertFood[]): Promise<void> {
+    for (const food of foodList) {
+      const id = randomUUID();
+      const foodWithId: Food = { 
+        ...food, 
+        id,
+        fiber_per_100g: food.fiber_per_100g ?? 0 
+      };
+      this.foods.set(id, foodWithId);
+    }
+  }
+
+  async getFoodsByMacroClass(macro_class: string, limit = 20): Promise<Food[]> {
+    return Array.from(this.foods.values())
+      .filter(f => f.macro_class === macro_class)
+      .slice(0, limit);
   }
 }
 

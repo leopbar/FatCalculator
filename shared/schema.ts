@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, real, json } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, real, json, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -86,7 +86,9 @@ export const foods = pgTable("foods", {
   macro_class: text("macro_class", { 
     enum: ["protein", "carb", "fat", "vegetable", "mixed"] 
   }).notNull(),
-});
+}, (t) => ({
+  nameCategory: uniqueIndex("foods_name_category_idx").on(t.name, t.category),
+}));
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
