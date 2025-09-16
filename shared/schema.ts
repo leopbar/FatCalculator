@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, real, json, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, real, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -68,27 +68,6 @@ export type MealItem = z.infer<typeof mealItemSchema>;
 export type Meal = z.infer<typeof mealSchema>;
 export type MacroTarget = z.infer<typeof macroTargetSchema>;
 export type MenuPlan = z.infer<typeof menuPlanSchema>;
-
-// Foods table - stores official nutritional data from hispanic table
-export const foods = pgTable("foods", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  category: text("category").notNull(), // A-Cereales, B-Verduras, C-Frutas, etc.
-  // Macros per 100g from official hispanic nutritional table
-  protein_per_100g: real("protein_per_100g").notNull(),
-  carb_per_100g: real("carb_per_100g").notNull(),
-  fat_per_100g: real("fat_per_100g").notNull(),
-  kcal_per_100g: real("kcal_per_100g").notNull(),
-  fiber_per_100g: real("fiber_per_100g").default(0), // Default 0 if not specified
-  // Energy density for satiety calculation (kcal/g)
-  energy_density: real("energy_density").notNull(),
-  // Macro classification for meal generation
-  macro_class: text("macro_class", { 
-    enum: ["protein", "carb", "fat", "vegetable", "mixed"] 
-  }).notNull(),
-}, (t) => ({
-  nameCategory: uniqueIndex("foods_name_category_idx").on(t.name, t.category),
-}));
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -160,15 +139,9 @@ export const insertMenuPlanSchema = createInsertSchema(menuPlans).omit({
   userId: true,
 });
 
-export const insertFoodSchema = createInsertSchema(foods).omit({
-  id: true,
-});
-
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
-export type Food = typeof foods.$inferSelect;
-export type InsertFood = z.infer<typeof insertFoodSchema>;
 export type BodyMetrics = typeof bodyMetrics.$inferSelect;
 export type InsertBodyMetrics = z.infer<typeof insertBodyMetricsSchema>;
 export type Calculation = typeof calculations.$inferSelect;

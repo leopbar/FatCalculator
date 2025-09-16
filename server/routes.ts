@@ -7,7 +7,6 @@ import {
   insertCalculationSchema,
   insertMenuPlanSchema
 } from "@shared/schema";
-import { getAllFoodsForSeed } from "./food-seeder";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Based on javascript_auth_all_persistance blueprint
@@ -127,43 +126,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Todos os dados foram limpos com sucesso" });
     } catch (error) {
       console.error("Error clearing user data:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
-    }
-  });
-
-  // Foods endpoints
-  app.get("/api/foods", requireAuth, async (req: any, res) => {
-    try {
-      const { category, macro_class, limit } = req.query;
-      const parsedLimit = limit ? parseInt(limit as string) : undefined;
-      
-      const foods = await storage.getFoods({
-        category: category as string | undefined,
-        macro_class: macro_class as string | undefined,
-        limit: parsedLimit,
-      });
-      
-      res.json(foods);
-    } catch (error) {
-      console.error("Error getting foods:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
-    }
-  });
-
-  // Admin endpoint to seed foods from hispanic nutritional table
-  app.post("/api/admin/seed-foods", requireAuth, async (req: any, res) => {
-    try {
-      // For now, any authenticated user can seed foods
-      // In production, you'd want proper admin role checking
-      const foods = getAllFoodsForSeed();
-      await storage.seedFoods(foods);
-      
-      res.json({ 
-        message: "Alimentos populados com sucesso",
-        count: foods.length 
-      });
-    } catch (error) {
-      console.error("Error seeding foods:", error);
       res.status(500).json({ error: "Erro interno do servidor" });
     }
   });
