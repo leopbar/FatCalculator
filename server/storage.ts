@@ -145,19 +145,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async saveMenuPlan(userId: string, data: InsertMenuPlan): Promise<MenuPlanData> {
-    const insertData = {
-      category: data.category,
-      tdee: data.tdee,
-      targetCalories: data.targetCalories,
-      macroTarget: data.macroTarget,
-      meals: data.meals,
-      dailyTotals: data.dailyTotals,
-      userId: userId
-    };
-    
+    const row = { ...data, userId } as typeof menuPlans.$inferInsert;
     const [menuPlan] = await db
       .insert(menuPlans)
-      .values(insertData)
+      .values(row)
       .returning();
     return menuPlan as MenuPlanData;
   }
