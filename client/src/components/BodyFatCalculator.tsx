@@ -147,8 +147,16 @@ export default function BodyFatCalculator() {
       bodyFatPercentage = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
     } else {
       // US Navy formula for females: 495 / (1.29579 - 0.35004 * log10(waist + hip - neck) + 0.22100 * log10(height)) - 450
-      const hipValue = hip || 0; // Handle null case
-      bodyFatPercentage = 495 / (1.29579 - 0.35004 * Math.log10(waist + hipValue - neck) + 0.22100 * Math.log10(height)) - 450;
+      // Hip measurement is required for females
+      if (!hip || hip <= 0) {
+        toast({
+          title: "Erro no cálculo",
+          description: "A medida do quadril é obrigatória para o cálculo feminino.",
+          variant: "destructive",
+        });
+        return;
+      }
+      bodyFatPercentage = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
     }
 
     // Determine category and color
