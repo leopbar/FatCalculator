@@ -130,6 +130,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get alimentos hispanos
+  app.get("/api/alimentos", requireAuth, async (req: any, res) => {
+    try {
+      const { categoria } = req.query;
+      
+      let alimentos;
+      if (categoria) {
+        alimentos = await storage.getAlimentosByCategoria(categoria as string);
+      } else {
+        alimentos = await storage.getAllAlimentos();
+      }
+      
+      res.json(alimentos);
+    } catch (error) {
+      console.error("Error getting alimentos:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // Seed alimentos hispanos (temporary endpoint)
   app.post("/api/seed-alimentos", requireAuth, async (req: any, res) => {
     try {
