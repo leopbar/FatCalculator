@@ -358,40 +358,6 @@ export default function MenuPage() {
           ))}
         </div>
 
-        {/* Daily Totals */}
-        <Card className="border-primary/20 bg-accent/30" data-testid="card-daily-totals">
-          <CardHeader>
-            <CardTitle className="text-center">Total Diário</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-primary" data-testid="text-total-calories">
-                  {menuPlan.dailyTotals.kcal}
-                </div>
-                <p className="text-xs text-muted-foreground">Calorias</p>
-              </div>
-              <div>
-                <div className="text-xl font-bold text-foreground" data-testid="text-total-protein">
-                  {menuPlan.dailyTotals.protein}g
-                </div>
-                <p className="text-xs text-muted-foreground">Proteína</p>
-              </div>
-              <div>
-                <div className="text-xl font-bold text-foreground" data-testid="text-total-carb">
-                  {menuPlan.dailyTotals.carb}g
-                </div>
-                <p className="text-xs text-muted-foreground">Carboidratos</p>
-              </div>
-              <div>
-                <div className="text-xl font-bold text-foreground" data-testid="text-total-fat">
-                  {menuPlan.dailyTotals.fat}g
-                </div>
-                <p className="text-xs text-muted-foreground">Gorduras</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
