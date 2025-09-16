@@ -7,10 +7,13 @@ import {
   type InsertCalculation,
   type MenuPlanData,
   type InsertMenuPlan,
+  type AlimentoHispano,
+  type InsertAlimentoHispano,
   users,
   bodyMetrics,
   calculations,
-  menuPlans
+  menuPlans,
+  alimentosHispanos
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -42,6 +45,12 @@ export interface IStorage {
   // Menu plan methods
   saveMenuPlan(userId: string, data: InsertMenuPlan): Promise<MenuPlanData>;
   getLatestMenuPlan(userId: string): Promise<MenuPlanData | undefined>;
+  
+  // Alimentos hispanos methods
+  createAlimento(data: InsertAlimentoHispano): Promise<AlimentoHispano>;
+  getAllAlimentos(): Promise<AlimentoHispano[]>;
+  getAlimentosByCategoria(categoria: string): Promise<AlimentoHispano[]>;
+  bulkCreateAlimentos(alimentos: InsertAlimentoHispano[]): Promise<void>;
   
   // User summary for dashboard
   getUserSummary(userId: string): Promise<{
@@ -188,6 +197,32 @@ export class DatabaseStorage implements IStorage {
     await db.delete(calculations).where(eq(calculations.userId, userId));
     await db.delete(bodyMetrics).where(eq(bodyMetrics.userId, userId));
   }
+
+  // Alimentos hispanos methods
+  async createAlimento(data: InsertAlimentoHispano): Promise<AlimentoHispano> {
+    const [alimento] = await db
+      .insert(alimentosHispanos)
+      .values(data)
+      .returning();
+    return alimento;
+  }
+
+  async getAllAlimentos(): Promise<AlimentoHispano[]> {
+    return await db.select().from(alimentosHispanos);
+  }
+
+  async getAlimentosByCategoria(categoria: string): Promise<AlimentoHispano[]> {
+    return await db
+      .select()
+      .from(alimentosHispanos)
+      .where(eq(alimentosHispanos.categoria, categoria));
+  }
+
+  async bulkCreateAlimentos(alimentos: InsertAlimentoHispano[]): Promise<void> {
+    if (alimentos.length > 0) {
+      await db.insert(alimentosHispanos).values(alimentos);
+    }
+  }
 }
 
 // Keep MemStorage for fallback if needed
@@ -196,6 +231,7 @@ export class MemStorage implements IStorage {
   private bodyMetrics: Map<string, BodyMetrics>; // keyed by userId
   private calculations: Map<string, Calculation>; // keyed by userId
   private menuPlans: Map<string, MenuPlanData>; // keyed by userId
+  private alimentos: Map<string, AlimentoHispano>; // keyed by id
   sessionStore: any; // Using any for compatibility with express-session types
 
   constructor() {
@@ -203,6 +239,7 @@ export class MemStorage implements IStorage {
     this.bodyMetrics = new Map();
     this.calculations = new Map();
     this.menuPlans = new Map();
+    this.alimentos = new Map();
     // Based on javascript_auth_all_persistance blueprint
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
@@ -284,6 +321,32 @@ export class MemStorage implements IStorage {
     this.bodyMetrics.delete(userId);
     this.calculations.delete(userId);
     this.menuPlans.delete(userId);
+  }
+
+  // Alimentos hispanos methods
+  async createAlimento(data: InsertAlimentoHispano): Promise<AlimentoHispano> {
+    const id = randomUUID();
+    const alimento: AlimentoHispano = { ...data, id };
+    this.alimentos.set(id, alimento);
+    return alimento;
+  }
+
+  async getAllAlimentos(): Promise<AlimentoHispano[]> {
+    return Array.from(this.alimentos.values());
+  }
+
+  async getAlimentosByCategoria(categoria: string): Promise<AlimentoHispano[]> {
+    return Array.from(this.alimentos.values()).filter(
+      (alimento) => alimento.categoria === categoria
+    );
+  }
+
+  async bulkCreateAlimentos(alimentos: InsertAlimentoHispano[]): Promise<void> {
+    alimentos.forEach((data) => {
+      const id = randomUUID();
+      const alimento: AlimentoHispano = { ...data, id };
+      this.alimentos.set(id, alimento);
+    });
   }
 }
 

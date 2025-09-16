@@ -118,6 +118,17 @@ export const menuPlans = pgTable("menu_plans", {
   }>().notNull(),
 });
 
+// Alimentos hispanos table - stores Hispanic food nutritional data
+export const alimentosHispanos = pgTable("alimentos_hispanos", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  nombre: text("nombre").notNull(), // Spanish food name
+  categoria: text("categoria").notNull(), // Category (A-Cereales, B-Verduras, etc.)
+  calorias_por_100g: real("calorias_por_100g").notNull(),
+  carbohidratos_por_100g: real("carbohidratos_por_100g").notNull(),
+  proteinas_por_100g: real("proteinas_por_100g").notNull(),
+  grasas_por_100g: real("grasas_por_100g").notNull(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -139,6 +150,10 @@ export const insertMenuPlanSchema = createInsertSchema(menuPlans).omit({
   userId: true,
 });
 
+export const insertAlimentoHispanoSchema = createInsertSchema(alimentosHispanos).omit({
+  id: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -148,3 +163,5 @@ export type Calculation = typeof calculations.$inferSelect;
 export type InsertCalculation = z.infer<typeof insertCalculationSchema>;
 export type MenuPlanData = typeof menuPlans.$inferSelect;
 export type InsertMenuPlan = z.infer<typeof insertMenuPlanSchema>;
+export type AlimentoHispano = typeof alimentosHispanos.$inferSelect;
+export type InsertAlimentoHispano = z.infer<typeof insertAlimentoHispanoSchema>;

@@ -1,5 +1,6 @@
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
+import { sql } from 'drizzle-orm';
 import ws from "ws";
 import * as schema from "@shared/schema";
 
@@ -31,3 +32,28 @@ pool.on('connect', () => {
 });
 
 export const db = drizzle({ client: pool, schema });
+
+// Initialize database tables
+async function initializeTables() {
+  try {
+    // Create the alimentos_hispanos table if it doesn't exist
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS alimentos_hispanos (
+        id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        nombre text NOT NULL,
+        categoria text NOT NULL,
+        calorias_por_100g real NOT NULL,
+        carbohidratos_por_100g real NOT NULL,
+        proteinas_por_100g real NOT NULL,
+        grasas_por_100g real NOT NULL
+      );
+    `);
+    
+    console.log('Database tables initialized successfully');
+  } catch (error) {
+    console.error('Error initializing database tables:', error);
+  }
+}
+
+// Initialize tables when the module is loaded
+initializeTables();
