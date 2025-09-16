@@ -112,7 +112,7 @@ export default function ResultsPage() {
   return (
     <Results
       bodyFatPercentage={calculation.bodyFatPercent}
-      tmb={calculation.bmr}
+      tmb={calculation.tdee}
       category={calculation.category}
       categoryColor={categoryColor}
       onRecalculate={handleRecalculate}
