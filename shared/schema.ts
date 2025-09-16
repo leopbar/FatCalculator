@@ -165,3 +165,23 @@ export type MenuPlanData = typeof menuPlans.$inferSelect;
 export type InsertMenuPlan = z.infer<typeof insertMenuPlanSchema>;
 export type AlimentoHispano = typeof alimentosHispanos.$inferSelect;
 export type InsertAlimentoHispano = z.infer<typeof insertAlimentoHispanoSchema>;
+
+// Mapper function to convert AlimentoHispano to FoodItem
+export function mapAlimentoToFoodItem(alimento: AlimentoHispano): FoodItem {
+  return {
+    id: alimento.id,
+    name: alimento.nombre,
+    category: alimento.categoria,
+    protein_per_100g: alimento.proteinas_por_100g,
+    carb_per_100g: alimento.carbohidratos_por_100g,
+    fat_per_100g: alimento.grasas_por_100g,
+    kcal_per_100g: alimento.calorias_por_100g,
+    fiber_per_100g: 0, // Default for now, can be updated later if data is available
+    energy_density: alimento.calorias_por_100g / 100, // kcal/g
+  };
+}
+
+// Helper function to map array of AlimentoHispano to FoodItem array
+export function mapAlimentosToFoodItems(alimentos: AlimentoHispano[]): FoodItem[] {
+  return alimentos.map(mapAlimentoToFoodItem);
+}
