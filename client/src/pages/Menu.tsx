@@ -44,9 +44,10 @@ export default function MenuPage() {
   const { toast } = useToast();
   const [generatingMenu, setGeneratingMenu] = useState(false);
 
-  // Get category from URL params (if coming from results page selection)
+  // Get category and calories from URL params (if coming from results page selection)
   const params = new URLSearchParams(window.location.search);
   const selectedCategory = params.get('cat') as 'suave' | 'moderado' | 'restritivo' | null;
+  const selectedCalories = params.get('cal') ? parseInt(params.get('cal')!) : null;
 
   // Fetch user's calculation data
   const { data: calculation, isLoading: calculationLoading } = useQuery<CalculationData>({
@@ -114,9 +115,15 @@ export default function MenuPage() {
       // Use selected category or default to 'moderado'
       const category = selectedCategory || 'moderado';
       
-      // Calculate target calories based on category
-      const calorieReductions = { suave: 200, moderado: 400, restritivo: 600 };
-      const targetCalories = calculation.tdee - calorieReductions[category];
+      // Use calories from URL params (calculated correctly in Results) or fallback to calculation
+      let targetCalories: number;
+      if (selectedCalories) {
+        targetCalories = selectedCalories;
+      } else {
+        // Fallback calculation with correct deficits matching Results component
+        const calorieReductions = { suave: 300, moderado: 500, restritivo: 750 };
+        targetCalories = Math.max(1200, calculation.tdee - calorieReductions[category]);
+      }
 
       // Calculate macro targets
       const macroTarget = calculateMacroTargets(
