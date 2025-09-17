@@ -456,6 +456,9 @@ function refineFinalPortions(portions: { [key: string]: number }): { [key: strin
   return refined;
 }
 
+// Define types for meal templates
+type MealName = keyof typeof NUTRITIONAL_MEAL_TEMPLATES;
+
 // Generate precise nutritionally balanced meal
 function generatePreciseMeal(
   mealName: string,
@@ -466,17 +469,17 @@ function generatePreciseMeal(
   availableFoods: ReturnType<typeof categorizeFoodsWithQuality>,
   usedFoods: Set<string>
 ): MealItem[] {
-  const template = NUTRITIONAL_MEAL_TEMPLATES[mealName];
+  const template = NUTRITIONAL_MEAL_TEMPLATES[mealName as MealName];
   if (!template) return [];
 
   const selectedFoods: { [key: string]: FoodItem } = {};
 
   // Select required foods first
-  template.requiredCategories.forEach(category => {
+  template.requiredCategories.forEach((category: string) => {
     const food = selectNutritionalFood(
       category,
       availableFoods,
-      template.preferences[category] || [],
+      template.preferences[category as keyof typeof template.preferences] || [],
       usedFoods
     );
     if (food) {
@@ -485,11 +488,11 @@ function generatePreciseMeal(
   });
 
   // Add optional foods if we still have macro/calorie budget
-  template.optionalCategories.forEach(category => {
+  template.optionalCategories.forEach((category: string) => {
     const food = selectNutritionalFood(
       category,
       availableFoods,
-      template.preferences[category] || [],
+      template.preferences[category as keyof typeof template.preferences] || [],
       usedFoods
     );
     if (food) {
