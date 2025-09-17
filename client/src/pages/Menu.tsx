@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Utensils, Target, Calculator, Home } from "lucide-react";
-import { calculateMacroTargets, generateMealPlan, generateMealPlanWithAI, validateMealPlan, convertToHouseholdMeasures } from "@/lib/nutrition";
+import { calculateMacroTargets, generateMealPlan, generateMealPlanWithAI, validateMealPlan, convertToHouseholdMeasures, convertMealsToText } from "@/lib/nutrition";
 import { MacroTarget, MenuPlan, AlimentoHispano, mapAlimentosToFoodItems } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +36,7 @@ interface MenuPlanData {
   macroTarget: MacroTarget;
   meals: any[];
   dailyTotals: any;
+  aiMenuContent?: string; // AI generated menu content
 }
 
 export default function MenuPage() {
@@ -43,6 +44,7 @@ export default function MenuPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [generatingMenu, setGeneratingMenu] = useState(false);
+  const [generationAttempted, setGenerationAttempted] = useState(false);
 
   // Get category and calories from URL params (if coming from results page selection)
   const params = new URLSearchParams(window.location.search);
@@ -102,8 +104,9 @@ export default function MenuPage() {
       return;
     }
 
-    // If category is selected from URL params, ALWAYS generate new menu (delete old one first if exists)
-    if (selectedCategory && !generatingMenu && alimentosData) {
+    // If category is selected from URL params, generate new menu ONLY if we haven't attempted yet
+    if (selectedCategory && !generatingMenu && !generationAttempted && alimentosData) {
+      setGenerationAttempted(true);
       generateMenuPlan();
     }
     
@@ -112,7 +115,7 @@ export default function MenuPage() {
     if (!selectedCategory && !existingMenu && !menuLoading && !menuError && !generatingMenu) {
       navigate('/results');
     }
-  }, [calculation, bodyMetrics, selectedCategory, user, calculationLoading, metricsLoading, alimentosData, alimentosLoading, generatingMenu]);
+  }, [calculation, bodyMetrics, selectedCategory, user, calculationLoading, metricsLoading, alimentosData, alimentosLoading]);
 
   const generateMenuPlan = async () => {
     if (!calculation || !bodyMetrics || !alimentosData) return;

@@ -639,6 +639,35 @@ export function generateMealPlan(
   return meals;
 }
 
+// Convert meal objects to text format for display
+export function convertMealsToText(meals: Meal[]): string {
+  const mealTimeNames = [
+    "🌅 DESAYUNO (7:00 AM)",
+    "🍽️ ALMUERZO (12:30 PM)", 
+    "🥪 MERIENDA (3:30 PM)",
+    "🍽️ CENA (7:00 PM)",
+    "🌙 COLACIÓN NOCTURNA (9:30 PM)"
+  ];
+
+  let textContent = "";
+  
+  meals.forEach((meal, index) => {
+    const mealTime = mealTimeNames[index] || `REFEIÇÃO ${index + 1}`;
+    textContent += `${mealTime}\n`;
+    
+    meal.items.forEach(item => {
+      textContent += `- ${item.name}: ${item.grams}g\n`;
+    });
+    
+    textContent += `\nTotais: ${Math.round(meal.totals.kcal)} kcal | `;
+    textContent += `${Math.round(meal.totals.protein)}g proteína | `;
+    textContent += `${Math.round(meal.totals.carb)}g carboidratos | `;
+    textContent += `${Math.round(meal.totals.fat)}g gorduras\n\n`;
+  });
+
+  return textContent;
+}
+
 // Função para converter gramas em medidas caseiras
 export function convertToHouseholdMeasures(foodName: string, grams: number): string {
   const name = foodName.toLowerCase();
