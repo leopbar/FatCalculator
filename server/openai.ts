@@ -1,9 +1,46 @@
 import OpenAI from 'openai';
 
+// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
 // Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+// Circuit breaker to prevent infinite retries
+class CircuitBreaker {
+  private failures = 0;
+  private lastFailureTime = 0;
+  private readonly maxFailures = 3;
+  private readonly resetTime = 300000; // 5 minutes
+
+  isOpen(): boolean {
+    if (this.failures >= this.maxFailures) {
+      const timeSinceLastFailure = Date.now() - this.lastFailureTime;
+      if (timeSinceLastFailure < this.resetTime) {
+        return true; // Circuit is open, don't allow calls
+      } else {
+        this.reset(); // Reset circuit after timeout
+      }
+    }
+    return false;
+  }
+
+  recordFailure(): void {
+    this.failures++;
+    this.lastFailureTime = Date.now();
+  }
+
+  recordSuccess(): void {
+    this.reset();
+  }
+
+  private reset(): void {
+    this.failures = 0;
+    this.lastFailureTime = 0;
+  }
+}
+
+const circuitBreaker = new CircuitBreaker();
 
 // Generate meal plan using OpenAI with calculated macros
 export async function generateMealPlanWithAI(
@@ -13,6 +50,11 @@ export async function generateMealPlanWithAI(
   fat: number,
   category: string
 ): Promise<string> {
+  // Check circuit breaker first
+  if (circuitBreaker.isOpen()) {
+    throw new Error("Circuit breaker is open - too many recent failures. Please try again later.");
+  }
+
   try {
     // Log API key status (without exposing the key)
     const hasApiKey = !!process.env.OPENAI_API_KEY;
@@ -20,12 +62,9 @@ export async function generateMealPlanWithAI(
     console.log(`OpenAI API Key status: ${hasApiKey ? 'present' : 'missing'} (${keyPreview})`);
 
     if (!process.env.OPENAI_API_KEY) {
+      circuitBreaker.recordFailure();
       throw new Error("OpenAI API key not configured");
     }
-
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
 
     const prompt = `Cree un plan de comidas personalizado para un día con los siguientes macronutrientes:
     - Calorías totales: ${calories} kcal
@@ -58,7 +97,7 @@ export async function generateMealPlanWithAI(
     console.log("Calling OpenAI API...");
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
       messages: [
         {
           role: "system",
@@ -74,15 +113,19 @@ export async function generateMealPlanWithAI(
     });
 
     console.log("OpenAI API call successful");
+    circuitBreaker.recordSuccess();
     return completion.choices[0]?.message?.content || "Error generando el plan de comidas";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error calling OpenAI API:", error);
     console.error("Error details:", {
-      name: error.name,
-      message: error.message,
-      code: error.code,
-      status: error.status
+      name: error?.name,
+      message: error?.message,
+      code: error?.code,
+      status: error?.status
     });
+    
+    // Record failure in circuit breaker
+    circuitBreaker.recordFailure();
     throw error;
   }
 }
