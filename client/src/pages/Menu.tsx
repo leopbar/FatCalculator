@@ -118,6 +118,12 @@ export default function MenuPage() {
 
     setGeneratingMenu(true);
     try {
+      // Se já existe um cardápio, deletar primeiro
+      if (existingMenu) {
+        await apiRequest("DELETE", "/api/menu");
+        // Invalidar cache para refletir a deleção
+        await queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
+      }
       // Use selected category or default to 'moderado'
       const category = selectedCategory || 'moderado';
       

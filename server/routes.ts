@@ -119,6 +119,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/menu", requireAuth, async (req: any, res) => {
+    try {
+      await storage.deleteMenuPlan(req.user.id);
+      res.json({ message: "Cardápio deletado com sucesso" });
+    } catch (error) {
+      console.error("Error deleting menu plan:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // Clear all user data (for recalculation)
   app.delete("/api/clear-data", requireAuth, async (req: any, res) => {
     try {
