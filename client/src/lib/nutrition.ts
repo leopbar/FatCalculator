@@ -524,7 +524,39 @@ function generatePreciseMeal(
   return mealItems;
 }
 
-// Generate meal plan with strict adherence to macro targets
+// Generate meal plan with AI using calculated macros
+export async function generateMealPlanWithAI(
+  macroTarget: MacroTarget,
+  category: 'suave' | 'moderado' | 'restritivo'
+): Promise<string> {
+  try {
+    const response = await fetch('/api/generate-menu-ai', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        calories: macroTarget.calories,
+        protein: macroTarget.protein_g,
+        carb: macroTarget.carb_g,
+        fat: macroTarget.fat_g,
+        category: category
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Falha na requisição para IA');
+    }
+
+    const data = await response.json();
+    return data.menuContent;
+  } catch (error) {
+    console.error('Error generating AI menu:', error);
+    throw error;
+  }
+}
+
+// Generate meal plan with strict adherence to macro targets (FALLBACK)
 export function generateMealPlan(
   macroTarget: MacroTarget,
   category: 'suave' | 'moderado' | 'restritivo',

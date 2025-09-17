@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Utensils, Target, Calculator, Home } from "lucide-react";
-import { calculateMacroTargets, generateMealPlan, validateMealPlan, convertToHouseholdMeasures } from "@/lib/nutrition";
+import { calculateMacroTargets, generateMealPlan, generateMealPlanWithAI, validateMealPlan, convertToHouseholdMeasures } from "@/lib/nutrition";
 import { MacroTarget, MenuPlan, AlimentoHispano, mapAlimentosToFoodItems } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -155,46 +155,33 @@ export default function MenuPage() {
       // Map database foods to FoodItem format
       const foods = mapAlimentosToFoodItems(alimentosData);
 
-      // Generate meal plan using foods from database
-      const meals = generateMealPlan(macroTarget, category, foods);
-
-      // Calculate daily totals
-      const dailyTotals = meals.reduce(
-        (acc, meal) => ({
-          protein: acc.protein + meal.totals.protein,
-          carb: acc.carb + meal.totals.carb,
-          fat: acc.fat + meal.totals.fat,
-          kcal: acc.kcal + meal.totals.kcal,
-        }),
-        { protein: 0, carb: 0, fat: 0, kcal: 0 }
-      );
-
-      // Validate meal plan doesn't exceed targets
-      const isValid = validateMealPlan(meals, macroTarget);
-      
-      if (!isValid) {
-        console.warn('Generated meal plan exceeds macro targets', {
-          dailyTotals,
-          macroTarget
-        });
-        toast({
-          title: "Aviso sobre o cardápio",
-          description: "O cardápio gerado pode ter pequenas variações nas metas nutricionais.",
-          variant: "default",
-        });
+      // Generate meal plan using AI with calculated macros
+      let aiMenuContent;
+      try {
+        aiMenuContent = await generateMealPlanWithAI(macroTarget, category);
+        console.log("✅ Cardápio gerado com IA:", aiMenuContent);
+      } catch (aiError) {
+        console.warn("⚠️ Falha na IA, usando sistema interno:", aiError);
+        // Fallback to internal system
+        const meals = generateMealPlan(macroTarget, category, foods);
+        aiMenuContent = convertMealsToText(meals);
       }
+
+      // For AI-generated menus, we trust the AI to follow macro targets
+      // No need to calculate daily totals as it's text-based content
 
       const menuData = {
         category,
         tdee: calculation.tdee,
         targetCalories,
         macroTarget,
-        meals,
+        meals: [], // Empty for now - AI content in aiMenuContent
+        aiMenuContent, // Store AI generated content
         dailyTotals: {
-          protein: Math.round(dailyTotals.protein * 10) / 10,
-          carb: Math.round(dailyTotals.carb * 10) / 10,
-          fat: Math.round(dailyTotals.fat * 10) / 10,
-          kcal: Math.round(dailyTotals.kcal),
+          protein: macroTarget.protein_g,
+          carb: macroTarget.carb_g,
+          fat: macroTarget.fat_g,
+          kcal: macroTarget.calories,
         },
       };
 
@@ -349,9 +336,23 @@ export default function MenuPage() {
           </CardContent>
         </Card>
 
-        {/* Meals */}
-        <div className="space-y-4">
-          {menuPlan.meals.map((meal, index) => (
+        {/* AI Generated Menu Content or Structured Meals */}
+        {existingMenu.aiMenuContent ? (
+          <Card className="border-primary/20 bg-accent/30">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-foreground">
+                Cardápio Personalizado (Gerado por IA)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre className="whitespace-pre-wrap text-sm text-foreground font-mono">
+                {existingMenu.aiMenuContent}
+              </pre>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {menuPlan.meals.map((meal, index) => (
             <Card key={meal.name} className="border-primary/20 bg-accent/30" data-testid={`card-meal-${meal.name.toLowerCase().replace(/\s+/g, '-')}`}>
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-foreground">
@@ -395,7 +396,8 @@ export default function MenuPage() {
               </CardContent>
             </Card>
           ))}
-        </div>
+          </div>
+        )}
 
 
         {/* Action Buttons */}

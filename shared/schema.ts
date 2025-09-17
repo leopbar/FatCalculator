@@ -55,6 +55,7 @@ export const menuPlanSchema = z.object({
   targetCalories: z.number(),
   macroTarget: macroTargetSchema,
   meals: z.array(mealSchema),
+  aiMenuContent: z.string().optional(), // AI generated content
   dailyTotals: z.object({
     protein: z.number(),
     carb: z.number(),
@@ -86,8 +87,8 @@ export const bodyMetrics = pgTable("body_metrics", {
   neck: real("neck").notNull(), // cm
   waist: real("waist").notNull(), // cm
   hip: real("hip"), // cm (optional for males)
-  activityLevel: text("activity_level", { 
-    enum: ["sedentario", "leve", "moderado", "intenso", "muito_intenso"] 
+  activityLevel: text("activity_level", {
+    enum: ["sedentario", "leve", "moderado", "intenso", "muito_intenso"]
   }).notNull(),
 });
 
@@ -110,12 +111,7 @@ export const menuPlans = pgTable("menu_plans", {
   targetCalories: real("target_calories").notNull(),
   macroTarget: json("macro_target").$type<MacroTarget>().notNull(),
   meals: json("meals").$type<Meal[]>().notNull(),
-  dailyTotals: json("daily_totals").$type<{
-    protein: number;
-    carb: number;
-    fat: number;
-    kcal: number;
-  }>().notNull(),
+  aiMenuContent: text("ai_menu_content"), // AI generated content
 });
 
 // Alimentos hispanos table - stores Hispanic food nutritional data

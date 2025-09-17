@@ -140,6 +140,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate menu plan with AI
+  app.post("/api/generate-menu-ai", requireAuth, async (req: any, res) => {
+    try {
+      const { calories, protein, carb, fat, category } = req.body;
+      
+      if (!calories || !protein || !carb || !fat || !category) {
+        return res.status(400).json({ error: "Parâmetros de macros obrigatórios" });
+      }
+
+      // Check if OpenAI API key is configured
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ error: "OpenAI API key não configurada" });
+      }
+
+      const { generateMealPlanWithAI } = await import('./openai');
+      const aiGeneratedMenu = await generateMealPlanWithAI(calories, protein, carb, fat, category);
+      
+      res.json({ menuContent: aiGeneratedMenu });
+    } catch (error) {
+      console.error("Error generating AI menu:", error);
+      res.status(500).json({ error: "Erro ao gerar cardápio com IA" });
+    }
+  });
+
   // Get alimentos hispanos
   app.get("/api/alimentos", requireAuth, async (req: any, res) => {
     try {
