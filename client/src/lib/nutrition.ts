@@ -597,7 +597,12 @@ export function generateMealPlan(
     
     // Only reset used foods if we've used most of the database
     if (usedFoods.size > foods.length * 0.9) {
+      usedFoods.clear();
+    }
+  });
 
+  return meals;
+}
 
 // Função para converter gramas em medidas caseiras
 export function convertToHouseholdMeasures(foodName: string, grams: number): string {
@@ -747,13 +752,6 @@ export function convertToHouseholdMeasures(foodName: string, grams: number): str
     const teaspoons = Math.round(grams / 5);
     return `(${teaspoons} ${teaspoons === 1 ? 'colher de chá' : 'colheres de chá'})`;
   }
-}
-
-      usedFoods.clear();
-    }
-  });
-  
-  return meals;
 }
 
 // Ultra-strict validation that meal plan stays within macro targets
