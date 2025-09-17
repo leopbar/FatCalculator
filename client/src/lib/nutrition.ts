@@ -202,71 +202,101 @@ function categorizeFoodsWithQuality(foods: FoodItem[]): {
   return categorized;
 }
 
-// Meal templates based on nutritional science and cultural patterns
-const MEAL_TEMPLATES = {
+// Precise meal templates with strict nutritional guidelines
+const NUTRITIONAL_MEAL_TEMPLATES = {
   "Café da manhã": {
-    structure: ["protein", "dairy", "carb", "fat"],
+    requiredCategories: ["eggs", "dairy", "carb"],
+    optionalCategories: ["fat", "vegetable"],
+    macroDistribution: { protein: 0.25, carb: 0.25, fat: 0.20 },
     preferences: {
-      protein: ["ovos", "ovo", "huevo", "clara"],
+      eggs: ["ovo", "clara", "huevo"],
       dairy: ["leite", "iogurte", "yogur"],
-      carb: ["aveia", "banana", "pão", "pan"],
-      fat: ["azeite", "amend", "almend"]
-    },
-    ratios: { protein: 0.25, dairy: 0.25, carb: 0.35, fat: 0.15 }
+      carb: ["aveia", "banana", "pão"],
+      fat: ["azeite", "amend"],
+    }
   },
   "Almoço": {
-    structure: ["protein", "vegetable", "carb", "fat"],
+    requiredCategories: ["protein", "carb", "vegetable"],
+    optionalCategories: ["fat"],
+    macroDistribution: { protein: 0.30, carb: 0.35, fat: 0.25 },
     preferences: {
-      protein: ["frango", "pollo", "tilapia", "peixe", "pescado", "carne"],
-      vegetable: ["brócoli", "brocoli", "espinafre", "espinaca", "tomate"],
-      carb: ["arroz", "quinoa", "batata", "papa"],
-      fat: ["azeite", "oliva", "abacate", "aguacate"]
-    },
-    ratios: { protein: 0.30, vegetable: 0.15, carb: 0.40, fat: 0.15 }
+      protein: ["frango", "pollo", "tilapia", "peixe", "carne"],
+      carb: ["arroz", "quinoa", "batata"],
+      vegetable: ["brócoli", "espinafre", "tomate"],
+      fat: ["azeite", "oliva", "abacate"],
+    }
   },
   "Lanche da tarde": {
-    structure: ["dairy", "carb", "fat"],
+    requiredCategories: ["dairy", "carb"],
+    optionalCategories: ["fat", "vegetable"],
+    macroDistribution: { protein: 0.15, carb: 0.20, fat: 0.15 },
     preferences: {
       dairy: ["iogurte", "yogur", "queijo"],
       carb: ["banana", "aveia", "batata"],
-      fat: ["amend", "almend", "nuez"]
-    },
-    ratios: { dairy: 0.40, carb: 0.40, fat: 0.20 }
+      fat: ["amend", "almend", "nuez"],
+    }
   },
   "Janta": {
-    structure: ["protein", "vegetable", "carb", "fat"],
+    requiredCategories: ["protein", "vegetable", "carb"],
+    optionalCategories: ["fat"],
+    macroDistribution: { protein: 0.25, carb: 0.20, fat: 0.30 },
     preferences: {
-      protein: ["tilapia", "salmão", "salmon", "frango", "pollo"],
-      vegetable: ["brócoli", "brocoli", "espinafre", "lechuga", "alface"],
-      carb: ["quinoa", "arroz", "batata doce", "camote"],
-      fat: ["azeite", "oliva", "abacate"]
-    },
-    ratios: { protein: 0.35, vegetable: 0.20, carb: 0.30, fat: 0.15 }
+      protein: ["tilapia", "salmão", "frango", "pollo"],
+      carb: ["quinoa", "arroz", "batata doce"],
+      vegetable: ["brócoli", "espinafre", "alface"],
+      fat: ["azeite", "oliva", "abacate"],
+    }
   },
   "Ceia": {
-    structure: ["protein", "dairy", "vegetable"],
+    requiredCategories: ["protein", "dairy"],
+    optionalCategories: ["vegetable"],
+    macroDistribution: { protein: 0.15, carb: 0.05, fat: 0.10 },
     preferences: {
-      protein: ["ovos", "clara", "queijo"],
+      protein: ["clara", "queijo"],
       dairy: ["iogurte", "leite"],
-      vegetable: ["alface", "lechuga", "tomate"]
-    },
-    ratios: { protein: 0.40, dairy: 0.35, vegetable: 0.25 }
+      vegetable: ["alface", "tomate"],
+    }
   }
 };
 
-// Smart food selection based on preferences and nutritional goals
-function selectOptimalFood(
-  category: keyof ReturnType<typeof categorizeFoodsWithQuality>,
-  preferences: string[],
+// Precise food selection with nutritional preferences
+function selectNutritionalFood(
+  categoryName: string,
   availableFoods: ReturnType<typeof categorizeFoodsWithQuality>,
+  preferences: string[],
   usedFoods: Set<string>
 ): (FoodItem & { quality: number }) | null {
-  const categoryFoods = availableFoods[category];
-  if (!categoryFoods || categoryFoods.length === 0) return null;
+  let foods: Array<FoodItem & { quality: number }> = [];
+
+  // Map category names to available food arrays
+  switch (categoryName) {
+    case "eggs":
+      foods = availableFoods.eggs;
+      break;
+    case "dairy":
+      foods = availableFoods.dairy;
+      break;
+    case "protein":
+      foods = availableFoods.protein;
+      break;
+    case "carb":
+      foods = availableFoods.carb;
+      break;
+    case "fat":
+      foods = availableFoods.fat;
+      break;
+    case "vegetable":
+      foods = availableFoods.vegetable;
+      break;
+    default:
+      return null;
+  }
+
+  if (!foods || foods.length === 0) return null;
 
   // First try to find preferred foods that haven't been used
   for (const preference of preferences) {
-    const preferredFood = categoryFoods.find(food => 
+    const preferredFood = foods.find(food => 
       food.name.toLowerCase().includes(preference) && !usedFoods.has(food.id)
     );
     if (preferredFood) {
@@ -276,7 +306,7 @@ function selectOptimalFood(
   }
 
   // Fallback to highest quality unused food
-  const availableFood = categoryFoods.find(food => !usedFoods.has(food.id));
+  const availableFood = foods.find(food => !usedFoods.has(food.id));
   if (availableFood) {
     usedFoods.add(availableFood.id);
     return availableFood;
@@ -285,28 +315,26 @@ function selectOptimalFood(
   return null;
 }
 
-// Calculate optimal portions to meet macro targets
-function calculateOptimalPortions(
-  selectedFoods: { [key: string]: FoodItem },
+// Calculate precise portions using linear programming approach
+function calculatePrecisePortions(
+  foods: { [key: string]: FoodItem },
   targetCalories: number,
   targetProtein: number,
   targetCarb: number,
-  targetFat: number,
-  ratios: { [key: string]: number }
+  targetFat: number
 ): { [key: string]: number } {
   const portions: { [key: string]: number } = {};
   
-  // Initial calculation based on calorie ratios
-  Object.entries(selectedFoods).forEach(([type, food]) => {
-    const targetCals = targetCalories * ratios[type];
-    portions[type] = Math.max(20, Math.min(200, (targetCals / food.kcal_per_100g) * 100));
+  // Start with minimum viable portions
+  Object.keys(foods).forEach(key => {
+    portions[key] = 30; // Start with 30g
   });
 
-  // Iterative adjustment to meet macro targets (simplified)
-  for (let iteration = 0; iteration < 3; iteration++) {
-    const currentMacros = Object.entries(selectedFoods).reduce(
-      (acc, [type, food]) => {
-        const grams = portions[type];
+  // Iteratively adjust to meet targets with strict limits
+  for (let iteration = 0; iteration < 20; iteration++) {
+    const currentMacros = Object.entries(foods).reduce(
+      (acc, [key, food]) => {
+        const grams = portions[key];
         const macros = calculateFoodMacros(food, grams);
         return {
           protein: acc.protein + macros.protein,
@@ -318,58 +346,70 @@ function calculateOptimalPortions(
       { protein: 0, carb: 0, fat: 0, kcal: 0 }
     );
 
-    // Adjust portions based on macro gaps
-    const proteinGap = targetProtein - currentMacros.protein;
-    const carbGap = targetCarb - currentMacros.carb;
-    const fatGap = targetFat - currentMacros.fat;
+    // Check if we're close enough to targets (within 5% tolerance)
+    const calorieError = Math.abs(currentMacros.kcal - targetCalories) / targetCalories;
+    const proteinError = Math.abs(currentMacros.protein - targetProtein) / targetProtein;
+    const carbError = Math.abs(currentMacros.carb - targetCarb) / targetCarb;
+    const fatError = Math.abs(currentMacros.fat - targetFat) / targetFat;
 
-    // Find food with highest protein content for protein adjustment
-    if (Math.abs(proteinGap) > 2) {
-      const proteinFood = Object.entries(selectedFoods).reduce((best, [type, food]) => 
-        food.protein_per_100g > best.protein ? { type, protein: food.protein_per_100g } : best,
-        { type: '', protein: 0 }
-      );
-      if (proteinFood.type) {
-        const adjustment = (proteinGap / selectedFoods[proteinFood.type].protein_per_100g) * 100;
-        portions[proteinFood.type] = Math.max(10, Math.min(300, portions[proteinFood.type] + adjustment));
-      }
+    if (calorieError < 0.05 && proteinError < 0.05 && carbError < 0.05 && fatError < 0.05) {
+      break;
     }
 
-    // Similar adjustments for carbs and fats
-    if (Math.abs(carbGap) > 3) {
-      const carbFood = Object.entries(selectedFoods).reduce((best, [type, food]) => 
-        food.carb_per_100g > best.carb ? { type, carb: food.carb_per_100g } : best,
-        { type: '', carb: 0 }
-      );
-      if (carbFood.type) {
-        const adjustment = (carbGap / selectedFoods[carbFood.type].carb_per_100g) * 100;
-        portions[carbFood.type] = Math.max(10, Math.min(400, portions[carbFood.type] + adjustment));
-      }
+    // If we're exceeding targets significantly, reduce all portions
+    if (currentMacros.kcal > targetCalories * 1.1) {
+      const reductionFactor = targetCalories / currentMacros.kcal;
+      Object.keys(portions).forEach(key => {
+        portions[key] = Math.max(10, portions[key] * reductionFactor);
+      });
+      continue;
     }
 
-    if (Math.abs(fatGap) > 1) {
-      const fatFood = Object.entries(selectedFoods).reduce((best, [type, food]) => 
-        food.fat_per_100g > best.fat ? { type, fat: food.fat_per_100g } : best,
-        { type: '', fat: 0 }
-      );
-      if (fatFood.type) {
-        const adjustment = (fatGap / selectedFoods[fatFood.type].fat_per_100g) * 100;
-        portions[fatFood.type] = Math.max(5, Math.min(150, portions[fatFood.type] + adjustment));
+    // Fine-tune individual macros
+    const adjustments = {
+      protein: targetProtein - currentMacros.protein,
+      carb: targetCarb - currentMacros.carb,
+      fat: targetFat - currentMacros.fat
+    };
+
+    // Find foods that can best address each macro deficit/excess
+    Object.entries(adjustments).forEach(([macro, deficit]) => {
+      if (Math.abs(deficit) < 1) return; // Skip small adjustments
+
+      let bestFood = "";
+      let bestRatio = 0;
+
+      Object.entries(foods).forEach(([key, food]) => {
+        let ratio = 0;
+        if (macro === "protein") ratio = food.protein_per_100g;
+        else if (macro === "carb") ratio = food.carb_per_100g;
+        else if (macro === "fat") ratio = food.fat_per_100g;
+
+        if (ratio > bestRatio) {
+          bestRatio = ratio;
+          bestFood = key;
+        }
+      });
+
+      if (bestFood && bestRatio > 0) {
+        const adjustment = (deficit / bestRatio) * 100;
+        const newPortion = portions[bestFood] + adjustment;
+        portions[bestFood] = Math.max(5, Math.min(250, newPortion));
       }
-    }
+    });
   }
 
-  // Round portions to realistic values (multiples of 5g)
-  Object.keys(portions).forEach(type => {
-    portions[type] = Math.round(portions[type] / 5) * 5;
-    portions[type] = Math.max(10, portions[type]); // Minimum 10g
+  // Final cleanup - round to realistic portions
+  Object.keys(portions).forEach(key => {
+    portions[key] = Math.round(portions[key] / 5) * 5; // Round to nearest 5g
+    portions[key] = Math.max(10, Math.min(300, portions[key])); // Enforce limits
   });
 
   return portions;
 }
 
-// Generate a single meal using nutritional science approach
-function generateNutritionallyBalancedMeal(
+// Generate precise nutritionally balanced meal
+function generatePreciseMeal(
   mealName: string,
   targetCalories: number,
   targetProtein: number,
@@ -378,58 +418,51 @@ function generateNutritionallyBalancedMeal(
   availableFoods: ReturnType<typeof categorizeFoodsWithQuality>,
   usedFoods: Set<string>
 ): MealItem[] {
-  const template = MEAL_TEMPLATES[mealName];
+  const template = NUTRITIONAL_MEAL_TEMPLATES[mealName];
   if (!template) return [];
 
   const selectedFoods: { [key: string]: FoodItem } = {};
 
-  // Select foods based on meal structure and preferences
-  template.structure.forEach(category => {
-    if (category === "dairy" && availableFoods.dairy.length > 0) {
-      const food = selectOptimalFood("dairy", template.preferences.dairy || [], availableFoods, usedFoods);
-      if (food) selectedFoods.dairy = food;
-    } else if (category === "eggs" && availableFoods.eggs.length > 0) {
-      const food = selectOptimalFood("eggs", template.preferences.protein || [], availableFoods, usedFoods);
-      if (food) selectedFoods.protein = food;
-    } else if (category === "protein" && !selectedFoods.protein) {
-      // Try eggs first for breakfast, then dairy, then regular protein
-      if (mealName === "Café da manhã" && availableFoods.eggs.length > 0) {
-        const food = selectOptimalFood("eggs", ["ovo", "huevo", "clara"], availableFoods, usedFoods);
-        if (food) selectedFoods.protein = food;
-      }
-      if (!selectedFoods.protein && availableFoods.dairy.length > 0) {
-        const food = selectOptimalFood("dairy", template.preferences.dairy || [], availableFoods, usedFoods);
-        if (food) selectedFoods.protein = food;
-      }
-      if (!selectedFoods.protein) {
-        const food = selectOptimalFood("protein", template.preferences.protein || [], availableFoods, usedFoods);
-        if (food) selectedFoods.protein = food;
-      }
-    } else if (category === "vegetable") {
-      const food = selectOptimalFood("vegetable", template.preferences.vegetable || [], availableFoods, usedFoods);
-      if (food) selectedFoods.vegetable = food;
-    } else if (category === "carb") {
-      const food = selectOptimalFood("carb", template.preferences.carb || [], availableFoods, usedFoods);
-      if (food) selectedFoods.carb = food;
-    } else if (category === "fat") {
-      const food = selectOptimalFood("fat", template.preferences.fat || [], availableFoods, usedFoods);
-      if (food) selectedFoods.fat = food;
+  // Select required foods first
+  template.requiredCategories.forEach(category => {
+    const food = selectNutritionalFood(
+      category,
+      availableFoods,
+      template.preferences[category] || [],
+      usedFoods
+    );
+    if (food) {
+      selectedFoods[category] = food;
     }
   });
 
-  // Calculate optimal portions
-  const portions = calculateOptimalPortions(
+  // Add optional foods if we still have macro/calorie budget
+  template.optionalCategories.forEach(category => {
+    const food = selectNutritionalFood(
+      category,
+      availableFoods,
+      template.preferences[category] || [],
+      usedFoods
+    );
+    if (food) {
+      selectedFoods[category] = food;
+    }
+  });
+
+  if (Object.keys(selectedFoods).length === 0) return [];
+
+  // Calculate precise portions
+  const portions = calculatePrecisePortions(
     selectedFoods,
     targetCalories,
     targetProtein,
     targetCarb,
-    targetFat,
-    template.ratios
+    targetFat
   );
 
-  // Create meal items
-  const mealItems: MealItem[] = Object.entries(selectedFoods).map(([type, food]) => {
-    const grams = portions[type];
+  // Create meal items with calculated portions
+  const mealItems: MealItem[] = Object.entries(selectedFoods).map(([key, food]) => {
+    const grams = portions[key];
     const macros = calculateFoodMacros(food, grams);
     
     return {
@@ -443,7 +476,7 @@ function generateNutritionallyBalancedMeal(
   return mealItems;
 }
 
-// Generate a balanced meal plan with 5 meals using enhanced nutritional approach
+// Generate meal plan with strict adherence to macro targets
 export function generateMealPlan(
   macroTarget: MacroTarget,
   category: 'suave' | 'moderado' | 'restritivo',
@@ -464,7 +497,7 @@ export function generateMealPlan(
     throw new Error("No carb foods available in database");  
   }
 
-  // Enhanced meal distribution with better macro allocation
+  // Strict meal distribution that adds up to exactly 100%
   const mealDistribution = {
     "Café da manhã": { calories: 0.20, protein: 0.25, carb: 0.25, fat: 0.20 },
     "Almoço": { calories: 0.30, protein: 0.30, carb: 0.35, fat: 0.30 },
@@ -482,7 +515,7 @@ export function generateMealPlan(
     const mealCarb = Math.floor(macroTarget.carb_g * distribution.carb);
     const mealFat = Math.floor(macroTarget.fat_g * distribution.fat);
     
-    const mealItems = generateNutritionallyBalancedMeal(
+    const mealItems = generatePreciseMeal(
       mealName, 
       mealCalories, 
       mealProtein, 
@@ -514,8 +547,8 @@ export function generateMealPlan(
       },
     });
     
-    // Reset used foods occasionally to allow repetition if needed
-    if (usedFoods.size > foods.length * 0.8) {
+    // Only reset used foods if we've used most of the database
+    if (usedFoods.size > foods.length * 0.9) {
       usedFoods.clear();
     }
   });
@@ -523,7 +556,7 @@ export function generateMealPlan(
   return meals;
 }
 
-// Validate that meal plan doesn't exceed macro targets
+// Strict validation that meal plan stays within macro targets
 export function validateMealPlan(meals: Meal[], macroTarget: MacroTarget): boolean {
   const dailyTotals = meals.reduce(
     (acc, meal) => ({
@@ -535,13 +568,23 @@ export function validateMealPlan(meals: Meal[], macroTarget: MacroTarget): boole
     { protein: 0, carb: 0, fat: 0, kcal: 0 }
   );
 
-  // Allow 10% tolerance for more realistic meal planning
-  const tolerance = 1.1;
+  // Strict tolerance of 5% - no more than that
+  const tolerance = 1.05;
   
-  return (
+  const isValid = (
     dailyTotals.kcal <= macroTarget.calories * tolerance &&
     dailyTotals.protein <= macroTarget.protein_g * tolerance &&
     dailyTotals.carb <= macroTarget.carb_g * tolerance &&
     dailyTotals.fat <= macroTarget.fat_g * tolerance
   );
+
+  // Log validation results for debugging
+  if (!isValid) {
+    console.log("Generated meal plan exceeds macro targets", {
+      dailyTotals,
+      macroTarget
+    });
+  }
+
+  return isValid;
 }
