@@ -597,7 +597,12 @@ export function generateMealPlan(
     
     // Only reset used foods if we've used most of the database
     if (usedFoods.size > foods.length * 0.9) {
-
+      usedFoods.clear();
+    }
+  });
+  
+  return meals;
+}
 
 // Função para converter gramas em medidas caseiras
 export function convertToHouseholdMeasures(foodName: string, grams: number): string {
