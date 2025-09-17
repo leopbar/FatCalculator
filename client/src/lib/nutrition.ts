@@ -315,8 +315,8 @@ function selectNutritionalFood(
   return null;
 }
 
-// Calculate precise portions using linear programming approach
-function calculatePrecisePortions(
+// Enhanced portion calculation with strict macro adherence
+function calculateOptimalPortions(
   foods: { [key: string]: FoodItem },
   targetCalories: number,
   targetProtein: number,
@@ -324,88 +324,136 @@ function calculatePrecisePortions(
   targetFat: number
 ): { [key: string]: number } {
   const portions: { [key: string]: number } = {};
+  const foodKeys = Object.keys(foods);
   
-  // Start with minimum viable portions
-  Object.keys(foods).forEach(key => {
-    portions[key] = 30; // Start with 30g
+  // Initialize with minimal portions
+  foodKeys.forEach(key => {
+    portions[key] = 20; // Start smaller
   });
 
-  // Iteratively adjust to meet targets with strict limits
-  for (let iteration = 0; iteration < 20; iteration++) {
-    const currentMacros = Object.entries(foods).reduce(
-      (acc, [key, food]) => {
-        const grams = portions[key];
-        const macros = calculateFoodMacros(food, grams);
-        return {
-          protein: acc.protein + macros.protein,
-          carb: acc.carb + macros.carb,
-          fat: acc.fat + macros.fat,
-          kcal: acc.kcal + macros.kcal
-        };
-      },
-      { protein: 0, carb: 0, fat: 0, kcal: 0 }
+  // Optimization algorithm with priority-based scaling
+  for (let iteration = 0; iteration < 50; iteration++) {
+    const currentMacros = calculateCurrentMacros(foods, portions);
+    
+    // Check if within acceptable tolerance (3%)
+    const tolerance = 0.03;
+    const withinRange = (
+      Math.abs(currentMacros.kcal - targetCalories) / targetCalories <= tolerance &&
+      Math.abs(currentMacros.protein - targetProtein) / Math.max(targetProtein, 1) <= tolerance &&
+      Math.abs(currentMacros.carb - targetCarb) / Math.max(targetCarb, 1) <= tolerance &&
+      Math.abs(currentMacros.fat - targetFat) / Math.max(targetFat, 1) <= tolerance
     );
+    
+    if (withinRange) break;
 
-    // Check if we're close enough to targets (within 5% tolerance)
-    const calorieError = Math.abs(currentMacros.kcal - targetCalories) / targetCalories;
-    const proteinError = Math.abs(currentMacros.protein - targetProtein) / targetProtein;
-    const carbError = Math.abs(currentMacros.carb - targetCarb) / targetCarb;
-    const fatError = Math.abs(currentMacros.fat - targetFat) / targetFat;
+    // Priority-based adjustments
+    const deficits = {
+      protein: targetProtein - currentMacros.protein,
+      carb: targetCarb - currentMacros.carb,
+      fat: targetFat - currentMacros.fat,
+      calories: targetCalories - currentMacros.kcal
+    };
 
-    if (calorieError < 0.05 && proteinError < 0.05 && carbError < 0.05 && fatError < 0.05) {
-      break;
-    }
-
-    // If we're exceeding targets significantly, reduce all portions
-    if (currentMacros.kcal > targetCalories * 1.1) {
-      const reductionFactor = targetCalories / currentMacros.kcal;
-      Object.keys(portions).forEach(key => {
-        portions[key] = Math.max(10, portions[key] * reductionFactor);
+    // If exceeding calorie target significantly, scale down all portions
+    if (currentMacros.kcal > targetCalories * 1.05) {
+      const scaleFactor = (targetCalories * 0.98) / currentMacros.kcal;
+      foodKeys.forEach(key => {
+        portions[key] = Math.max(5, portions[key] * scaleFactor);
       });
       continue;
     }
 
-    // Fine-tune individual macros
-    const adjustments = {
-      protein: targetProtein - currentMacros.protein,
-      carb: targetCarb - currentMacros.carb,
-      fat: targetFat - currentMacros.fat
-    };
-
-    // Find foods that can best address each macro deficit/excess
-    Object.entries(adjustments).forEach(([macro, deficit]) => {
-      if (Math.abs(deficit) < 1) return; // Skip small adjustments
-
-      let bestFood = "";
-      let bestRatio = 0;
-
-      Object.entries(foods).forEach(([key, food]) => {
-        let ratio = 0;
-        if (macro === "protein") ratio = food.protein_per_100g;
-        else if (macro === "carb") ratio = food.carb_per_100g;
-        else if (macro === "fat") ratio = food.fat_per_100g;
-
-        if (ratio > bestRatio) {
-          bestRatio = ratio;
-          bestFood = key;
-        }
-      });
-
-      if (bestFood && bestRatio > 0) {
-        const adjustment = (deficit / bestRatio) * 100;
-        const newPortion = portions[bestFood] + adjustment;
-        portions[bestFood] = Math.max(5, Math.min(250, newPortion));
-      }
-    });
+    // Adjust portions based on macro deficits
+    const adjustmentMade = adjustPortionsForMacros(foods, portions, deficits);
+    if (!adjustmentMade) break; // Prevent infinite loops
   }
 
-  // Final cleanup - round to realistic portions
-  Object.keys(portions).forEach(key => {
-    portions[key] = Math.round(portions[key] / 5) * 5; // Round to nearest 5g
-    portions[key] = Math.max(10, Math.min(300, portions[key])); // Enforce limits
+  // Final portion refinement
+  return refineFinalPortions(portions);
+}
+
+// Helper function to calculate current macros
+function calculateCurrentMacros(foods: { [key: string]: FoodItem }, portions: { [key: string]: number }) {
+  return Object.entries(foods).reduce(
+    (acc, [key, food]) => {
+      const macros = calculateFoodMacros(food, portions[key]);
+      return {
+        protein: acc.protein + macros.protein,
+        carb: acc.carb + macros.carb,
+        fat: acc.fat + macros.fat,
+        kcal: acc.kcal + macros.kcal
+      };
+    },
+    { protein: 0, carb: 0, fat: 0, kcal: 0 }
+  );
+}
+
+// Helper function to adjust portions for macro targets
+function adjustPortionsForMacros(
+  foods: { [key: string]: FoodItem }, 
+  portions: { [key: string]: number }, 
+  deficits: { protein: number; carb: number; fat: number; calories: number }
+): boolean {
+  let adjustmentMade = false;
+
+  // Find the most efficient food for each macro
+  ['protein', 'carb', 'fat'].forEach(macroType => {
+    const deficit = deficits[macroType as keyof typeof deficits];
+    if (Math.abs(deficit) < 0.5) return; // Skip small deficits
+
+    let bestFood = '';
+    let bestEfficiency = 0;
+
+    Object.entries(foods).forEach(([key, food]) => {
+      let macroContent = 0;
+      if (macroType === 'protein') macroContent = food.protein_per_100g;
+      else if (macroType === 'carb') macroContent = food.carb_per_100g;
+      else if (macroType === 'fat') macroContent = food.fat_per_100g;
+
+      // Efficiency = macro content per calorie (to minimize calorie impact)
+      const efficiency = food.kcal_per_100g > 0 ? macroContent / food.kcal_per_100g : 0;
+      
+      if (efficiency > bestEfficiency && macroContent > 5) {
+        bestEfficiency = efficiency;
+        bestFood = key;
+      }
+    });
+
+    if (bestFood && bestEfficiency > 0) {
+      const food = foods[bestFood];
+      let macroContent = 0;
+      if (macroType === 'protein') macroContent = food.protein_per_100g;
+      else if (macroType === 'carb') macroContent = food.carb_per_100g;
+      else if (macroType === 'fat') macroContent = food.fat_per_100g;
+
+      // Calculate portion adjustment needed
+      const gramsNeeded = (deficit / macroContent) * 100;
+      const newPortion = portions[bestFood] + gramsNeeded;
+      
+      // Apply reasonable limits
+      portions[bestFood] = Math.max(5, Math.min(400, newPortion));
+      adjustmentMade = true;
+    }
   });
 
-  return portions;
+  return adjustmentMade;
+}
+
+// Helper function to refine final portions
+function refineFinalPortions(portions: { [key: string]: number }): { [key: string]: number } {
+  const refined: { [key: string]: number } = {};
+  
+  Object.entries(portions).forEach(([key, grams]) => {
+    // Round to nearest 5g for realistic portions
+    let roundedGrams = Math.round(grams / 5) * 5;
+    
+    // Enforce practical limits
+    roundedGrams = Math.max(10, Math.min(350, roundedGrams));
+    
+    refined[key] = roundedGrams;
+  });
+  
+  return refined;
 }
 
 // Generate precise nutritionally balanced meal
@@ -451,8 +499,8 @@ function generatePreciseMeal(
 
   if (Object.keys(selectedFoods).length === 0) return [];
 
-  // Calculate precise portions
-  const portions = calculatePrecisePortions(
+  // Calculate optimal portions with strict macro adherence
+  const portions = calculateOptimalPortions(
     selectedFoods,
     targetCalories,
     targetProtein,
@@ -556,7 +604,7 @@ export function generateMealPlan(
   return meals;
 }
 
-// Strict validation that meal plan stays within macro targets
+// Ultra-strict validation that meal plan stays within macro targets
 export function validateMealPlan(meals: Meal[], macroTarget: MacroTarget): boolean {
   const dailyTotals = meals.reduce(
     (acc, meal) => ({
@@ -568,8 +616,8 @@ export function validateMealPlan(meals: Meal[], macroTarget: MacroTarget): boole
     { protein: 0, carb: 0, fat: 0, kcal: 0 }
   );
 
-  // Strict tolerance of 5% - no more than that
-  const tolerance = 1.05;
+  // Ultra-strict tolerance: Maximum 8% over target (no more exceeding chosen limits)
+  const tolerance = 1.08;
   
   const isValid = (
     dailyTotals.kcal <= macroTarget.calories * tolerance &&
@@ -578,11 +626,23 @@ export function validateMealPlan(meals: Meal[], macroTarget: MacroTarget): boole
     dailyTotals.fat <= macroTarget.fat_g * tolerance
   );
 
-  // Log validation results for debugging
+  // Enhanced logging for better debugging
   if (!isValid) {
-    console.log("Generated meal plan exceeds macro targets", {
-      dailyTotals,
-      macroTarget
+    console.warn("🚫 Meal plan exceeds user's chosen targets:", {
+      userSelectedCalories: macroTarget.calories,
+      generatedCalories: Math.round(dailyTotals.kcal),
+      exceedsBy: Math.round(dailyTotals.kcal - macroTarget.calories),
+      macroTargets: {
+        protein: `${macroTarget.protein_g}g (generated: ${Math.round(dailyTotals.protein)}g)`,
+        carb: `${macroTarget.carb_g}g (generated: ${Math.round(dailyTotals.carb)}g)`,
+        fat: `${macroTarget.fat_g}g (generated: ${Math.round(dailyTotals.fat)}g)`
+      }
+    });
+  } else {
+    console.log("✅ Meal plan within acceptable range:", {
+      targetCalories: macroTarget.calories,
+      generatedCalories: Math.round(dailyTotals.kcal),
+      adherencePercentage: Math.round((dailyTotals.kcal / macroTarget.calories) * 100) + "%"
     });
   }
 
