@@ -102,8 +102,8 @@ export default function MenuPage() {
       return;
     }
 
-    // Only generate if category is selected (from URL params) and no existing menu
-    if (selectedCategory && !generatingMenu && !existingMenu && alimentosData) {
+    // If category is selected from URL params, ALWAYS generate new menu (delete old one first if exists)
+    if (selectedCategory && !generatingMenu && alimentosData) {
       generateMenuPlan();
     }
     
@@ -112,19 +112,24 @@ export default function MenuPage() {
     if (!selectedCategory && !existingMenu && !menuLoading && !menuError && !generatingMenu) {
       navigate('/results');
     }
-  }, [calculation, bodyMetrics, selectedCategory, user, calculationLoading, metricsLoading, alimentosData, alimentosLoading, generatingMenu, existingMenu, menuLoading, menuError]);
+  }, [calculation, bodyMetrics, selectedCategory, user, calculationLoading, metricsLoading, alimentosData, alimentosLoading, generatingMenu]);
 
   const generateMenuPlan = async () => {
     if (!calculation || !bodyMetrics || !alimentosData) return;
 
     setGeneratingMenu(true);
     try {
-      // Se já existe um cardápio, deletar primeiro
-      if (existingMenu) {
+      // SEMPRE deletar qualquer cardápio existente primeiro (mesmo que existingMenu seja undefined devido ao cache)
+      try {
         await apiRequest("DELETE", "/api/menu");
-        // Invalidar cache para refletir a deleção
-        await queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
+        console.log("✅ Cardápio anterior deletado com sucesso");
+      } catch (deleteError) {
+        // Se erro 404 (não existe), tudo bem, continua
+        console.log("ℹ️ Nenhum cardápio anterior para deletar (normal)");
       }
+      
+      // Invalidar cache para garantir que não há cardápio antigo
+      await queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
       // Use selected category or default to 'moderado'
       const category = selectedCategory || 'moderado';
       
