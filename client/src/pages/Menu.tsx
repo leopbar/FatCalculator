@@ -108,7 +108,8 @@ export default function MenuPage() {
     }
     
     // If no category selected and no existing menu, redirect to results
-    if (!selectedCategory && !existingMenu && !menuLoading && !menuError) {
+    // BUT NOT if we're currently generating a menu
+    if (!selectedCategory && !existingMenu && !menuLoading && !menuError && !generatingMenu) {
       navigate('/results');
     }
   }, [calculation, bodyMetrics, selectedCategory, user, calculationLoading, metricsLoading, alimentosData, alimentosLoading, generatingMenu, existingMenu, menuLoading, menuError]);
