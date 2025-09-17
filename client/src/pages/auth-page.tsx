@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
@@ -17,7 +18,7 @@ const loginSchema = insertUserSchema;
 const registerSchema = insertUserSchema.extend({
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "As senhas não coincidem",
+  message: "Las contraseñas no coinciden",
   path: ["confirmPassword"],
 });
 
@@ -56,7 +57,7 @@ export default function AuthPage() {
   // Show loading state while redirecting - but AFTER all hooks are called
   if (user) {
     return <div className="min-h-screen bg-background flex items-center justify-center">
-      <p className="text-muted-foreground">Redirecionando...</p>
+      <p className="text-muted-foreground">Redirigiendo...</p>
     </div>;
   }
 
@@ -88,24 +89,24 @@ export default function AuthPage() {
                 <div className="flex items-center justify-center mb-4">
                   <Shield className="h-12 w-12 text-primary" />
                 </div>
-                <h1 className="text-3xl font-bold text-foreground">Acesso Autorizado</h1>
+                <h1 className="text-3xl font-bold text-foreground">Acceso Autorizado</h1>
                 <p className="text-muted-foreground mt-2">
-                  Entre com suas credenciais para acessar a calculadora
+                  Ingrese sus credenciales para acceder a la calculadora
                 </p>
               </div>
 
               <Tabs defaultValue="login" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="login" data-testid="tab-login">Login</TabsTrigger>
-                  <TabsTrigger value="register" data-testid="tab-register">Registrar</TabsTrigger>
+                  <TabsTrigger value="login" data-testid="tab-login">Iniciar sesión</TabsTrigger>
+                  <TabsTrigger value="register" data-testid="tab-register">Registrarse</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="login">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Fazer Login</CardTitle>
+                      <CardTitle>Iniciar Sesión</CardTitle>
                       <CardDescription>
-                        Digite suas credenciais para acessar sua conta
+                        Ingrese sus credenciales para acceder a su cuenta
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -116,11 +117,11 @@ export default function AuthPage() {
                             name="username"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Usuário</FormLabel>
+                                <FormLabel>Usuario</FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
-                                    placeholder="Digite seu usuário"
+                                    placeholder="Ingrese su usuario"
                                     data-testid="input-username-login"
                                     autoComplete="username"
                                   />
@@ -134,12 +135,12 @@ export default function AuthPage() {
                             name="password"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Senha</FormLabel>
+                                <FormLabel>Contraseña</FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
                                     type="password"
-                                    placeholder="Digite sua senha"
+                                    placeholder="Ingrese su contraseña"
                                     data-testid="input-password-login"
                                     autoComplete="current-password"
                                   />
@@ -154,7 +155,7 @@ export default function AuthPage() {
                             disabled={loginMutation.isPending}
                             data-testid="button-login"
                           >
-                            {loginMutation.isPending ? "Entrando..." : "Entrar"}
+                            {loginMutation.isPending ? "Ingresando..." : "Ingresar"}
                           </Button>
                         </form>
                       </Form>
@@ -165,9 +166,9 @@ export default function AuthPage() {
                 <TabsContent value="register">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Criar Conta</CardTitle>
+                      <CardTitle>Crear Cuenta</CardTitle>
                       <CardDescription>
-                        Crie uma nova conta para acessar a calculadora
+                        Cree una nueva cuenta para acceder a la calculadora
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -178,11 +179,11 @@ export default function AuthPage() {
                             name="username"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Usuário</FormLabel>
+                                <FormLabel>Usuario</FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
-                                    placeholder="Escolha um nome de usuário"
+                                    placeholder="Elija un nombre de usuario"
                                     data-testid="input-username-register"
                                     autoComplete="username"
                                   />
@@ -196,12 +197,12 @@ export default function AuthPage() {
                             name="password"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Senha</FormLabel>
+                                <FormLabel>Contraseña</FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
                                     type="password"
-                                    placeholder="Crie uma senha segura"
+                                    placeholder="Cree una contraseña segura"
                                     data-testid="input-password-register"
                                     autoComplete="new-password"
                                   />
@@ -215,12 +216,12 @@ export default function AuthPage() {
                             name="confirmPassword"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Confirmar Senha</FormLabel>
+                                <FormLabel>Confirmar Contraseña</FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
                                     type="password"
-                                    placeholder="Confirme sua senha"
+                                    placeholder="Confirme su contraseña"
                                     data-testid="input-confirm-password"
                                     autoComplete="new-password"
                                   />
@@ -235,7 +236,7 @@ export default function AuthPage() {
                             disabled={registerMutation.isPending}
                             data-testid="button-register"
                           >
-                            {registerMutation.isPending ? "Criando conta..." : "Criar Conta"}
+                            {registerMutation.isPending ? "Creando cuenta..." : "Crear Cuenta"}
                           </Button>
                         </form>
                       </Form>
@@ -253,29 +254,29 @@ export default function AuthPage() {
                 <Calculator className="h-16 w-16 text-primary" />
               </div>
               <h2 className="text-4xl font-bold text-foreground mb-4">
-                Calculadora de Gordura Corporal
+                Calculadora de Grasa Corporal
               </h2>
               <p className="text-lg text-muted-foreground mb-6">
-                Sistema completo para cálculo de gordura corporal usando o método oficial da 
-                Marinha dos EUA, com recomendações personalizadas de cardápios baseadas em 
-                padrões internacionais de nutrição.
+                Sistema completo para cálculo de grasa corporal usando el método oficial de la 
+                Marina de los EE.UU., con recomendaciones personalizadas de menús basadas en 
+                estándares internacionales de nutrición.
               </p>
               <div className="space-y-3 text-sm text-muted-foreground">
                 <div className="flex items-center justify-center lg:justify-start">
                   <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Cálculo preciso de percentual de gordura corporal</span>
+                  <span>Cálculo preciso de porcentaje de grasa corporal</span>
                 </div>
                 <div className="flex items-center justify-center lg:justify-start">
                   <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Taxa metabólica basal (TDEE) personalizada</span>
+                  <span>Tasa metabólica basal (TDEE) personalizada</span>
                 </div>
                 <div className="flex items-center justify-center lg:justify-start">
                   <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Cardápios com 5 refeições balanceadas</span>
+                  <span>Menús con 5 comidas balanceadas</span>
                 </div>
                 <div className="flex items-center justify-center lg:justify-start">
                   <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Baseado em dados nutricionais USDA</span>
+                  <span>Basado en datos nutricionales USDA</span>
                 </div>
               </div>
             </div>

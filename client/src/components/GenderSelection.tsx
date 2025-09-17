@@ -1,3 +1,4 @@
+
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { User, Users } from "lucide-react";
@@ -21,14 +22,14 @@ export default function GenderSelection({ value, onChange }: GenderSelectionProp
           <RadioGroupItem value="male" id="male" data-testid="radio-male" />
           <Label htmlFor="male" className="flex items-center space-x-2 cursor-pointer flex-1">
             <User className="w-5 h-5 text-primary" />
-            <span>Masculino</span>
+            <span>Hombre</span>
           </Label>
         </div>
         <div className="flex items-center space-x-2 border rounded-lg p-4 hover-elevate transition-all duration-200">
           <RadioGroupItem value="female" id="female" data-testid="radio-female" />
           <Label htmlFor="female" className="flex items-center space-x-2 cursor-pointer flex-1">
             <Users className="w-5 h-5 text-primary" />
-            <span>Feminino</span>
+            <span>Mujer</span>
           </Label>
         </div>
       </RadioGroup>

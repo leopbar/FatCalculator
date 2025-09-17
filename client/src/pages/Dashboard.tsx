@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -56,7 +57,7 @@ export default function Dashboard() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Redirecionando...</p>
+        <p className="text-muted-foreground">Redirigiendo...</p>
       </div>
     );
   }
@@ -70,10 +71,10 @@ export default function Dashboard() {
             <User className="w-8 h-8 text-primary" />
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                Olá, {user.username}!
+                ¡Hola, {user.username}!
               </h1>
               <p className="text-muted-foreground">
-                Bem-vindo à sua calculadora de gordura corporal
+                Bienvenido a tu calculadora de grasa corporal
               </p>
             </div>
           </div>
@@ -82,129 +83,129 @@ export default function Dashboard() {
             onClick={() => logoutMutation.mutate()}
             data-testid="button-logout"
           >
-            Sair
+            Cerrar sesión
           </Button>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto p-6 space-y-8">
-        {/* Recursos Adicionais */}
+        {/* Recursos Adicionales */}
         <section>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* Comece Aqui */}
+            {/* Comience Aquí */}
             <Card className="hover-elevate cursor-pointer">
               <CardHeader className="text-center">
                 <Play className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle>Comece Aqui</CardTitle>
+                <CardTitle>Comience Aquí</CardTitle>
                 <CardDescription>
-                  Guia completo para iniciar sua jornada de transformação corporal
+                  Guía completa para iniciar su transformación corporal
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button className="w-full" variant="outline">
-                  Em Breve
+                  Próximamente
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Orientação Alimentar */}
+            {/* Orientación Alimentaria */}
             <Card className="hover-elevate cursor-pointer">
               <CardHeader className="text-center">
                 <Utensils className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle>Orientação Alimentar</CardTitle>
+                <CardTitle>Orientación Alimentaria</CardTitle>
                 <CardDescription>
-                  Fundamentos de uma alimentação saudável e equilibrada
+                  Fundamentos de una alimentación saludable y equilibrada
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button className="w-full" variant="outline">
-                  Em Breve
+                  Próximamente
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Estratégias Alimentares */}
+            {/* Estrategias Alimentarias */}
             <Card className="hover-elevate cursor-pointer">
               <CardHeader className="text-center">
                 <Target className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle>Estratégias Alimentares</CardTitle>
+                <CardTitle>Estrategias Alimentarias</CardTitle>
                 <CardDescription>
-                  Técnicas avançadas para otimizar sua dieta e resultados
+                  Técnicas avanzadas para optimizar su dieta y resultados
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button className="w-full" variant="outline">
-                  Em Breve
+                  Próximamente
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Ebook de Receitas */}
+            {/* Libro de Recetas */}
             <Card className="hover-elevate cursor-pointer">
               <CardHeader className="text-center">
                 <BookOpen className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle>Ebook de Receitas</CardTitle>
+                <CardTitle>Libro de Recetas</CardTitle>
                 <CardDescription>
-                  Receitas saborosas e nutritivas para todos os momentos
+                  Recetas sabrosas y nutritivas para todos los momentos
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button className="w-full" variant="outline">
-                  Em Breve
+                  Próximamente
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Suplementação sem Segredo */}
+            {/* Suplementación sin Secretos */}
             <Card className="hover-elevate cursor-pointer">
               <CardHeader className="text-center">
                 <Pill className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle>Suplementação sem Segredo</CardTitle>
+                <CardTitle>Suplementación sin Secretos</CardTitle>
                 <CardDescription>
-                  Guia completo sobre suplementos: o que funciona de verdade
+                  Guía completa sobre suplementos: lo que realmente funciona
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button className="w-full" variant="outline">
-                  Em Breve
+                  Próximamente
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Blindando sua Mente */}
+            {/* Fortaleciendo su Mente */}
             <Card className="hover-elevate cursor-pointer">
               <CardHeader className="text-center">
                 <Brain className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle>Blindando sua Mente</CardTitle>
+                <CardTitle>Fortaleciendo su Mente</CardTitle>
                 <CardDescription>
-                  Estratégias psicológicas para manter a motivação e disciplina
+                  Estrategias psicológicas para mantener la motivación y disciplina
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button className="w-full" variant="outline">
-                  Em Breve
+                  Próximamente
                 </Button>
               </CardContent>
             </Card>
           </div>
         </section>
 
-        {/* Ferramentas */}
+        {/* Herramientas */}
         <section>
-          <h2 className="text-2xl font-bold mb-6 text-foreground">Ferramentas</h2>
+          <h2 className="text-2xl font-bold mb-6 text-foreground">Herramientas</h2>
           <div className="grid gap-6 md:grid-cols-3">
-            {/* Calculadora de Gordura */}
+            {/* Calculadora de Grasa */}
             <Card className="hover-elevate cursor-pointer" onClick={handleCalculatorClick}>
               <CardHeader className="text-center">
                 <Calculator className="w-12 h-12 text-primary mx-auto mb-2" />
                 <CardTitle data-testid="card-title-calculator">
-                  Calculadora de Gordura
+                  Calculadora de Grasa
                 </CardTitle>
                 <CardDescription>
                   {summary?.hasMetrics
-                    ? "Refazer cálculo das medidas corporais"
-                    : "Calcular percentual de gordura corporal"}
+                    ? "Recalcular las medidas corporales"
+                    : "Calcular porcentaje de grasa corporal"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -213,7 +214,7 @@ export default function Dashboard() {
                   variant={summary?.hasMetrics ? "secondary" : "default"}
                   data-testid="button-calculator"
                 >
-                  {summary?.hasMetrics ? "Recalcular" : "Começar"}
+                  {summary?.hasMetrics ? "Recalcular" : "Comenzar"}
                 </Button>
               </CardContent>
             </Card>
@@ -223,12 +224,12 @@ export default function Dashboard() {
               <CardHeader className="text-center">
                 <TrendingUp className="w-12 h-12 text-primary mx-auto mb-2" />
                 <CardTitle data-testid="card-title-results">
-                  Taxa Metabólica
+                  Tasa Metabólica
                 </CardTitle>
                 <CardDescription>
                   {summary?.hasCalculation
-                    ? "Ver seus resultados de TMB e TDEE"
-                    : "Ainda não há cálculos disponíveis"}
+                    ? "Ver sus resultados de TMB y TDEE"
+                    : "Aún no hay cálculos disponibles"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -238,22 +239,22 @@ export default function Dashboard() {
                   disabled={!summary?.hasCalculation && !isLoading}
                   data-testid="button-results"
                 >
-                  {summary?.hasCalculation ? "Ver Resultados" : "Calcular Primeiro"}
+                  {summary?.hasCalculation ? "Ver Resultados" : "Calcular Primero"}
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Cardápio Personalizado */}
+            {/* Menú Personalizado */}
             <Card className="hover-elevate cursor-pointer" onClick={handleMenuClick}>
               <CardHeader className="text-center">
                 <UtensilsCrossed className="w-12 h-12 text-primary mx-auto mb-2" />
                 <CardTitle data-testid="card-title-menu">
-                  Cardápio Personalizado
+                  Menú Personalizado
                 </CardTitle>
                 <CardDescription>
                   {summary?.hasMenu
-                    ? "Ver seu cardápio personalizado"
-                    : "Cardápio baseado nos seus objetivos"}
+                    ? "Ver su menú personalizado"
+                    : "Menú basado en sus objetivos"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -263,7 +264,7 @@ export default function Dashboard() {
                   disabled={!summary?.hasMenu && !isLoading}
                   data-testid="button-menu"
                 >
-                  {summary?.hasMenu ? "Ver Cardápio" : "Calcular Primeiro"}
+                  {summary?.hasMenu ? "Ver Menú" : "Calcular Primero"}
                 </Button>
               </CardContent>
             </Card>
@@ -274,17 +275,17 @@ export default function Dashboard() {
         {!isLoading && summary && (
           <div className="mt-8 p-4 bg-muted rounded-lg">
             <h3 className="font-semibold mb-2" data-testid="text-status-title">
-              Status dos seus dados:
+              Estado de sus datos:
             </h3>
             <div className="flex gap-4 text-sm">
               <span className={`${summary.hasMetrics ? 'text-green-600' : 'text-muted-foreground'}`}>
-                ✓ Medidas corporais: {summary.hasMetrics ? 'Salvas' : 'Pendente'}
+                ✓ Medidas corporales: {summary.hasMetrics ? 'Guardadas' : 'Pendiente'}
               </span>
               <span className={`${summary.hasCalculation ? 'text-green-600' : 'text-muted-foreground'}`}>
-                ✓ Cálculos: {summary.hasCalculation ? 'Concluído' : 'Pendente'}
+                ✓ Cálculos: {summary.hasCalculation ? 'Completado' : 'Pendiente'}
               </span>
               <span className={`${summary.hasMenu ? 'text-green-600' : 'text-muted-foreground'}`}>
-                ✓ Cardápio: {summary.hasMenu ? 'Gerado' : 'Pendente'}
+                ✓ Menú: {summary.hasMenu ? 'Generado' : 'Pendiente'}
               </span>
             </div>
           </div>
@@ -292,7 +293,7 @@ export default function Dashboard() {
 
         {isLoading && (
           <div className="mt-8 text-center">
-            <p className="text-muted-foreground">Carregando seus dados...</p>
+            <p className="text-muted-foreground">Cargando sus datos...</p>
           </div>
         )}
       </main>

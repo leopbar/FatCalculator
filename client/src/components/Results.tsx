@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -78,7 +79,7 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
         intensity: "medium"
       },
       {
-        category: "Restritivo",
+        category: "Restrictivo",
         deficit: 750,
         intensity: "high"
       }
@@ -105,10 +106,10 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold text-foreground">
-            Resultado do Cálculo
+            Resultado del Cálculo
           </h1>
           <p className="text-muted-foreground">
-            Método oficial da Marinha dos EUA
+            Método oficial de la Marina de EE.UU.
           </p>
         </div>
 
@@ -117,7 +118,7 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
           <CardContent className="p-8 text-center space-y-6">
             <div className="flex items-center justify-center space-x-2">
               <TrendingUp className="w-8 h-8 text-primary" />
-              <h2 className="text-xl font-semibold text-foreground">Percentual de Gordura</h2>
+              <h2 className="text-xl font-semibold text-foreground">Porcentaje de Grasa</h2>
             </div>
             
             <div className="space-y-4">
@@ -140,18 +141,18 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
           <CardContent className="p-6 text-center space-y-4">
             <div className="flex items-center justify-center space-x-2">
               <Flame className="w-6 h-6 text-primary" />
-              <h3 className="text-lg font-semibold text-foreground">Gasto Energético Diário</h3>
+              <h3 className="text-lg font-semibold text-foreground">Gasto Energético Diario</h3>
             </div>
             
             <div className="space-y-2">
               <div className="text-4xl font-bold text-primary" data-testid="text-tdee">
-                {tmb.toLocaleString('pt-BR')}
+                {tmb.toLocaleString('es-ES')}
               </div>
-              <p className="text-sm text-muted-foreground">calorias por dia</p>
+              <p className="text-sm text-muted-foreground">calorías por día</p>
             </div>
             
             <p className="text-xs text-muted-foreground">
-              Energia que seu corpo gasta diariamente com seu nível de atividade física
+              Energía que su cuerpo gasta diariamente con su nivel de actividad física
             </p>
           </CardContent>
         </Card>
@@ -160,10 +161,10 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
         <div className="space-y-4">
           <div className="flex items-center justify-center space-x-2">
             <Target className="w-6 h-6 text-primary" />
-            <h3 className="text-lg font-semibold text-foreground">Recomendações para Emagrecimento</h3>
+            <h3 className="text-lg font-semibold text-foreground">Recomendaciones para Adelgazar</h3>
           </div>
           <p className="text-center text-sm text-muted-foreground">
-            Selecione uma categoria para gerar seu cardápio personalizado
+            Seleccione una categoría para generar su menú personalizado
           </p>
           
           <div className="grid gap-4 md:grid-cols-3">
@@ -195,23 +196,23 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
                     <div className="space-y-2 text-center">
                       <div>
                         <div className={`text-2xl font-bold ${isSelected ? 'text-primary' : 'text-primary'}`} data-testid={`text-calories-${rec.category.toLowerCase()}`}>
-                          {rec.dailyCalories.toLocaleString('pt-BR')}
+                          {rec.dailyCalories.toLocaleString('es-ES')}
                         </div>
-                        <p className="text-xs text-muted-foreground">calorias por dia</p>
+                        <p className="text-xs text-muted-foreground">calorías por día</p>
                       </div>
                       
                       <div>
                         <div className={`text-lg font-semibold ${isSelected ? 'text-foreground' : 'text-foreground'}`} data-testid={`text-weight-loss-${rec.category.toLowerCase()}`}>
                           ~{rec.weeklyWeightLoss} kg
                         </div>
-                        <p className="text-xs text-muted-foreground">perda por semana</p>
+                        <p className="text-xs text-muted-foreground">pérdida por semana</p>
                       </div>
                     </div>
                     
                     {isSelected && (
                       <div className="text-center pt-2">
                         <div className="text-sm text-primary font-semibold">
-                          ✓ Selecionado
+                          ✓ Seleccionado
                         </div>
                       </div>
                     )}
@@ -221,7 +222,7 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
             })}
           </div>
 
-          {/* Botão Gerar Cardápio - só aparece quando uma categoria está selecionada */}
+          {/* Botón Generar Menú - solo aparece cuando una categoría está seleccionada */}
           {selectedCategory && (
             <div className="flex justify-center pt-4">
               <Button 
@@ -231,7 +232,7 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
                 data-testid="button-generate-menu"
               >
                 <ChefHat className="w-5 h-5 mr-2" />
-                Gerar Cardápio - {selectedCategory.category.charAt(0).toUpperCase() + selectedCategory.category.slice(1)}
+                Generar Menú - {selectedCategory.category.charAt(0).toUpperCase() + selectedCategory.category.slice(1)}
               </Button>
             </div>
           )}
@@ -244,13 +245,13 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
               <Info className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
               <div className="space-y-2 text-left">
                 <p className="text-sm text-muted-foreground">
-                  <strong>Percentual de Gordura:</strong> Calculado pelo método oficial da Marinha dos EUA
+                  <strong>Porcentaje de Grasa:</strong> Calculado por el método oficial de la Marina de EE.UU.
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  <strong>Gasto Energético:</strong> Calculado pela fórmula Mifflin-St Jeor, considerando seu nível de atividade física
+                  <strong>Gasto Energético:</strong> Calculado por la fórmula Mifflin-St Jeor, considerando su nivel de actividad física
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  <strong>Recomendações:</strong> Baseadas em déficits calóricos seguros. Consulte um profissional antes de iniciar qualquer dieta restritiva.
+                  <strong>Recomendaciones:</strong> Basadas en déficits calóricos seguros. Consulte un profesional antes de iniciar cualquier dieta restrictiva.
                 </p>
               </div>
             </div>
@@ -267,7 +268,7 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
             data-testid="button-dashboard"
           >
             <Home className="w-5 h-5 mr-2" />
-            Dashboard
+            Panel
           </Button>
           <Button
             onClick={onRecalculate}
@@ -276,7 +277,7 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
             data-testid="button-recalculate"
           >
             <RotateCcw className="w-5 h-5 mr-2" />
-            Refazer cálculo
+            Recalcular
           </Button>
         </div>
       </div>

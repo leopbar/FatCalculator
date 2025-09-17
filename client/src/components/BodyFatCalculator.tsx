@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
@@ -74,40 +75,40 @@ export default function BodyFatCalculator() {
     const hip = formData.gender === "female" ? parseFloat(formData.hip) : 0;
     
     if (!formData.age || age <= 0 || age > 120) {
-      newErrors.age = "Idade é obrigatória e deve estar entre 1 e 120 anos";
+      newErrors.age = "La edad es obligatoria y debe estar entre 1 y 120 años";
     }
     if (!formData.height || height <= 0) {
-      newErrors.height = "Altura é obrigatória e deve ser maior que 0";
+      newErrors.height = "La altura es obligatoria y debe ser mayor que 0";
     }
     if (!formData.weight || weight <= 0) {
-      newErrors.weight = "Peso é obrigatório e deve ser maior que 0";
+      newErrors.weight = "El peso es obligatorio y debe ser mayor que 0";
     }
     if (!formData.neck || neck <= 0) {
-      newErrors.neck = "Medida do pescoço é obrigatória e deve ser maior que 0";
+      newErrors.neck = "La medida del cuello es obligatoria y debe ser mayor que 0";
     }
     if (!formData.waist || waist <= 0) {
-      newErrors.waist = "Medida da cintura é obrigatória e deve ser maior que 0";
+      newErrors.waist = "La medida de la cintura es obligatoria y debe ser mayor que 0";
     }
     if (formData.gender === "female" && (!formData.hip || hip <= 0)) {
-      newErrors.hip = "Medida do quadril é obrigatória para mulheres e deve ser maior que 0";
+      newErrors.hip = "La medida de la cadera es obligatoria para mujeres y debe ser mayor que 0";
     }
     if (!formData.activityLevel) {
-      newErrors.activityLevel = "Nível de atividade física é obrigatório";
+      newErrors.activityLevel = "El nivel de actividad física es obligatorio";
     } else if (!['sedentary', 'light', 'moderate', 'intense'].includes(formData.activityLevel)) {
-      newErrors.activityLevel = "Nível de atividade física inválido";
+      newErrors.activityLevel = "Nivel de actividad física inválido";
     }
 
     // Critical validation for US Navy formula
     if (formData.gender === "male") {
       if (waist <= neck) {
-        newErrors.waist = "Para homens, a cintura deve ser maior que o pescoço";
-        newErrors.neck = "Para homens, o pescoço deve ser menor que a cintura";
+        newErrors.waist = "Para hombres, la cintura debe ser mayor que el cuello";
+        newErrors.neck = "Para hombres, el cuello debe ser menor que la cintura";
       }
     } else if (formData.gender === "female") {
       if (waist + hip <= neck) {
-        newErrors.waist = "Para mulheres, cintura + quadril deve ser maior que o pescoço";
-        newErrors.hip = "Para mulheres, cintura + quadril deve ser maior que o pescoço";
-        newErrors.neck = "Para mulheres, o pescoço deve ser menor que cintura + quadril";
+        newErrors.waist = "Para mujeres, cintura + cadera debe ser mayor que el cuello";
+        newErrors.hip = "Para mujeres, cintura + cadera debe ser mayor que el cuello";
+        newErrors.neck = "Para mujeres, el cuello debe ser menor que cintura + cadera";
       }
     }
 
@@ -118,8 +119,8 @@ export default function BodyFatCalculator() {
   const calculateBodyFat = async () => {
     if (!validateForm()) {
       toast({
-        title: "Erro de validação",
-        description: "Por favor, corrija os erros nos campos destacados.",
+        title: "Error de validación",
+        description: "Por favor, corrija los errores en los campos resaltados.",
         variant: "destructive",
       });
       return;
@@ -132,7 +133,7 @@ export default function BodyFatCalculator() {
     const waist = parseFloat(formData.waist);
     const hip = formData.gender === "female" ? parseFloat(formData.hip) : null;
 
-    // Map activity levels to Portuguese values expected by the API
+    // Map activity levels to Spanish values expected by the API
     const activityLevelMap: Record<string, string> = {
       'sedentary': 'sedentario',
       'light': 'leve',
@@ -150,8 +151,8 @@ export default function BodyFatCalculator() {
       // Hip measurement is required for females
       if (!hip || hip <= 0) {
         toast({
-          title: "Erro no cálculo",
-          description: "A medida do quadril é obrigatória para o cálculo feminino.",
+          title: "Error en el cálculo",
+          description: "La medida de la cadera es obligatoria para el cálculo femenino.",
           variant: "destructive",
         });
         return;
@@ -165,7 +166,7 @@ export default function BodyFatCalculator() {
 
     if (formData.gender === "male") {
       if (bodyFatPercentage < 6) {
-        category = "Essencial";
+        category = "Esencial";
         categoryColor = "warning";
       } else if (bodyFatPercentage < 14) {
         category = "Atlético";
@@ -174,15 +175,15 @@ export default function BodyFatCalculator() {
         category = "Fitness";
         categoryColor = "success";
       } else if (bodyFatPercentage < 25) {
-        category = "Aceitável";
+        category = "Aceptable";
         categoryColor = "warning";
       } else {
-        category = "Obesidade";
+        category = "Obesidad";
         categoryColor = "destructive";
       }
     } else {
       if (bodyFatPercentage < 10) {
-        category = "Essencial";
+        category = "Esencial";
         categoryColor = "warning";
       } else if (bodyFatPercentage < 21) {
         category = "Atlético";
@@ -191,10 +192,10 @@ export default function BodyFatCalculator() {
         category = "Fitness";
         categoryColor = "success";
       } else if (bodyFatPercentage < 32) {
-        category = "Aceitável";
+        category = "Aceptable";
         categoryColor = "warning";
       } else {
-        category = "Obesidade";
+        category = "Obesidad";
         categoryColor = "destructive";
       }
     }
@@ -220,8 +221,8 @@ export default function BodyFatCalculator() {
     const activityFactor = activityFactors[formData.activityLevel as keyof typeof activityFactors];
     if (!activityFactor) {
       toast({
-        title: "Erro no cálculo",
-        description: "Nível de atividade física inválido.",
+        title: "Error en el cálculo",
+        description: "Nivel de actividad física inválido.",
         variant: "destructive",
       });
       return;
@@ -232,8 +233,8 @@ export default function BodyFatCalculator() {
     // Validate calculation results
     if (!isFinite(bodyFatPercentage) || isNaN(bodyFatPercentage) || !isFinite(tmb) || isNaN(tmb)) {
       toast({
-        title: "Erro no cálculo",
-        description: "Não foi possível calcular o resultado com os valores fornecidos. Verifique os dados inseridos.",
+        title: "Error en el cálculo",
+        description: "No fue posible calcular el resultado con los valores proporcionados. Verifique los datos ingresados.",
         variant: "destructive",
       });
       return;
@@ -242,7 +243,7 @@ export default function BodyFatCalculator() {
     try {
       // Save body metrics to server
       const bodyMetricsData = {
-        gender: formData.gender === "male" ? "masculino" : "feminino",
+        gender: formData.gender === "male" ? "masculino" : "femenino",
         age,
         height,
         weight,
@@ -270,8 +271,8 @@ export default function BodyFatCalculator() {
       await queryClient.invalidateQueries({ queryKey: ['/api/body-metrics'] });
 
       toast({
-        title: "Cálculo realizado!",
-        description: "Dados salvos com sucesso. Redirecionando...",
+        title: "¡Cálculo realizado!",
+        description: "Datos guardados con éxito. Redirigiendo...",
       });
 
       // Navigate to results page
@@ -279,8 +280,8 @@ export default function BodyFatCalculator() {
     } catch (error) {
       console.error('Error saving data:', error);
       toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar os dados. Tente novamente.",
+        title: "Error al guardar",
+        description: "No fue posible guardar los datos. Intente nuevamente.",
         variant: "destructive",
       });
     }
@@ -304,8 +305,8 @@ export default function BodyFatCalculator() {
     queryClient.invalidateQueries({ queryKey: ['/api/body-metrics'] });
     queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
     toast({
-      title: "Formulário limpo",
-      description: "Todos os campos foram resetados.",
+      title: "Formulario limpiado",
+      description: "Todos los campos han sido restablecidos.",
     });
   };
 
@@ -332,15 +333,15 @@ export default function BodyFatCalculator() {
         <div className="flex items-center justify-between mb-6">
           <div className="text-center flex-1">
             <h1 className="text-2xl font-bold text-foreground">
-              Calculadora de Gordura Corporal
+              Calculadora de Grasa Corporal
             </h1>
             <p className="text-muted-foreground">
-              Método oficial da Marinha dos EUA
+              Método oficial de la Marina de EE.UU.
             </p>
           </div>
           <div className="flex flex-col items-end">
             <p className="text-sm text-muted-foreground mb-2">
-              Olá, {user?.username}
+              Hola, {user?.username}
             </p>
             <div className="flex gap-2">
               <Button
@@ -351,7 +352,7 @@ export default function BodyFatCalculator() {
                 className="flex items-center gap-2"
               >
                 <Home className="h-4 w-4" />
-                Dashboard
+                Panel
               </Button>
               <Button
                 variant="outline"
@@ -362,7 +363,7 @@ export default function BodyFatCalculator() {
                 className="flex items-center gap-2"
               >
                 <LogOut className="h-4 w-4" />
-                {logoutMutation.isPending ? "Saindo..." : "Sair"}
+                {logoutMutation.isPending ? "Saliendo..." : "Salir"}
               </Button>
             </div>
           </div>
@@ -373,7 +374,7 @@ export default function BodyFatCalculator() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Calculator className="w-5 h-5 text-primary" />
-              <span>Dados Corporais</span>
+              <span>Datos Corporales</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -385,11 +386,11 @@ export default function BodyFatCalculator() {
             <div className="space-y-4">
               <MeasurementInput
                 id="age"
-                label="Idade"
+                label="Edad"
                 value={formData.age}
                 onChange={updateFormData('age')}
-                placeholder="Ex: 30"
-                unit="anos"
+                placeholder="Ej: 30"
+                unit="años"
                 error={errors.age}
               />
 
@@ -398,7 +399,7 @@ export default function BodyFatCalculator() {
                 label="Altura"
                 value={formData.height}
                 onChange={updateFormData('height')}
-                placeholder="Ex: 175"
+                placeholder="Ej: 175"
                 unit="cm"
                 error={errors.height}
               />
@@ -408,17 +409,17 @@ export default function BodyFatCalculator() {
                 label="Peso"
                 value={formData.weight}
                 onChange={updateFormData('weight')}
-                placeholder="Ex: 70"
+                placeholder="Ej: 70"
                 unit="kg"
                 error={errors.weight}
               />
 
               <MeasurementInput
                 id="neck"
-                label="Pescoço"
+                label="Cuello"
                 value={formData.neck}
                 onChange={updateFormData('neck')}
-                placeholder="Ex: 38"
+                placeholder="Ej: 38"
                 unit="cm"
                 error={errors.neck}
               />
@@ -428,7 +429,7 @@ export default function BodyFatCalculator() {
                 label="Cintura"
                 value={formData.waist}
                 onChange={updateFormData('waist')}
-                placeholder="Ex: 85"
+                placeholder="Ej: 85"
                 unit="cm"
                 error={errors.waist}
               />
@@ -436,10 +437,10 @@ export default function BodyFatCalculator() {
               {formData.gender === "female" && (
                 <MeasurementInput
                   id="hip"
-                  label="Quadril"
+                  label="Cadera"
                   value={formData.hip}
                   onChange={updateFormData('hip')}
-                  placeholder="Ex: 95"
+                  placeholder="Ej: 95"
                   unit="cm"
                   error={errors.hip}
                 />
@@ -449,14 +450,14 @@ export default function BodyFatCalculator() {
             {/* Activity Level Selection */}
             <div className="space-y-3">
               <h3 className="text-sm font-medium text-foreground">
-                Qual seu nível de atividade física?
+                ¿Cuál es su nivel de actividad física?
               </h3>
               <div className="space-y-2">
                 {[
-                  { value: "sedentary", label: "Sedentário", description: "pouco ou nenhum exercício" },
-                  { value: "light", label: "Leve", description: "exercício leve 1–3 dias/semana" },
-                  { value: "moderate", label: "Moderado", description: "exercício moderado 3–5 dias/semana" },
-                  { value: "intense", label: "Intenso", description: "exercício pesado 6–7 dias/semana" }
+                  { value: "sedentary", label: "Sedentario", description: "poco o ningún ejercicio" },
+                  { value: "light", label: "Ligero", description: "ejercicio ligero 1-3 días/semana" },
+                  { value: "moderate", label: "Moderado", description: "ejercicio moderado 3-5 días/semana" },
+                  { value: "intense", label: "Intenso", description: "ejercicio intenso 6-7 días/semana" }
                 ].map((level) => (
                   <label
                     key={level.value}
@@ -497,7 +498,7 @@ export default function BodyFatCalculator() {
                 data-testid="button-calculate"
               >
                 <Calculator className="w-4 h-4 mr-2" />
-                {(saveBodyMetricsMutation.isPending || saveCalculationMutation.isPending) ? "Salvando..." : "Calcular"}
+                {(saveBodyMetricsMutation.isPending || saveCalculationMutation.isPending) ? "Guardando..." : "Calcular"}
               </Button>
               <Button
                 onClick={resetForm}
