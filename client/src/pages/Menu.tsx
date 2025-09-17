@@ -109,7 +109,7 @@ export default function MenuPage() {
       setGenerationAttempted(true);
       generateMenuPlan();
     }
-    
+
     // If no category selected and no existing menu, redirect to results
     // BUT NOT if we're currently generating a menu
     if (!selectedCategory && !existingMenu && !menuLoading && !menuError && !generatingMenu) {
@@ -130,12 +130,12 @@ export default function MenuPage() {
         // Se erro 404 (não existe), tudo bem, continua
         console.log("ℹ️ Nenhum cardápio anterior para deletar (normal)");
       }
-      
+
       // Invalidar cache para garantir que não há cardápio antigo
       await queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
       // Use selected category or default to 'moderado'
       const category = selectedCategory || 'moderado';
-      
+
       // Use calories from URL params (calculated correctly in Results) or fallback to calculation
       let targetCalories: number;
       if (selectedCalories) {
@@ -185,7 +185,7 @@ export default function MenuPage() {
           carb: macroTarget.carb_g,
           fat: macroTarget.fat_g,
           kcal: macroTarget.calories,
-        },
+        }
       };
 
       // Save to server

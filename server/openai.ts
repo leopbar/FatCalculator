@@ -1,10 +1,7 @@
-import OpenAI from 'openai';
 
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Using Ollama as free local AI alternative
+const OLLAMA_API_URL = 'http://localhost:11434/api/generate';
+const OLLAMA_MODEL = 'llama3.1:8b'; // Free local model
 
 // Circuit breaker to prevent infinite retries
 class CircuitBreaker {
@@ -42,7 +39,7 @@ class CircuitBreaker {
 
 const circuitBreaker = new CircuitBreaker();
 
-// Generate meal plan using OpenAI with calculated macros
+// Generate meal plan using Ollama with calculated macros
 export async function generateMealPlanWithAI(
   calories: number,
   protein: number,
@@ -56,15 +53,7 @@ export async function generateMealPlanWithAI(
   }
 
   try {
-    // Log API key status (without exposing the key)
-    const hasApiKey = !!process.env.OPENAI_API_KEY;
-    const keyPreview = process.env.OPENAI_API_KEY ? `${process.env.OPENAI_API_KEY.slice(0, 7)}...${process.env.OPENAI_API_KEY.slice(-4)}` : 'not set';
-    console.log(`OpenAI API Key status: ${hasApiKey ? 'present' : 'missing'} (${keyPreview})`);
-
-    if (!process.env.OPENAI_API_KEY) {
-      circuitBreaker.recordFailure();
-      throw new Error("OpenAI API key not configured");
-    }
+    console.log(`Ollama service status: checking local installation`);
 
     const prompt = `Cree un plan de comidas personalizado para un día con los siguientes macronutrientes:
     - Calorías totales: ${calories} kcal
@@ -92,31 +81,34 @@ export async function generateMealPlanWithAI(
     🌙 COLACIÓN NOCTURNA (XX:XX PM)
     - Alimento 1: XXg
 
-    Incluya alimentos tradicionales latinoamericanos como quinoa, amaranto, frijoles, aguacate, choclo, camote, etc. Sea específico con las cantidades en gramos.`;
+    Incluya alimentos tradicionales latinoamericanos como quinoa, amaranto, frijoles, aguacate, choclo, camote, etc. Sea específico con las cantidades en gramos.
 
-    console.log("Calling OpenAI API...");
+    Eres un nutricionista especializado en dietas latinoamericanas y planes de alimentación personalizados. Responde solo con el plan de comidas, sin explicaciones adicionales.`;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-      messages: [
-        {
-          role: "system",
-          content: "Eres un nutricionista especializado en dietas latinoamericanas y planes de alimentación personalizados."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      max_tokens: 1000,
-      temperature: 0.7,
+    console.log("Calling Ollama API...");
+
+    const response = await fetch(OLLAMA_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        prompt: prompt,
+        stream: false,
+      }),
     });
 
-    console.log("OpenAI API call successful");
+    if (!response.ok) {
+      throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+    }
+
+    const completion = await response.json();
+    console.log("Ollama API call successful");
     circuitBreaker.recordSuccess();
-    return completion.choices[0]?.message?.content || "Error generando el plan de comidas";
+    return completion.response || "Error generando el plan de comidas";
   } catch (error: any) {
-    console.error("Error calling OpenAI API:", error);
+    console.error("Error calling Ollama API:", error);
     console.error("Error details:", {
       name: error?.name,
       message: error?.message,
