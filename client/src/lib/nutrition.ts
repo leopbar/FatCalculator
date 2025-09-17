@@ -1,4 +1,3 @@
-
 import { MacroTarget, FoodItem, Meal, MealItem, MenuPlan } from "@shared/schema";
 
 // Calculate macronutrient targets based on international standards (AMDR)
@@ -17,7 +16,7 @@ export function calculateMacroTargets(
 
   // Calculate Lean Body Mass (LBM) in kg
   const lbm = bodyWeight * (1 - bodyFatPercentage / 100);
-  
+
   // Protein targets based on ISSN/ACSM guidelines (g/kg LBM)
   // Higher protein for more restrictive diets to preserve muscle mass
   const proteinPerKgLBM = {
@@ -25,14 +24,14 @@ export function calculateMacroTargets(
     moderado: 2.0,
     restritivo: 2.2
   };
-  
+
   let proteinGrams = lbm * proteinPerKgLBM[category];
   let proteinCalories = proteinGrams * 4;
-  
+
   // Ensure protein stays within AMDR bounds (10-35% of total calories)
   const minProteinCal = targetCalories * 0.10;
   const maxProteinCal = targetCalories * 0.35;
-  
+
   if (proteinCalories < minProteinCal) {
     proteinCalories = minProteinCal;
     proteinGrams = proteinCalories / 4;
@@ -40,26 +39,26 @@ export function calculateMacroTargets(
     proteinCalories = maxProteinCal;
     proteinGrams = proteinCalories / 4;
   }
-  
+
   // Minimum fat for hormone production and essential fatty acids (0.6 g/kg LBM)
   // But ensure fat doesn't exceed 35% of calories (AMDR upper bound)
   let fatGrams = Math.max(lbm * 0.6, targetCalories * 0.20 / 9);
   let fatCalories = fatGrams * 9;
-  
+
   const maxFatCal = targetCalories * 0.35;
   if (fatCalories > maxFatCal) {
     fatCalories = maxFatCal;
     fatGrams = fatCalories / 9;
   }
-  
+
   // Remaining calories go to carbohydrates
   let remainingCalories = targetCalories - proteinCalories - fatCalories;
   let carbCalories = remainingCalories;
-  
+
   // Ensure carbs stay within AMDR bounds (45-65%)
   const minCarbCal = targetCalories * 0.45;
   const maxCarbCal = targetCalories * 0.65;
-  
+
   // Adjust if carbs are outside AMDR bounds
   if (carbCalories < minCarbCal) {
     carbCalories = minCarbCal;
@@ -70,7 +69,7 @@ export function calculateMacroTargets(
     // Increase fat with remaining calories (keeping within fat max of 35%)
     const adjustedFatCal = targetCalories - proteinCalories - carbCalories;
     const maxFatCalAllowed = targetCalories * 0.35;
-    
+
     if (adjustedFatCal <= maxFatCalAllowed) {
       fatCalories = adjustedFatCal;
       fatGrams = fatCalories / 9;
@@ -83,9 +82,9 @@ export function calculateMacroTargets(
       proteinGrams = proteinCalories / 4;
     }
   }
-  
+
   const carbGrams = carbCalories / 4;
-  
+
   return {
     calories: targetCalories,
     protein_g: Math.round(proteinGrams),
@@ -133,7 +132,7 @@ function categorizeFoodsWithQuality(foods: FoodItem[]): {
 
   foods.forEach(food => {
     const name = food.name.toLowerCase();
-    
+
     // Identify eggs specifically
     if (name.includes('ovo') || name.includes('huevo') || name.includes('clara')) {
       categorized.eggs.push({
@@ -141,7 +140,7 @@ function categorizeFoodsWithQuality(foods: FoodItem[]): {
         quality: food.protein_per_100g * 10 // High quality protein
       });
     }
-    
+
     // Identify dairy products
     if (name.includes('leite') || name.includes('iogurte') || name.includes('yogur') || 
         name.includes('queijo') || name.includes('queso') || name.includes('milk')) {
@@ -150,7 +149,7 @@ function categorizeFoodsWithQuality(foods: FoodItem[]): {
         quality: food.protein_per_100g * 8 + (food.kcal_per_100g < 100 ? 20 : 0)
       });
     }
-    
+
     // High protein foods (>15g per 100g) - but exclude eggs and dairy to avoid double categorization
     if (food.protein_per_100g >= 15 && !categorized.eggs.some(e => e.id === food.id) && !categorized.dairy.some(d => d.id === food.id)) {
       const proteinQuality = food.protein_per_100g;
@@ -160,7 +159,7 @@ function categorizeFoodsWithQuality(foods: FoodItem[]): {
         quality: proteinQuality + fatPenalty
       });
     }
-    
+
     // High carb foods (>50g per 100g)
     if (food.carb_per_100g >= 50) {
       const fiberBonus = (food.fiber_per_100g || 0) * 2;
@@ -170,7 +169,7 @@ function categorizeFoodsWithQuality(foods: FoodItem[]): {
         quality: qualityScore
       });
     }
-    
+
     // High fat foods (>70% fat calories)
     const fatCalories = food.fat_per_100g * 9;
     const fatPercentage = food.kcal_per_100g > 0 ? fatCalories / food.kcal_per_100g : 0;
@@ -182,7 +181,7 @@ function categorizeFoodsWithQuality(foods: FoodItem[]): {
         quality: food.fat_per_100g + healthBonus
       });
     }
-    
+
     // Low calorie vegetables (<50 kcal per 100g)
     if (food.kcal_per_100g < 50 && food.carb_per_100g < 15) {
       const fiberBonus = (food.fiber_per_100g || 0) * 3;
@@ -325,7 +324,7 @@ function calculateOptimalPortions(
 ): { [key: string]: number } {
   const portions: { [key: string]: number } = {};
   const foodKeys = Object.keys(foods);
-  
+
   // Initialize with minimal portions
   foodKeys.forEach(key => {
     portions[key] = 20; // Start smaller
@@ -334,7 +333,7 @@ function calculateOptimalPortions(
   // Optimization algorithm with priority-based scaling
   for (let iteration = 0; iteration < 50; iteration++) {
     const currentMacros = calculateCurrentMacros(foods, portions);
-    
+
     // Check if within acceptable tolerance (3%)
     const tolerance = 0.03;
     const withinRange = (
@@ -343,7 +342,7 @@ function calculateOptimalPortions(
       Math.abs(currentMacros.carb - targetCarb) / Math.max(targetCarb, 1) <= tolerance &&
       Math.abs(currentMacros.fat - targetFat) / Math.max(targetFat, 1) <= tolerance
     );
-    
+
     if (withinRange) break;
 
     // Priority-based adjustments
@@ -412,7 +411,7 @@ function adjustPortionsForMacros(
 
       // Efficiency = macro content per calorie (to minimize calorie impact)
       const efficiency = food.kcal_per_100g > 0 ? macroContent / food.kcal_per_100g : 0;
-      
+
       if (efficiency > bestEfficiency && macroContent > 5) {
         bestEfficiency = efficiency;
         bestFood = key;
@@ -429,7 +428,7 @@ function adjustPortionsForMacros(
       // Calculate portion adjustment needed
       const gramsNeeded = (deficit / macroContent) * 100;
       const newPortion = portions[bestFood] + gramsNeeded;
-      
+
       // Apply reasonable limits
       portions[bestFood] = Math.max(5, Math.min(400, newPortion));
       adjustmentMade = true;
@@ -442,17 +441,17 @@ function adjustPortionsForMacros(
 // Helper function to refine final portions
 function refineFinalPortions(portions: { [key: string]: number }): { [key: string]: number } {
   const refined: { [key: string]: number } = {};
-  
+
   Object.entries(portions).forEach(([key, grams]) => {
     // Round to nearest 5g for realistic portions
     let roundedGrams = Math.round(grams / 5) * 5;
-    
+
     // Enforce practical limits
     roundedGrams = Math.max(10, Math.min(350, roundedGrams));
-    
+
     refined[key] = roundedGrams;
   });
-  
+
   return refined;
 }
 
@@ -512,7 +511,7 @@ function generatePreciseMeal(
   const mealItems: MealItem[] = Object.entries(selectedFoods).map(([key, food]) => {
     const grams = portions[key];
     const macros = calculateFoodMacros(food, grams);
-    
+
     return {
       foodId: food.id,
       name: food.name,
@@ -536,7 +535,7 @@ export function generateMealPlan(
 
   // Categorize foods with quality scoring
   const categorizedFoods = categorizeFoodsWithQuality(foods);
-  
+
   // Validate we have essential food categories
   if (categorizedFoods.protein.length === 0 && categorizedFoods.eggs.length === 0 && categorizedFoods.dairy.length === 0) {
     throw new Error("No protein foods available in database");
@@ -553,16 +552,16 @@ export function generateMealPlan(
     "Janta": { calories: 0.25, protein: 0.25, carb: 0.20, fat: 0.25 },
     "Ceia": { calories: 0.10, protein: 0.15, carb: 0.05, fat: 0.10 }
   };
-  
+
   const meals: Meal[] = [];
   const usedFoods = new Set<string>();
-  
+
   Object.entries(mealDistribution).forEach(([mealName, distribution]) => {
     const mealCalories = Math.floor(macroTarget.calories * distribution.calories);
     const mealProtein = Math.floor(macroTarget.protein_g * distribution.protein);
     const mealCarb = Math.floor(macroTarget.carb_g * distribution.carb);
     const mealFat = Math.floor(macroTarget.fat_g * distribution.fat);
-    
+
     const mealItems = generatePreciseMeal(
       mealName, 
       mealCalories, 
@@ -572,7 +571,7 @@ export function generateMealPlan(
       categorizedFoods,
       usedFoods
     );
-    
+
     // Calculate actual meal totals
     const totals = mealItems.reduce(
       (acc, item) => ({
@@ -583,7 +582,7 @@ export function generateMealPlan(
       }),
       { protein: 0, carb: 0, fat: 0, kcal: 0 }
     );
-    
+
     meals.push({
       name: mealName,
       items: mealItems,
@@ -594,26 +593,26 @@ export function generateMealPlan(
         kcal: Math.round(totals.kcal),
       },
     });
-    
+
     // Only reset used foods if we've used most of the database
     if (usedFoods.size > foods.length * 0.9) {
       usedFoods.clear();
     }
   });
-  
+
   return meals;
 }
 
 // Função para converter gramas em medidas caseiras
 export function convertToHouseholdMeasures(foodName: string, grams: number): string {
   const name = foodName.toLowerCase();
-  
+
   // Ovos - 1 ovo médio = ~50g
   if (name.includes('ovo') || name.includes('clara')) {
     const eggs = Math.round(grams / 50);
     return `(${eggs} ${eggs === 1 ? 'ovo' : 'ovos'})`;
   }
-  
+
   // Leite e líquidos - 1 xícara = ~240ml = ~240g
   if (name.includes('leite') || name.includes('iogurte') || name.includes('yogur')) {
     if (grams >= 240) {
@@ -624,25 +623,25 @@ export function convertToHouseholdMeasures(foodName: string, grams: number): str
       return `(${ml}ml)`;
     }
   }
-  
+
   // Queijos - 1 fatia média = ~30g
   if (name.includes('queijo')) {
     const slices = Math.round(grams / 30);
     return `(${slices} ${slices === 1 ? 'fatia' : 'fatias'})`;
   }
-  
+
   // Arroz cozido - 1 colher de sopa = ~20g
   if (name.includes('arroz') && name.includes('cozido')) {
     const spoons = Math.round(grams / 20);
     return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
   }
-  
+
   // Aveia - 1 colher de sopa = ~15g
   if (name.includes('aveia')) {
     const spoons = Math.round(grams / 15);
     return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
   }
-  
+
   // Batata doce - 1 unidade média = ~150g
   if (name.includes('batata doce')) {
     if (grams >= 75) {
@@ -653,31 +652,31 @@ export function convertToHouseholdMeasures(foodName: string, grams: number): str
       return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
     }
   }
-  
+
   // Banana - 1 unidade média = ~100g
   if (name.includes('banana') || name.includes('plátano')) {
     const units = Math.round(grams / 100 * 10) / 10;
     return `(${units} ${units === 1 ? 'banana' : 'bananas'})`;
   }
-  
+
   // Pão integral - 1 fatia = ~25g
   if (name.includes('pão')) {
     const slices = Math.round(grams / 25);
     return `(${slices} ${slices === 1 ? 'fatia' : 'fatias'})`;
   }
-  
+
   // Azeite de oliva - 1 colher de sopa = ~15ml = ~15g
   if (name.includes('azeite')) {
     const spoons = Math.round(grams / 15);
     return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
   }
-  
+
   // Amêndoas e nozes - 1 colher de sopa = ~15g
   if (name.includes('amêndoa') || name.includes('amendoim') || name.includes('noz')) {
     const spoons = Math.round(grams / 15);
     return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
   }
-  
+
   // Abacate - 1 unidade média = ~200g
   if (name.includes('abacate') || name.includes('aguacate')) {
     if (grams >= 100) {
@@ -688,19 +687,19 @@ export function convertToHouseholdMeasures(foodName: string, grams: number): str
       return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
     }
   }
-  
+
   // Pasta de amendoim - 1 colher de sopa = ~15g
   if (name.includes('pasta')) {
     const spoons = Math.round(grams / 15);
     return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
   }
-  
+
   // Vegetais folhosos (brócolis, espinafre, alface) - 1 xícara = ~30g
   if (name.includes('brócoli') || name.includes('espinafre') || name.includes('alface')) {
     const cups = Math.round(grams / 30);
     return `(${cups} ${cups === 1 ? 'xícara' : 'xícaras'})`;
   }
-  
+
   // Tomate - 1 unidade média = ~120g
   if (name.includes('tomate')) {
     if (grams >= 60) {
@@ -711,7 +710,7 @@ export function convertToHouseholdMeasures(foodName: string, grams: number): str
       return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
     }
   }
-  
+
   // Pepino - 1 unidade média = ~200g
   if (name.includes('pepino')) {
     if (grams >= 100) {
@@ -722,7 +721,7 @@ export function convertToHouseholdMeasures(foodName: string, grams: number): str
       return `(${slices} fatias)`;
     }
   }
-  
+
   // Carnes (frango, tilápia, etc) - usar colheres ou porções
   if (name.includes('frango') || name.includes('pollo') || name.includes('tilápia') || 
       name.includes('peixe') || name.includes('carne') || name.includes('salmão')) {
@@ -734,13 +733,13 @@ export function convertToHouseholdMeasures(foodName: string, grams: number): str
       return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
     }
   }
-  
+
   // Quinoa cozida - 1 colher de sopa = ~20g
   if (name.includes('quinoa')) {
     const spoons = Math.round(grams / 20);
     return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
   }
-  
+
   // Para outros alimentos, usar colheres como medida padrão
   if (grams >= 60) {
     const spoons = Math.round(grams / 15);
@@ -752,13 +751,6 @@ export function convertToHouseholdMeasures(foodName: string, grams: number): str
     const teaspoons = Math.round(grams / 5);
     return `(${teaspoons} ${teaspoons === 1 ? 'colher de chá' : 'colheres de chá'})`;
   }
-}
-
-      usedFoods.clear();
-    }
-  });
-  
-  return meals;
 }
 
 // Ultra-strict validation that meal plan stays within macro targets
@@ -775,7 +767,7 @@ export function validateMealPlan(meals: Meal[], macroTarget: MacroTarget): boole
 
   // Ultra-strict tolerance: Maximum 8% over target (no more exceeding chosen limits)
   const tolerance = 1.08;
-  
+
   const isValid = (
     dailyTotals.kcal <= macroTarget.calories * tolerance &&
     dailyTotals.protein <= macroTarget.protein_g * tolerance &&
