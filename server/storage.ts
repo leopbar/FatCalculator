@@ -45,6 +45,7 @@ export interface IStorage {
   // Menu plan methods
   saveMenuPlan(userId: string, data: InsertMenuPlan): Promise<MenuPlanData>;
   getLatestMenuPlan(userId: string): Promise<MenuPlanData | undefined>;
+  deleteMenuPlan(userId: string): Promise<void>;
   
   // Alimentos hispanos methods
   createAlimento(data: InsertAlimentoHispano): Promise<AlimentoHispano>;
@@ -191,6 +192,10 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  async deleteMenuPlan(userId: string): Promise<void> {
+    await db.delete(menuPlans).where(eq(menuPlans.userId, userId));
+  }
+
   async clearAllUserData(userId: string): Promise<void> {
     // Delete all user data in the correct order (due to foreign key constraints)
     await db.delete(menuPlans).where(eq(menuPlans.userId, userId));
@@ -315,6 +320,10 @@ export class MemStorage implements IStorage {
       hasCalculation: this.calculations.has(userId),
       hasMenu: this.menuPlans.has(userId),
     };
+  }
+
+  async deleteMenuPlan(userId: string): Promise<void> {
+    this.menuPlans.delete(userId);
   }
 
   async clearAllUserData(userId: string): Promise<void> {
