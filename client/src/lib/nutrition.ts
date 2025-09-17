@@ -597,6 +597,158 @@ export function generateMealPlan(
     
     // Only reset used foods if we've used most of the database
     if (usedFoods.size > foods.length * 0.9) {
+
+
+// Função para converter gramas em medidas caseiras
+export function convertToHouseholdMeasures(foodName: string, grams: number): string {
+  const name = foodName.toLowerCase();
+  
+  // Ovos - 1 ovo médio = ~50g
+  if (name.includes('ovo') || name.includes('clara')) {
+    const eggs = Math.round(grams / 50);
+    return `(${eggs} ${eggs === 1 ? 'ovo' : 'ovos'})`;
+  }
+  
+  // Leite e líquidos - 1 xícara = ~240ml = ~240g
+  if (name.includes('leite') || name.includes('iogurte') || name.includes('yogur')) {
+    if (grams >= 240) {
+      const cups = Math.round(grams / 240 * 10) / 10;
+      return `(${cups} ${cups === 1 ? 'xícara' : 'xícaras'})`;
+    } else {
+      const ml = Math.round(grams);
+      return `(${ml}ml)`;
+    }
+  }
+  
+  // Queijos - 1 fatia média = ~30g
+  if (name.includes('queijo')) {
+    const slices = Math.round(grams / 30);
+    return `(${slices} ${slices === 1 ? 'fatia' : 'fatias'})`;
+  }
+  
+  // Arroz cozido - 1 colher de sopa = ~20g
+  if (name.includes('arroz') && name.includes('cozido')) {
+    const spoons = Math.round(grams / 20);
+    return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+  }
+  
+  // Aveia - 1 colher de sopa = ~15g
+  if (name.includes('aveia')) {
+    const spoons = Math.round(grams / 15);
+    return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+  }
+  
+  // Batata doce - 1 unidade média = ~150g
+  if (name.includes('batata doce')) {
+    if (grams >= 75) {
+      const units = Math.round(grams / 150 * 10) / 10;
+      return `(${units} ${units === 1 ? 'unidade média' : 'unidades médias'})`;
+    } else {
+      const spoons = Math.round(grams / 20);
+      return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+    }
+  }
+  
+  // Banana - 1 unidade média = ~100g
+  if (name.includes('banana') || name.includes('plátano')) {
+    const units = Math.round(grams / 100 * 10) / 10;
+    return `(${units} ${units === 1 ? 'banana' : 'bananas'})`;
+  }
+  
+  // Pão integral - 1 fatia = ~25g
+  if (name.includes('pão')) {
+    const slices = Math.round(grams / 25);
+    return `(${slices} ${slices === 1 ? 'fatia' : 'fatias'})`;
+  }
+  
+  // Azeite de oliva - 1 colher de sopa = ~15ml = ~15g
+  if (name.includes('azeite')) {
+    const spoons = Math.round(grams / 15);
+    return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+  }
+  
+  // Amêndoas e nozes - 1 colher de sopa = ~15g
+  if (name.includes('amêndoa') || name.includes('amendoim') || name.includes('noz')) {
+    const spoons = Math.round(grams / 15);
+    return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+  }
+  
+  // Abacate - 1 unidade média = ~200g
+  if (name.includes('abacate') || name.includes('aguacate')) {
+    if (grams >= 100) {
+      const units = Math.round(grams / 200 * 10) / 10;
+      return `(${units} ${units === 1 ? 'abacate médio' : 'abacates médios'})`;
+    } else {
+      const spoons = Math.round(grams / 20);
+      return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+    }
+  }
+  
+  // Pasta de amendoim - 1 colher de sopa = ~15g
+  if (name.includes('pasta')) {
+    const spoons = Math.round(grams / 15);
+    return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+  }
+  
+  // Vegetais folhosos (brócolis, espinafre, alface) - 1 xícara = ~30g
+  if (name.includes('brócoli') || name.includes('espinafre') || name.includes('alface')) {
+    const cups = Math.round(grams / 30);
+    return `(${cups} ${cups === 1 ? 'xícara' : 'xícaras'})`;
+  }
+  
+  // Tomate - 1 unidade média = ~120g
+  if (name.includes('tomate')) {
+    if (grams >= 60) {
+      const units = Math.round(grams / 120 * 10) / 10;
+      return `(${units} ${units === 1 ? 'tomate médio' : 'tomates médios'})`;
+    } else {
+      const spoons = Math.round(grams / 20);
+      return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+    }
+  }
+  
+  // Pepino - 1 unidade média = ~200g
+  if (name.includes('pepino')) {
+    if (grams >= 100) {
+      const units = Math.round(grams / 200 * 10) / 10;
+      return `(${units} ${units === 1 ? 'pepino médio' : 'pepinos médios'})`;
+    } else {
+      const slices = Math.round(grams / 10);
+      return `(${slices} fatias)`;
+    }
+  }
+  
+  // Carnes (frango, tilápia, etc) - usar colheres ou porções
+  if (name.includes('frango') || name.includes('pollo') || name.includes('tilápia') || 
+      name.includes('peixe') || name.includes('carne') || name.includes('salmão')) {
+    if (grams >= 100) {
+      const portions = Math.round(grams / 100 * 10) / 10;
+      return `(${portions} ${portions === 1 ? 'porção' : 'porções'})`;
+    } else {
+      const spoons = Math.round(grams / 20);
+      return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+    }
+  }
+  
+  // Quinoa cozida - 1 colher de sopa = ~20g
+  if (name.includes('quinoa')) {
+    const spoons = Math.round(grams / 20);
+    return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+  }
+  
+  // Para outros alimentos, usar colheres como medida padrão
+  if (grams >= 60) {
+    const spoons = Math.round(grams / 15);
+    return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+  } else if (grams >= 15) {
+    const spoons = Math.round(grams / 15);
+    return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+  } else {
+    const teaspoons = Math.round(grams / 5);
+    return `(${teaspoons} ${teaspoons === 1 ? 'colher de chá' : 'colheres de chá'})`;
+  }
+}
+
       usedFoods.clear();
     }
   });

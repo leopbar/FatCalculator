@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Utensils, Target, Calculator, Home } from "lucide-react";
-import { calculateMacroTargets, generateMealPlan, validateMealPlan } from "@/lib/nutrition";
+import { calculateMacroTargets, generateMealPlan, validateMealPlan, convertToHouseholdMeasures } from "@/lib/nutrition";
 import { MacroTarget, MenuPlan, AlimentoHispano, mapAlimentosToFoodItems } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -384,6 +384,9 @@ export default function MenuPage() {
                       <div className="text-right">
                         <p className="font-bold text-primary" data-testid={`food-grams-${item.foodId}`}>
                           {item.grams}g
+                        </p>
+                        <p className="text-xs text-muted-foreground" data-testid={`food-measure-${item.foodId}`}>
+                          {convertToHouseholdMeasures(item.name, item.grams)}
                         </p>
                       </div>
                     </div>
