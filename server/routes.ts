@@ -140,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Generate menu plan with AI
+  // Generate menu plan with internal system (using real food data)
   app.post("/api/generate-menu-ai", requireAuth, async (req: any, res) => {
     try {
       const { calories, protein, carb, fat, category } = req.body;
@@ -149,29 +149,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Parâmetros de macros obrigatórios" });
       }
 
-      // Ollama runs locally, no API key needed
-      console.log("Using Ollama (local AI) - no API key required");
+      console.log("Using internal meal generator with real food data");
 
-      // Assuming you have a local Ollama setup and a model that can generate meal plans.
-      // You'll need to adjust the import path and function call based on your Ollama integration.
-      // For demonstration, let's assume a function `generateMealPlanWithOllama` exists.
-      // You would likely use a library like `ollama` or `axios` to interact with the Ollama API.
-      
-      // Example using a hypothetical ollama client:
-      // const ollama = require('ollama'); // if you install ollama npm package
-      // const aiGeneratedMenu = await ollama.chat({
-      //   model: 'llama3', // or your preferred model
-      //   messages: [{ role: 'user', content: `Generate a meal plan with ${calories} calories, ${protein}g protein, ${carb}g carbs, ${fat}g fat, for a ${category} diet.` }],
-      // });
-      // const menuContent = aiGeneratedMenu.message.content;
+      // Import and use the new internal generator function
+      const { generateMealPlanWithAI } = await import("./openai");
 
-      // Placeholder for actual Ollama integration:
-      const menuContent = "Placeholder for AI generated menu using Ollama."; 
+      // Generate meal plan using real food data
+      const menuContent = await generateMealPlanWithAI(
+        Number(calories),
+        Number(protein), 
+        Number(carb),
+        Number(fat),
+        category
+      );
 
       res.json({ menuContent });
     } catch (error) {
-      console.error("Error generating AI menu with Ollama:", error);
-      res.status(500).json({ error: "Erro ao gerar cardápio com IA via Ollama" });
+      console.error("Error generating internal meal plan:", error);
+      res.status(500).json({ error: "Erro ao gerar cardápio" });
     }
   });
 
