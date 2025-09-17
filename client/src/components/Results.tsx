@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, RotateCcw, Info, Flame, Target, ChefHat, Home } from "lucide-react";
 import { useLocation } from "wouter";
+import { useState } from "react";
 
 interface ResultsProps {
   bodyFatPercentage: number;
@@ -14,6 +15,10 @@ interface ResultsProps {
 
 export default function Results({ bodyFatPercentage, tmb, category, categoryColor, onRecalculate }: ResultsProps) {
   const [, navigate] = useLocation();
+  const [selectedCategory, setSelectedCategory] = useState<{
+    category: 'suave' | 'moderado' | 'restritivo';
+    calories: number;
+  } | null>(null);
   
   const handleGoToDashboard = () => {
     navigate('/dashboard');
@@ -34,7 +39,13 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
     return storedData ? JSON.parse(storedData) : null;
   };
 
-  const handleSelectCategory = (selectedCategory: 'suave' | 'moderado' | 'restritivo', calories: number) => {
+  const handleSelectCategory = (category: 'suave' | 'moderado' | 'restritivo', calories: number) => {
+    setSelectedCategory({ category, calories });
+  };
+
+  const handleGenerateMenu = () => {
+    if (!selectedCategory) return;
+    
     const formData = getStoredFormData();
     if (!formData) {
       console.error("Form data not found");
@@ -43,8 +54,8 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
 
     // Navigate to menu with parameters
     const params = new URLSearchParams({
-      cat: selectedCategory,
-      cal: calories.toString(),
+      cat: selectedCategory.category,
+      cal: selectedCategory.calories.toString(),
       tdee: tmb.toString(),
       weight: formData.weight.toString(),
       bf: bodyFatPercentage.toString()
@@ -156,56 +167,74 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
           </p>
           
           <div className="grid gap-4 md:grid-cols-3">
-            {weightLossRecommendations.map((rec, index) => (
-              <Card 
-                key={rec.category} 
-                className="border-primary/20 bg-accent/30 hover-elevate cursor-pointer transition-all" 
-                data-testid={`card-weight-loss-${rec.category.toLowerCase()}`}
-                onClick={() => handleSelectCategory(
-                  rec.category.toLowerCase() as 'suave' | 'moderado' | 'restritivo', 
-                  rec.dailyCalories
-                )}
-              >
-                <CardContent className="p-4 space-y-3">
-                  <div className="text-center">
-                    <Badge 
-                      variant={rec.intensity === 'low' ? 'default' : rec.intensity === 'medium' ? 'secondary' : 'outline'}
-                      className="text-sm px-3 py-1"
-                    >
-                      {rec.category}
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-2 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-primary" data-testid={`text-calories-${rec.category.toLowerCase()}`}>
-                        {rec.dailyCalories.toLocaleString('pt-BR')}
-                      </div>
-                      <p className="text-xs text-muted-foreground">calorias por dia</p>
+            {weightLossRecommendations.map((rec, index) => {
+              const categoryKey = rec.category.toLowerCase() as 'suave' | 'moderado' | 'restritivo';
+              const isSelected = selectedCategory?.category === categoryKey;
+              
+              return (
+                <Card 
+                  key={rec.category} 
+                  className={`hover-elevate cursor-pointer transition-all ${
+                    isSelected 
+                      ? 'border-primary bg-primary/10 ring-2 ring-primary' 
+                      : 'border-primary/20 bg-accent/30'
+                  }`}
+                  data-testid={`card-weight-loss-${rec.category.toLowerCase()}`}
+                  onClick={() => handleSelectCategory(categoryKey, rec.dailyCalories)}
+                >
+                  <CardContent className="p-4 space-y-3">
+                    <div className="text-center">
+                      <Badge 
+                        variant={isSelected ? 'default' : (rec.intensity === 'low' ? 'default' : rec.intensity === 'medium' ? 'secondary' : 'outline')}
+                        className={`text-sm px-3 py-1 ${isSelected ? 'bg-primary text-primary-foreground' : ''}`}
+                      >
+                        {rec.category}
+                      </Badge>
                     </div>
                     
-                    <div>
-                      <div className="text-lg font-semibold text-foreground" data-testid={`text-weight-loss-${rec.category.toLowerCase()}`}>
-                        ~{rec.weeklyWeightLoss} kg
+                    <div className="space-y-2 text-center">
+                      <div>
+                        <div className={`text-2xl font-bold ${isSelected ? 'text-primary' : 'text-primary'}`} data-testid={`text-calories-${rec.category.toLowerCase()}`}>
+                          {rec.dailyCalories.toLocaleString('pt-BR')}
+                        </div>
+                        <p className="text-xs text-muted-foreground">calorias por dia</p>
                       </div>
-                      <p className="text-xs text-muted-foreground">perda por semana</p>
+                      
+                      <div>
+                        <div className={`text-lg font-semibold ${isSelected ? 'text-foreground' : 'text-foreground'}`} data-testid={`text-weight-loss-${rec.category.toLowerCase()}`}>
+                          ~{rec.weeklyWeightLoss} kg
+                        </div>
+                        <p className="text-xs text-muted-foreground">perda por semana</p>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="text-center pt-2">
-                    <Button 
-                      size="sm" 
-                      className="w-full"
-                      data-testid={`button-select-${rec.category.toLowerCase()}`}
-                    >
-                      <ChefHat className="w-4 h-4 mr-2" />
-                      Gerar Cardápio
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    
+                    {isSelected && (
+                      <div className="text-center pt-2">
+                        <div className="text-sm text-primary font-semibold">
+                          ✓ Selecionado
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
+
+          {/* Botão Gerar Cardápio - só aparece quando uma categoria está selecionada */}
+          {selectedCategory && (
+            <div className="flex justify-center pt-4">
+              <Button 
+                onClick={handleGenerateMenu}
+                className="bg-primary hover:bg-primary/90 text-lg font-semibold px-8 py-3"
+                size="lg"
+                data-testid="button-generate-menu"
+              >
+                <ChefHat className="w-5 h-5 mr-2" />
+                Gerar Cardápio - {selectedCategory.category.charAt(0).toUpperCase() + selectedCategory.category.slice(1)}
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Info Card */}
