@@ -8,10 +8,22 @@ export function calculateMacroTargets(
   bodyFatPercent: number,
   category: 'suave' | 'moderado' | 'restritivo'
 ): MacroTarget {
-  // Validate inputs
-  if (!tdee || !targetCalories || !weight || !bodyFatPercent || !category) {
+  // Validate inputs - more strict validation to prevent NaN
+  if (!tdee || !targetCalories || !weight || bodyFatPercent === undefined || bodyFatPercent === null || !category) {
     console.error('Invalid inputs for macro calculation:', { tdee, targetCalories, weight, bodyFatPercent, category });
     throw new Error('Dados inválidos para cálculo de macros');
+  }
+
+  // Additional NaN checks
+  if (isNaN(tdee) || isNaN(targetCalories) || isNaN(weight) || isNaN(bodyFatPercent)) {
+    console.error('NaN values detected:', { tdee, targetCalories, weight, bodyFatPercent });
+    throw new Error('Valores inválidos detectados nos cálculos');
+  }
+
+  // Validate ranges
+  if (tdee <= 0 || targetCalories <= 0 || weight <= 0 || bodyFatPercent < 0 || bodyFatPercent > 100) {
+    console.error('Values out of valid range:', { tdee, targetCalories, weight, bodyFatPercent });
+    throw new Error('Valores fora do intervalo válido');
   }
 
   // Calculate lean body mass
@@ -78,6 +90,13 @@ export function calculateMacroTargets(
     carb_percent: carbPercent,
     fat_percent: fatPercent,
   };
+
+  // Final NaN validation before returning
+  const hasNaN = Object.values(result).some(value => isNaN(value) || value === null || value === undefined);
+  if (hasNaN) {
+    console.error('NaN detected in final macro targets:', result);
+    throw new Error('Erro interno: valores inválidos gerados no cálculo de macros');
+  }
 
   console.log('✅ Macro targets calculated:', result);
   return result;

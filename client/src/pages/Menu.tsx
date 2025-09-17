@@ -117,6 +117,18 @@ export default function MenuPage() {
   const generateMenuPlan = async () => {
     if (!calculation || !bodyMetrics || !alimentosData) return;
 
+    // Additional validation before starting generation
+    if (isNaN(calculation.tdee) || isNaN(calculation.bodyFatPercent) || 
+        isNaN(bodyMetrics.weight) || calculation.tdee <= 0 || bodyMetrics.weight <= 0) {
+      toast({
+        title: "Datos de cálculo inválidos",
+        description: "Por favor, realice los cálculos nuevamente.",
+        variant: "destructive",
+      });
+      navigate('/calculator');
+      return;
+    }
+
     setGeneratingMenu(true);
     try {
       // SEMPRE deletar qualquer cardápio existente primeiro (mesmo que existingMenu seja undefined devido ao cache)
@@ -215,11 +227,27 @@ export default function MenuPage() {
 
     } catch (error) {
       console.error('Error generating menu:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = "Não foi possível gerar o cardápio. Tente novamente.";
+      if (error instanceof Error) {
+        if (error.message.includes('inválidos') || error.message.includes('NaN')) {
+          errorMessage = "Dados de cálculo inválidos. Por favor, refaça os cálculos.";
+        } else if (error.message.includes('foods')) {
+          errorMessage = "Base de alimentos indisponível. Tente novamente em alguns minutos.";
+        }
+      }
+      
       toast({
-        title: "Erro ao gerar cardápio",
-        description: "Não foi possível gerar o cardápio. Tente novamente.",
+        title: "Error al generar menú",
+        description: errorMessage,
         variant: "destructive",
       });
+
+      // If calculation data is invalid, redirect to calculator
+      if (error instanceof Error && error.message.includes('inválidos')) {
+        navigate('/calculator');
+      }
     } finally {
       setGeneratingMenu(false);
     }
@@ -249,7 +277,7 @@ export default function MenuPage() {
           <CardContent className="p-8 text-center">
             <Calculator className="w-8 h-8 text-primary mx-auto mb-4 animate-spin" />
             <p className="text-foreground">
-              {generatingMenu ? "Gerando seu cardápio personalizado..." : "Carregando..."}
+              {generatingMenu ? "Generando su menú personalizado..." : "Cargando..."}
             </p>
           </CardContent>
         </Card>
@@ -263,7 +291,7 @@ export default function MenuPage() {
         <Card className="border-destructive/20 bg-destructive/5">
           <CardContent className="p-8 text-center space-y-4">
             <p className="text-destructive">
-              {!calculation ? "Nenhum cálculo encontrado." : "Erro ao carregar cardápio."}
+              {!calculation ? "No se encontraron cálculos." : "Error al cargar el menú."}
             </p>
             <Button onClick={handleGoBack} data-testid="button-back-to-results">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -300,7 +328,7 @@ export default function MenuPage() {
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center space-x-2">
             <Utensils className="w-6 h-6 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">Cardápio Personalizado</h1>
+            <h1 className="text-2xl font-bold text-foreground">Menú Personalizado</h1>
           </div>
           <Badge 
             variant={getCategoryBadgeVariant(menuPlan.category)}
@@ -325,7 +353,7 @@ export default function MenuPage() {
                 <div className="text-2xl font-bold text-primary" data-testid="text-target-calories">
                   {menuPlan.macroTarget.calories}
                 </div>
-                <p className="text-xs text-muted-foreground">Calorias</p>
+                <p className="text-xs text-muted-foreground">Calorías</p>
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold text-foreground" data-testid="text-target-protein">
@@ -337,13 +365,13 @@ export default function MenuPage() {
                 <div className="text-xl font-bold text-foreground" data-testid="text-target-carb">
                   {menuPlan.macroTarget.carb_g}g
                 </div>
-                <p className="text-xs text-muted-foreground">Carboidratos ({menuPlan.macroTarget.carb_percent}%)</p>
+                <p className="text-xs text-muted-foreground">Carbohidratos ({menuPlan.macroTarget.carb_percent}%)</p>
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold text-foreground" data-testid="text-target-fat">
                   {menuPlan.macroTarget.fat_g}g
                 </div>
-                <p className="text-xs text-muted-foreground">Gorduras ({menuPlan.macroTarget.fat_percent}%)</p>
+                <p className="text-xs text-muted-foreground">Grasas ({menuPlan.macroTarget.fat_percent}%)</p>
               </div>
             </div>
           </CardContent>
@@ -414,7 +442,7 @@ export default function MenuPage() {
             data-testid="button-back-to-results"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar aos Resultados
+            Volver a Resultados
           </Button>
           <Button 
             onClick={handleRecalculate}
@@ -422,7 +450,7 @@ export default function MenuPage() {
             data-testid="button-recalculate"
           >
             <Calculator className="w-4 h-4 mr-2" />
-            Refazer Cálculo
+            Recalcular
           </Button>
         </div>
       </div>
