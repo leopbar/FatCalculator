@@ -111,6 +111,7 @@ export const menuPlans = pgTable("menu_plans", {
   targetCalories: real("target_calories").notNull(),
   macroTarget: json("macro_target").$type<MacroTarget>().notNull(),
   meals: json("meals").$type<Meal[]>().notNull(),
+  dailyTotals: json("daily_totals").$type<{protein: number, carb: number, fat: number, kcal: number}>().notNull(),
   aiMenuContent: text("ai_menu_content"), // AI generated content
 });
 
