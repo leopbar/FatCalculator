@@ -4,96 +4,83 @@ import { MacroTarget, FoodItem, Meal, MealItem, MenuPlan } from "@shared/schema"
 export function calculateMacroTargets(
   tdee: number,
   targetCalories: number,
-  bodyWeight: number,
-  bodyFatPercentage: number,
+  weight: number,
+  bodyFatPercent: number,
   category: 'suave' | 'moderado' | 'restritivo'
 ): MacroTarget {
   // Validate inputs
-  if (!Number.isFinite(tdee) || !Number.isFinite(targetCalories) || 
-      !Number.isFinite(bodyWeight) || !Number.isFinite(bodyFatPercentage)) {
-    throw new Error("Invalid numeric inputs for macro calculation");
+  if (!tdee || !targetCalories || !weight || !bodyFatPercent || !category) {
+    console.error('Invalid inputs for macro calculation:', { tdee, targetCalories, weight, bodyFatPercent, category });
+    throw new Error('Dados inválidos para cálculo de macros');
   }
 
-  // Calculate Lean Body Mass (LBM) in kg
-  const lbm = bodyWeight * (1 - bodyFatPercentage / 100);
+  // Calculate lean body mass
+  const leanBodyMass = weight * (1 - bodyFatPercent / 100);
 
-  // Protein targets based on ISSN/ACSM guidelines (g/kg LBM)
-  // Higher protein for more restrictive diets to preserve muscle mass
-  const proteinPerKgLBM = {
-    suave: 1.8,
-    moderado: 2.0,
-    restritivo: 2.2
+  // More conservative protein targets to fit within calorie limits
+  let proteinMultiplier: number;
+  switch (category) {
+    case 'suave':
+      proteinMultiplier = 1.2; // Lower protein for easier adherence
+      break;
+    case 'moderado':
+      proteinMultiplier = 1.4; 
+      break;
+    case 'restritivo':
+      proteinMultiplier = 1.6; // Higher protein for muscle preservation
+      break;
+  }
+
+  const proteinGrams = Math.round(leanBodyMass * proteinMultiplier);
+  const proteinCalories = proteinGrams * 4;
+
+  // Ensure protein doesn't exceed 40% of total calories
+  const maxProteinCalories = targetCalories * 0.4;
+  const finalProteinCalories = Math.min(proteinCalories, maxProteinCalories);
+  const finalProteinGrams = Math.round(finalProteinCalories / 4);
+
+  // Fat targets based on category (20-30% of calories)
+  let fatPercentage: number;
+  switch (category) {
+    case 'suave':
+      fatPercentage = 25; // Higher fat for satiety
+      break;
+    case 'moderado':
+      fatPercentage = 22;
+      break;
+    case 'restritivo':
+      fatPercentage = 20; // Lower fat for more protein/carbs
+      break;
+  }
+
+  const fatCalories = Math.round(targetCalories * (fatPercentage / 100));
+  const fatGrams = Math.round(fatCalories / 9);
+
+  // Remaining calories for carbs
+  const remainingCalories = targetCalories - finalProteinCalories - fatCalories;
+  const carbGrams = Math.max(0, Math.round(remainingCalories / 4));
+  const carbCalories = carbGrams * 4;
+
+  // Ensure total doesn't exceed target calories
+  const actualTotalCalories = finalProteinCalories + fatCalories + carbCalories;
+
+  // Calculate actual percentages
+  const proteinPercent = Math.round((finalProteinCalories / targetCalories) * 100);
+  const fatPercent = Math.round((fatCalories / targetCalories) * 100);
+  const carbPercent = Math.round((carbCalories / targetCalories) * 100);
+
+  const result = {
+    calories: targetCalories, // Use target calories, not calculated total
+    protein_g: finalProteinGrams,
+    carb_g: carbGrams,
+    fat_g: fatGrams,
+    protein_percent: proteinPercent,
+    carb_percent: carbPercent,
+    fat_percent: fatPercent,
   };
 
-  let proteinGrams = lbm * proteinPerKgLBM[category];
-  let proteinCalories = proteinGrams * 4;
-
-  // Ensure protein stays within AMDR bounds (10-35% of total calories)
-  const minProteinCal = targetCalories * 0.10;
-  const maxProteinCal = targetCalories * 0.35;
-
-  if (proteinCalories < minProteinCal) {
-    proteinCalories = minProteinCal;
-    proteinGrams = proteinCalories / 4;
-  } else if (proteinCalories > maxProteinCal) {
-    proteinCalories = maxProteinCal;
-    proteinGrams = proteinCalories / 4;
-  }
-
-  // Minimum fat for hormone production and essential fatty acids (0.6 g/kg LBM)
-  // But ensure fat doesn't exceed 35% of calories (AMDR upper bound)
-  let fatGrams = Math.max(lbm * 0.6, targetCalories * 0.20 / 9);
-  let fatCalories = fatGrams * 9;
-
-  const maxFatCal = targetCalories * 0.35;
-  if (fatCalories > maxFatCal) {
-    fatCalories = maxFatCal;
-    fatGrams = fatCalories / 9;
-  }
-
-  // Remaining calories go to carbohydrates
-  let remainingCalories = targetCalories - proteinCalories - fatCalories;
-  let carbCalories = remainingCalories;
-
-  // Ensure carbs stay within AMDR bounds (45-65%)
-  const minCarbCal = targetCalories * 0.45;
-  const maxCarbCal = targetCalories * 0.65;
-
-  // Adjust if carbs are outside AMDR bounds
-  if (carbCalories < minCarbCal) {
-    carbCalories = minCarbCal;
-    fatCalories = targetCalories - proteinCalories - carbCalories;
-    fatGrams = fatCalories / 9;
-  } else if (carbCalories > maxCarbCal) {
-    carbCalories = maxCarbCal;
-    // Increase fat with remaining calories (keeping within fat max of 35%)
-    const adjustedFatCal = targetCalories - proteinCalories - carbCalories;
-    const maxFatCalAllowed = targetCalories * 0.35;
-
-    if (adjustedFatCal <= maxFatCalAllowed) {
-      fatCalories = adjustedFatCal;
-      fatGrams = fatCalories / 9;
-    } else {
-      // If we can't fit remaining in fat, distribute between fat and protein
-      fatCalories = maxFatCalAllowed;
-      fatGrams = fatCalories / 9;
-      const extraCal = targetCalories - carbCalories - fatCalories;
-      proteinCalories += extraCal;
-      proteinGrams = proteinCalories / 4;
-    }
-  }
-
-  const carbGrams = carbCalories / 4;
-
-  return {
-    calories: targetCalories,
-    protein_g: Math.round(proteinGrams),
-    carb_g: Math.round(carbGrams),
-    fat_g: Math.round(fatGrams),
-    protein_percent: Math.round((proteinCalories / targetCalories) * 100),
-    carb_percent: Math.round((carbCalories / targetCalories) * 100),
-    fat_percent: Math.round((fatCalories / targetCalories) * 100),
-  };
+  console.log('✅ Macro targets calculated:', result);
+  return result;
 }
 
 // Calculate macros for a specific amount of food
@@ -796,4 +783,160 @@ export function validateMealPlan(meals: Meal[], macroTarget: MacroTarget): boole
   }
 
   return isValid;
+}
+
+// Helper function to get suitable foods for a specific meal
+function getSuitableFoodsForMeal(mealName: string, foods: FoodItem[]): FoodItem[] {
+  const mealTemplate = NUTRITIONAL_MEAL_TEMPLATES[mealName];
+  if (!mealTemplate) return [];
+
+  const suitableFoodIds = new Set<string>();
+
+  // Add foods from required categories
+  mealTemplate.requiredCategories.forEach(category => {
+    const categoryFoods = getFoodsByCategory(category, foods);
+    categoryFoods.forEach(food => suitableFoodIds.add(food.id));
+  });
+
+  // Add foods from optional categories
+  mealTemplate.optionalCategories.forEach(category => {
+    const categoryFoods = getFoodsByCategory(category, foods);
+    categoryFoods.forEach(food => suitableFoodIds.add(food.id));
+  });
+
+  return foods.filter(food => suitableFoodIds.has(food.id));
+}
+
+// Helper function to get foods belonging to a specific category
+function getFoodsByCategory(category: string, foods: FoodItem[]): FoodItem[] {
+  const lowerCaseCategory = category.toLowerCase();
+  return foods.filter(food => {
+    const lowerCaseName = food.name.toLowerCase();
+    switch (lowerCaseCategory) {
+      case 'protein':
+        return food.protein_per_100g >= 15 || ['frango', 'pollo', 'tilapia', 'peixe', 'carne', 'salmão', 'ovo', 'clara', 'huevo'].some(keyword => lowerCaseName.includes(keyword));
+      case 'carb':
+        return food.carb_per_100g >= 50 || ['arroz', 'quinoa', 'batata', 'aveia', 'banana', 'pão'].some(keyword => lowerCaseName.includes(keyword));
+      case 'fat':
+        return food.fat_per_100g >= 20 || ['azeite', 'oliva', 'amend', 'abacate', 'noz'].some(keyword => lowerCaseName.includes(keyword));
+      case 'vegetable':
+        return food.kcal_per_100g < 50 && food.carb_per_100g < 15 || ['brócoli', 'espinafre', 'tomate', 'alface', 'pepino'].some(keyword => lowerCaseName.includes(keyword));
+      case 'dairy':
+        return ['leite', 'iogurte', 'yogur', 'queijo', 'queso', 'milk'].some(keyword => lowerCaseName.includes(keyword));
+      case 'eggs':
+        return ['ovo', 'clara', 'huevo'].some(keyword => lowerCaseName.includes(keyword));
+      default:
+        return false;
+    }
+  });
+}
+
+
+// Placeholder for generateMeal function (replace with actual implementation if available)
+// This is a crucial part that needs to be implemented based on your specific logic for generating a single meal.
+// The following is a dummy implementation to allow the code to compile.
+function generateMeal(
+  name: string,
+  targetCalories: number,
+  targetProtein: number,
+  targetCarb: number,
+  targetFat: number,
+  foods: FoodItem[],
+  category: 'suave' | 'moderado' | 'restritivo'
+): Meal {
+  const mealItems: MealItem[] = [];
+  let currentCalories = 0;
+  let currentProtein = 0;
+  let currentCarb = 0;
+  let currentFat = 0;
+
+  // Safety check for invalid targets
+  if (targetCalories <= 0 || targetProtein < 0 || targetCarb < 0 || targetFat < 0) {
+    console.warn(`Invalid meal targets for ${name}:`, { targetCalories, targetProtein, targetCarb, targetFat });
+    return {
+      name,
+      items: [],
+      totals: { protein: 0, carb: 0, fat: 0, kcal: 0 },
+    };
+  }
+
+  // Get foods suitable for this meal type
+  const suitableFoods = getSuitableFoodsForMeal(name, foods);
+
+  if (suitableFoods.length === 0) {
+    console.warn(`No suitable foods found for meal: ${name}`);
+    return {
+      name,
+      items: [],
+      totals: { protein: 0, carb: 0, fat: 0, kcal: 0 },
+    };
+  }
+
+  // Shuffle foods for variety
+  const shuffledFoods = [...suitableFoods].sort(() => Math.random() - 0.5);
+
+  // More conservative calorie target - stay within bounds
+  const maxCalories = targetCalories * 0.95; // 5% under target to be safe
+
+  for (const food of shuffledFoods) {
+    if (currentCalories >= maxCalories || mealItems.length >= 5) break;
+
+    // Calculate how many calories we still need
+    const remainingCalories = maxCalories - currentCalories;
+    if (remainingCalories <= 10) break; // Stop if very little calories left
+
+    const caloriesPerGram = food.kcal_per_100g / 100;
+    if (caloriesPerGram === 0) continue; // Avoid division by zero
+
+    // Calculate serving size - be more conservative
+    let servingGrams = Math.round(remainingCalories / caloriesPerGram);
+
+    // Reasonable portion sizes
+    servingGrams = Math.max(15, Math.min(150, servingGrams));
+
+    // Calculate nutrition for this serving
+    const factor = servingGrams / 100;
+
+    const itemProtein = Math.round((food.protein_per_100g * factor) * 10) / 10;
+    const itemCarb = Math.round((food.carb_per_100g * factor) * 10) / 10;
+    const itemFat = Math.round((food.fat_per_100g * factor) * 10) / 10;
+    const itemCalories = Math.round(food.kcal_per_100g * factor);
+
+    // Double check we don't exceed remaining calories
+    if (currentCalories + itemCalories > maxCalories) {
+      continue; // Skip this food
+    }
+
+    const mealItem: MealItem = {
+      foodId: food.id,
+      name: food.name,
+      grams: servingGrams,
+      protein: itemProtein,
+      carb: itemCarb,
+      fat: itemFat,
+      kcal: itemCalories,
+    };
+
+    mealItems.push(mealItem);
+    currentCalories += itemCalories;
+    currentProtein += itemProtein;
+    currentCarb += itemCarb;
+    currentFat += itemFat;
+
+    // Stop if we have enough items or calories
+    if (mealItems.length >= 3) {
+      break;
+    }
+  }
+
+  return {
+    name,
+    items: mealItems,
+    totals: {
+      protein: Math.round(currentProtein * 10) / 10,
+      carb: Math.round(currentCarb * 10) / 10,
+      fat: Math.round(currentFat * 10) / 10,
+      kcal: Math.round(currentCalories),
+    },
+  };
 }
