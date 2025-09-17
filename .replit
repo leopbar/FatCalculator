@@ -4,7 +4,6 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["ollama"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -16,20 +15,12 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 11434
-externalPort = 3002
-
-[[ports]]
 localPort = 33393
 externalPort = 3001
 
 [[ports]]
 localPort = 36193
 externalPort = 3000
-
-[[ports]]
-localPort = 46475
-externalPort = 3003
 
 [env]
 PORT = "5000"
@@ -55,22 +46,5 @@ task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
 
-[[workflows.workflow]]
-name = "Start Ollama"
-author = 47604842
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "ollama serve &"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 5"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "ollama pull llama3.1:8b"
-
 [agent]
-integrations = ["javascript_auth_all_persistance:1.0.0", "javascript_database:1.0.0", "javascript_openai:1.0.0"]
+integrations = ["javascript_auth_all_persistance:1.0.0", "javascript_database:1.0.0"]

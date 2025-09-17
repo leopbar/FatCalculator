@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Utensils, Target, Calculator, Home } from "lucide-react";
-import { calculateMacroTargets, generateMealPlan, generateMealPlanWithAI, validateMealPlan, convertToHouseholdMeasures, convertMealsToText } from "@/lib/nutrition";
+import { calculateMacroTargets, generateMealPlan, validateMealPlan, convertToHouseholdMeasures } from "@/lib/nutrition";
 import { MacroTarget, MenuPlan, AlimentoHispano, mapAlimentosToFoodItems } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -36,7 +36,6 @@ interface MenuPlanData {
   macroTarget: MacroTarget;
   meals: any[];
   dailyTotals: any;
-  aiMenuContent?: string; // AI generated menu content
 }
 
 export default function MenuPage() {
@@ -44,7 +43,6 @@ export default function MenuPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [generatingMenu, setGeneratingMenu] = useState(false);
-  const [generationAttempted, setGenerationAttempted] = useState(false);
 
   // Get category and calories from URL params (if coming from results page selection)
   const params = new URLSearchParams(window.location.search);
@@ -104,18 +102,17 @@ export default function MenuPage() {
       return;
     }
 
-    // If category is selected from URL params, generate new menu ONLY if we haven't attempted yet
-    if (selectedCategory && !generatingMenu && !generationAttempted && alimentosData) {
-      setGenerationAttempted(true);
+    // If category is selected from URL params, ALWAYS generate new menu (delete old one first if exists)
+    if (selectedCategory && !generatingMenu && alimentosData) {
       generateMenuPlan();
     }
-
+    
     // If no category selected and no existing menu, redirect to results
     // BUT NOT if we're currently generating a menu
     if (!selectedCategory && !existingMenu && !menuLoading && !menuError && !generatingMenu) {
       navigate('/results');
     }
-  }, [calculation, bodyMetrics, selectedCategory, user, calculationLoading, metricsLoading, alimentosData, alimentosLoading]);
+  }, [calculation, bodyMetrics, selectedCategory, user, calculationLoading, metricsLoading, alimentosData, alimentosLoading, generatingMenu]);
 
   const generateMenuPlan = async () => {
     if (!calculation || !bodyMetrics || !alimentosData) return;
@@ -130,12 +127,12 @@ export default function MenuPage() {
         // Se erro 404 (não existe), tudo bem, continua
         console.log("ℹ️ Nenhum cardápio anterior para deletar (normal)");
       }
-
+      
       // Invalidar cache para garantir que não há cardápio antigo
       await queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
       // Use selected category or default to 'moderado'
       const category = selectedCategory || 'moderado';
-
+      
       // Use calories from URL params (calculated correctly in Results) or fallback to calculation
       let targetCalories: number;
       if (selectedCalories) {
@@ -158,34 +155,47 @@ export default function MenuPage() {
       // Map database foods to FoodItem format
       const foods = mapAlimentosToFoodItems(alimentosData);
 
-      // Generate meal plan using AI with calculated macros
-      let aiMenuContent;
-      try {
-        aiMenuContent = await generateMealPlanWithAI(macroTarget, category);
-        console.log("✅ Cardápio gerado com IA:", aiMenuContent);
-      } catch (aiError) {
-        console.warn("⚠️ Falha na IA, usando sistema interno:", aiError);
-        // Fallback to internal system
-        const meals = generateMealPlan(macroTarget, category, foods);
-        aiMenuContent = convertMealsToText(meals);
-      }
+      // Generate meal plan using foods from database
+      const meals = generateMealPlan(macroTarget, category, foods);
 
-      // For AI-generated menus, we trust the AI to follow macro targets
-      // No need to calculate daily totals as it's text-based content
+      // Calculate daily totals
+      const dailyTotals = meals.reduce(
+        (acc, meal) => ({
+          protein: acc.protein + meal.totals.protein,
+          carb: acc.carb + meal.totals.carb,
+          fat: acc.fat + meal.totals.fat,
+          kcal: acc.kcal + meal.totals.kcal,
+        }),
+        { protein: 0, carb: 0, fat: 0, kcal: 0 }
+      );
+
+      // Validate meal plan doesn't exceed targets
+      const isValid = validateMealPlan(meals, macroTarget);
+      
+      if (!isValid) {
+        console.warn('Generated meal plan exceeds macro targets', {
+          dailyTotals,
+          macroTarget
+        });
+        toast({
+          title: "Aviso sobre o cardápio",
+          description: "O cardápio gerado pode ter pequenas variações nas metas nutricionais.",
+          variant: "default",
+        });
+      }
 
       const menuData = {
         category,
         tdee: calculation.tdee,
         targetCalories,
         macroTarget,
-        meals: [], // Empty for now - AI content in aiMenuContent
-        aiMenuContent, // Store AI generated content
+        meals,
         dailyTotals: {
-          protein: macroTarget.protein_g,
-          carb: macroTarget.carb_g,
-          fat: macroTarget.fat_g,
-          kcal: macroTarget.calories,
-        }
+          protein: Math.round(dailyTotals.protein * 10) / 10,
+          carb: Math.round(dailyTotals.carb * 10) / 10,
+          fat: Math.round(dailyTotals.fat * 10) / 10,
+          kcal: Math.round(dailyTotals.kcal),
+        },
       };
 
       // Save to server
@@ -339,23 +349,9 @@ export default function MenuPage() {
           </CardContent>
         </Card>
 
-        {/* AI Generated Menu Content or Structured Meals */}
-        {existingMenu.aiMenuContent ? (
-          <Card className="border-primary/20 bg-accent/30">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-foreground">
-                Cardápio Personalizado (Gerado por IA)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <pre className="whitespace-pre-wrap text-sm text-foreground font-mono">
-                {existingMenu.aiMenuContent}
-              </pre>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {menuPlan.meals.map((meal, index) => (
+        {/* Meals */}
+        <div className="space-y-4">
+          {menuPlan.meals.map((meal, index) => (
             <Card key={meal.name} className="border-primary/20 bg-accent/30" data-testid={`card-meal-${meal.name.toLowerCase().replace(/\s+/g, '-')}`}>
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-foreground">
@@ -399,8 +395,7 @@ export default function MenuPage() {
               </CardContent>
             </Card>
           ))}
-          </div>
-        )}
+        </div>
 
 
         {/* Action Buttons */}

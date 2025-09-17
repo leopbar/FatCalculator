@@ -456,9 +456,6 @@ function refineFinalPortions(portions: { [key: string]: number }): { [key: strin
   return refined;
 }
 
-// Define types for meal templates
-type MealName = keyof typeof NUTRITIONAL_MEAL_TEMPLATES;
-
 // Generate precise nutritionally balanced meal
 function generatePreciseMeal(
   mealName: string,
@@ -469,17 +466,17 @@ function generatePreciseMeal(
   availableFoods: ReturnType<typeof categorizeFoodsWithQuality>,
   usedFoods: Set<string>
 ): MealItem[] {
-  const template = NUTRITIONAL_MEAL_TEMPLATES[mealName as MealName];
+  const template = NUTRITIONAL_MEAL_TEMPLATES[mealName];
   if (!template) return [];
 
   const selectedFoods: { [key: string]: FoodItem } = {};
 
   // Select required foods first
-  template.requiredCategories.forEach((category: string) => {
+  template.requiredCategories.forEach(category => {
     const food = selectNutritionalFood(
       category,
       availableFoods,
-      template.preferences[category as keyof typeof template.preferences] || [],
+      template.preferences[category] || [],
       usedFoods
     );
     if (food) {
@@ -488,11 +485,11 @@ function generatePreciseMeal(
   });
 
   // Add optional foods if we still have macro/calorie budget
-  template.optionalCategories.forEach((category: string) => {
+  template.optionalCategories.forEach(category => {
     const food = selectNutritionalFood(
       category,
       availableFoods,
-      template.preferences[category as keyof typeof template.preferences] || [],
+      template.preferences[category] || [],
       usedFoods
     );
     if (food) {
@@ -527,39 +524,7 @@ function generatePreciseMeal(
   return mealItems;
 }
 
-// Generate meal plan with AI using calculated macros
-export async function generateMealPlanWithAI(
-  macroTarget: MacroTarget,
-  category: 'suave' | 'moderado' | 'restritivo'
-): Promise<string> {
-  try {
-    const response = await fetch('/api/generate-menu-ai', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        calories: macroTarget.calories,
-        protein: macroTarget.protein_g,
-        carb: macroTarget.carb_g,
-        fat: macroTarget.fat_g,
-        category: category
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Falha na requisição para IA');
-    }
-
-    const data = await response.json();
-    return data.menuContent;
-  } catch (error) {
-    console.error('Error generating AI menu:', error);
-    throw error;
-  }
-}
-
-// Generate meal plan with strict adherence to macro targets (FALLBACK)
+// Generate meal plan with strict adherence to macro targets
 export function generateMealPlan(
   macroTarget: MacroTarget,
   category: 'suave' | 'moderado' | 'restritivo',
@@ -632,41 +597,7 @@ export function generateMealPlan(
     
     // Only reset used foods if we've used most of the database
     if (usedFoods.size > foods.length * 0.9) {
-      usedFoods.clear();
-    }
-  });
 
-  return meals;
-}
-
-// Convert meal objects to text format for display
-export function convertMealsToText(meals: Meal[]): string {
-  const mealTimeNames = [
-    "🌅 DESAYUNO (7:00 AM)",
-    "🍽️ ALMUERZO (12:30 PM)", 
-    "🥪 MERIENDA (3:30 PM)",
-    "🍽️ CENA (7:00 PM)",
-    "🌙 COLACIÓN NOCTURNA (9:30 PM)"
-  ];
-
-  let textContent = "";
-  
-  meals.forEach((meal, index) => {
-    const mealTime = mealTimeNames[index] || `REFEIÇÃO ${index + 1}`;
-    textContent += `${mealTime}\n`;
-    
-    meal.items.forEach(item => {
-      textContent += `- ${item.name}: ${item.grams}g\n`;
-    });
-    
-    textContent += `\nTotais: ${Math.round(meal.totals.kcal)} kcal | `;
-    textContent += `${Math.round(meal.totals.protein)}g proteína | `;
-    textContent += `${Math.round(meal.totals.carb)}g carboidratos | `;
-    textContent += `${Math.round(meal.totals.fat)}g gorduras\n\n`;
-  });
-
-  return textContent;
-}
 
 // Função para converter gramas em medidas caseiras
 export function convertToHouseholdMeasures(foodName: string, grams: number): string {
@@ -816,6 +747,13 @@ export function convertToHouseholdMeasures(foodName: string, grams: number): str
     const teaspoons = Math.round(grams / 5);
     return `(${teaspoons} ${teaspoons === 1 ? 'colher de chá' : 'colheres de chá'})`;
   }
+}
+
+      usedFoods.clear();
+    }
+  });
+  
+  return meals;
 }
 
 // Ultra-strict validation that meal plan stays within macro targets
