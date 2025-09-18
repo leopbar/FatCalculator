@@ -14,7 +14,7 @@ import MeasurementInput from "./MeasurementInput";
 // Translation map from Spanish to Portuguese activity levels
 const activityLevelTranslations: { [key: string]: string } = {
   'sedentario': 'sedentario',
-  'ligero': 'ligeiro',
+  'ligero': 'leve',
   'moderado': 'moderado', 
   'intenso': 'intenso'
 };
