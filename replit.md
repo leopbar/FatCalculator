@@ -84,7 +84,12 @@ The application uses a client-side storage approach optimized for the calculator
 - **Error Handling**: Comprehensive validation and error handling for edge cases, malformed data, and invalid nutrition parameters
 - **Meal Data**: Static USDA-based food database stored as JSON with deterministic meal generation algorithms
 
-The application includes database infrastructure (Drizzle ORM, PostgreSQL) for potential future features but currently operates entirely client-side.
+The application includes a complete database infrastructure with PostgreSQL and Drizzle ORM:
+
+- **Meal Plan Templates**: Template_menus table populated with 25 comprehensive meal plans (5 for each calorie level: 1200, 1500, 1800, 2300, 2500 kcal)
+- **Structured Meal Data**: Each template contains complete macronutrient breakdown, 5 daily meals with specific food items and portions, and smart substitution guidelines
+- **Hispanic Food Focus**: All meal plans feature Brazilian and Hispanic cuisine with culturally appropriate foods and portions
+- **Database Schema**: Complete type-safe schema using Drizzle ORM with Zod validation for all meal plan data
 
 ## Design System
 
