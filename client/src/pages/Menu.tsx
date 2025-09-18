@@ -373,7 +373,7 @@ export default function MenuPage() {
                   {meal.name}
                 </CardTitle>
                 <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                  <span>{meal.totals.kcal} kcal</span>
+                  <span>{meal.approximate_calories} kcal</span>
                   <span>•</span>
                   <span>P: {meal.totals.protein}g</span>
                   <span>•</span>
@@ -386,21 +386,21 @@ export default function MenuPage() {
                 <div className="space-y-3">
                   {meal.items.map((item, itemIndex) => (
                     <div 
-                      key={item.foodId} 
+                      key={itemIndex} 
                       className="flex justify-between items-center py-2 border-b border-border/50 last:border-b-0"
-                      data-testid={`food-item-${item.foodId}`}
+                      data-testid={`food-item-${itemIndex}`}
                     >
                       <div className="flex-1">
                         <p className="font-medium text-foreground">{item.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {item.kcal} kcal • P: {item.protein}g • C: {item.carb}g • G: {item.fat}g
+                          {item.grams}g • {item.categoria}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-primary" data-testid={`food-grams-${item.foodId}`}>
+                        <p className="font-bold text-primary" data-testid={`food-grams-${itemIndex}`}>
                           {item.grams}g
                         </p>
-                        <p className="text-xs text-muted-foreground" data-testid={`food-measure-${item.foodId}`}>
+                        <p className="text-xs text-muted-foreground" data-testid={`food-measure-${itemIndex}`}>
                           {convertToHouseholdMeasures(item.name, item.grams)}
                         </p>
                       </div>
