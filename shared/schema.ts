@@ -115,8 +115,6 @@ export const menuPlans = pgTable("menu_plans", {
     fat: number;
     kcal: number;
   }>().notNull(),
-  templateName: text("template_name"),
-  smartSubstitutions: text("smart_substitutions"),
 });
 
 export const alimentosHispanos = pgTable("alimentos_hispanos", {

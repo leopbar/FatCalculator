@@ -36,8 +36,6 @@ interface MenuPlanData {
   macroTarget: MacroTarget;
   meals: any[];
   dailyTotals: any;
-  templateName?: string;
-  smartSubstitutions?: string;
 }
 
 export default function MenuPage() {
@@ -189,9 +187,7 @@ export default function MenuPage() {
           carb: bestTemplate.carb_grams,
           fat: bestTemplate.fat_grams,
           kcal: bestTemplate.total_calories,
-        },
-        templateName: bestTemplate.name,
-        smartSubstitutions: bestTemplate.smart_substitutions
+        }
       };
 
       // Save to server
@@ -203,7 +199,7 @@ export default function MenuPage() {
 
       toast({
         title: "Cardápio gerado!",
-        description: `Template "${bestTemplate.name}" aplicado com sucesso.`,
+        description: "Seu cardápio personalizado foi criado com sucesso.",
       });
 
       // Clear the category parameter from URL to prevent re-generation
@@ -319,11 +315,7 @@ export default function MenuPage() {
           >
             Plano {menuPlan.category.charAt(0).toUpperCase() + menuPlan.category.slice(1)}
           </Badge>
-          {existingMenu.templateName && (
-            <p className="text-sm text-muted-foreground">
-              Baseado em: {existingMenu.templateName}
-            </p>
-          )}
+          
         </div>
 
         {/* Macro Targets */}
@@ -413,26 +405,7 @@ export default function MenuPage() {
         </div>
 
 
-        {/* Smart Substitutions */}
-        {existingMenu.smartSubstitutions && (
-          <Card className="border-accent/30 bg-accent/20" data-testid="card-substitutions">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-foreground flex items-center space-x-2">
-                <span>💡</span>
-                <span>Sugestões de Substituição</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm text-foreground/80 leading-relaxed">
-                {existingMenu.smartSubstitutions.split('. ').map((substitution, index) => (
-                  <p key={index} className="mb-2">
-                    {substitution.endsWith('.') ? substitution : substitution + '.'}
-                  </p>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
