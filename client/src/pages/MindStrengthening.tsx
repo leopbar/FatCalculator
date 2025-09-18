@@ -1507,38 +1507,38 @@ export default function MindStrengthening() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-white border-b border-border sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="max-w-6xl mx-auto px-4 py-3 sm:py-4">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/dashboard")}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 flex-shrink-0"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Panel
+                <span className="hidden sm:inline">Panel</span>
               </Button>
-              <div className="h-8 w-px bg-border mx-2" />
-              <div className="flex items-center gap-3">
-                <div className={`p-2 ${currentSectionData?.color} rounded-lg`}>
-                  <IconComponent className="w-6 h-6 text-white" />
+              <div className="h-6 w-px bg-border sm:h-8 sm:mx-2" />
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className={`p-1.5 sm:p-2 ${currentSectionData?.color} rounded-lg flex-shrink-0`}>
+                  <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div>
-                  <h1 className="text-xl font-bold text-foreground">Fortaleciendo su Mente</h1>
-                  <p className="text-sm text-muted-foreground">
+                <div className="min-w-0">
+                  <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">Fortaleciendo su Mente</h1>
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">
                     Sección {currentSection} de {totalSections} • {currentSectionData?.estimatedTime}
                   </p>
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="text-sm text-muted-foreground">
+            <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+              <div className="text-xs sm:text-sm text-muted-foreground">
                 {completedSections.length}/{totalSections} completadas
               </div>
-              <div className="w-32">
-                <Progress value={completedPercentage} className="h-2" />
+              <div className="w-24 sm:w-32">
+                <Progress value={completedPercentage} className="h-1.5 sm:h-2" />
               </div>
             </div>
           </div>
@@ -1547,8 +1547,8 @@ export default function MindStrengthening() {
 
       {/* Progress Navigation */}
       <div className="bg-white border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between overflow-x-auto">
+        <div className="max-w-6xl mx-auto px-4 py-2 sm:py-3">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
             {sections.map((section, index) => {
               const Icon = section.icon;
               const isCompleted = completedSections.includes(section.id);
@@ -1558,7 +1558,7 @@ export default function MindStrengthening() {
                 <div key={section.id} className="flex items-center flex-shrink-0">
                   <button
                     onClick={() => setCurrentSection(section.id)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    className={`flex items-center gap-1.5 sm:gap-2 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm transition-colors whitespace-nowrap ${
                       isCurrent 
                         ? `${section.color} text-white` 
                         : isCompleted 
@@ -1566,13 +1566,13 @@ export default function MindStrengthening() {
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
-                    <span className="hidden sm:inline">{section.title}</span>
-                    <span className="sm:hidden">{section.id}</span>
-                    {isCompleted && <CheckCircle className="w-3 h-3" />}
+                    <Icon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="hidden md:inline text-xs sm:text-sm">{section.title}</span>
+                    <span className="md:hidden font-medium">{section.id}</span>
+                    {isCompleted && <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />}
                   </button>
                   {index < sections.length - 1 && (
-                    <div className="w-8 h-px bg-border mx-2 flex-shrink-0" />
+                    <div className="w-3 sm:w-4 h-px bg-border mx-1 sm:mx-2 flex-shrink-0" />
                   )}
                 </div>
               );
@@ -1582,63 +1582,65 @@ export default function MindStrengthening() {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-4 sm:py-8">
         {/* Section Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <div className={`p-3 ${currentSectionData?.color} rounded-xl`}>
-              <IconComponent className="w-8 h-8 text-white" />
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
+            <div className={`p-2 sm:p-3 ${currentSectionData?.color} rounded-xl self-start`}>
+              <IconComponent className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <Badge variant="secondary" className="mb-2">
                 Parte {currentSection}
               </Badge>
-              <h2 className="text-3xl font-bold text-foreground">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight">
                 {currentSectionData?.title}
               </h2>
             </div>
           </div>
-          <div className="w-full bg-muted rounded-full h-2">
+          <div className="w-full bg-muted rounded-full h-1.5 sm:h-2">
             <div 
-              className={`h-2 ${currentSectionData?.color} rounded-full transition-all duration-500`}
+              className={`h-1.5 sm:h-2 ${currentSectionData?.color} rounded-full transition-all duration-500`}
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
         </div>
 
         {/* Section Content */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           {currentSectionData?.content}
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <Button
             variant="outline"
             onClick={handlePrevious}
             disabled={currentSection === 1}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <ArrowLeft className="w-4 h-4" />
             Anterior
           </Button>
           
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <Button
               variant="outline"
               onClick={handleSectionComplete}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm"
               disabled={completedSections.includes(currentSection)}
             >
               {completedSections.includes(currentSection) ? (
                 <>
                   <CheckCircle className="w-4 h-4 text-green-600" />
-                  Completada
+                  <span className="hidden sm:inline">Completada</span>
+                  <span className="sm:hidden">✓ Leída</span>
                 </>
               ) : (
                 <>
                   <Clock className="w-4 h-4" />
-                  Marcar como Leída
+                  <span className="hidden sm:inline">Marcar como Leída</span>
+                  <span className="sm:hidden">Marcar Leída</span>
                 </>
               )}
             </Button>
@@ -1646,7 +1648,7 @@ export default function MindStrengthening() {
             {currentSection < totalSections ? (
               <Button
                 onClick={handleNext}
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 Siguiente
                 <ArrowRight className="w-4 h-4" />
@@ -1654,11 +1656,12 @@ export default function MindStrengthening() {
             ) : (
               <Button
                 onClick={() => navigate("/dashboard")}
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto"
                 variant="default"
               >
                 <Trophy className="w-4 h-4" />
-                Finalizar Guía
+                <span className="hidden sm:inline">Finalizar Guía</span>
+                <span className="sm:hidden">Finalizar</span>
               </Button>
             )}
           </div>
