@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Utensils, Target, Calculator, Home } from "lucide-react";
-import { calculateMacroTargets, convertToHouseholdMeasures } from "@/lib/nutrition";
+import { calculateMacroTargets, convertToHouseholdMeasures, translateCategoryToPortuguese } from "@/lib/nutrition";
 import { MacroTarget, MenuPlan } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -136,8 +136,10 @@ export default function MenuPage() {
       // Invalidar cache para garantir que não há cardápio antigo
       await queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
 
-      // Use selected category or default to 'moderado'
-      const category = selectedCategory || 'moderado';
+      // Use selected category or default to 'moderado', translate if necessary
+      const rawCategory = selectedCategory || 'moderado';
+      const category = translateCategoryToPortuguese(rawCategory);
+      console.log("🌐 Category translation:", rawCategory, "->", category);
 
       // Calculate target calories
       let targetCalories: number;

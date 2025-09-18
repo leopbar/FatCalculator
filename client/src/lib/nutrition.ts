@@ -1,5 +1,18 @@
 import { MacroTarget, FoodItem, Meal, MealItem, MenuPlan } from "@shared/schema";
 
+// Translation map from Spanish to Portuguese categories
+const categoryTranslations: { [key: string]: string } = {
+  'restrictivo': 'restritivo',
+  'moderado': 'moderado',
+  'suave': 'suave'
+};
+
+// Function to translate Spanish categories to Portuguese
+export function translateCategoryToPortuguese(category: string): string {
+  const lowerCategory = category.toLowerCase();
+  return categoryTranslations[lowerCategory] || lowerCategory;
+}
+
 // Calculate macronutrient targets based on international standards (AMDR)
 export function calculateMacroTargets(
   tdee: number,
@@ -10,9 +23,9 @@ export function calculateMacroTargets(
 ): MacroTarget {
   console.log("🎯 Calculating macro targets:", { tdee, targetCalories, weight, bodyFatPercent, category });
 
-  // Normalize category to handle variants
-  const normalizedCategory = category === 'restrictivo' ? 'restritivo' : category;
-  console.log("📝 Normalized category:", normalizedCategory);
+  // Translate Spanish categories to Portuguese
+  const translatedCategory = translateCategoryToPortuguese(category);
+  console.log("📝 Translated category from", category, "to", translatedCategory);
 
   // Validate inputs
   if (!tdee || !targetCalories || !weight || bodyFatPercent === undefined) {
@@ -28,7 +41,7 @@ export function calculateMacroTargets(
   let carbPercent: number;
   let fatPercent: number;
 
-  switch (normalizedCategory) {
+  switch (translatedCategory) {
     case 'suave':
       proteinMultiplier = 1.6;  // 1.6g per kg LBM
       carbPercent = 0.45;       // 45% carbs
@@ -40,7 +53,6 @@ export function calculateMacroTargets(
       fatPercent = 0.25;        // 25% fat
       break;
     case 'restritivo':
-    case 'restrictivo':  // Handle both variants
       proteinMultiplier = 2.0;  // 2.0g per kg LBM
       carbPercent = 0.35;       // 35% carbs
       fatPercent = 0.25;        // 25% fat
