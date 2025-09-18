@@ -26,6 +26,8 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import ConnectPgSimple from "connect-pg-simple";
 
+// Based on javascript_auth_all_persistance blueprint
+
 // Based on javascript_auth_all_persistance blueprint  
 const MemoryStore = createMemoryStore(session);
 const PgStore = ConnectPgSimple(session);

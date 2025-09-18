@@ -157,7 +157,9 @@ export const insertAlimentoHispanoSchema = createInsertSchema(alimentosHispanos)
 export const insertTemplateMenuSchema = createInsertSchema(templateMenus).omit({
   id: true,
   created_at: true,
-});</old_str>
+});
+
+// Template menu schemas for pre-defined meal plans</old_str>
 
 // Template menu schemas for pre-defined meal plans
 export const mealItemTemplateSchema = z.object({
