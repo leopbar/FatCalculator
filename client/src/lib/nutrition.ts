@@ -10,6 +10,10 @@ export function calculateMacroTargets(
 ): MacroTarget {
   console.log("🎯 Calculating macro targets:", { tdee, targetCalories, weight, bodyFatPercent, category });
 
+  // Normalize category to handle variants
+  const normalizedCategory = category === 'restrictivo' ? 'restritivo' : category;
+  console.log("📝 Normalized category:", normalizedCategory);
+
   // Validate inputs
   if (!tdee || !targetCalories || !weight || bodyFatPercent === undefined) {
     console.error("❌ Invalid inputs for macro calculation:", { tdee, targetCalories, weight, bodyFatPercent });
@@ -24,7 +28,7 @@ export function calculateMacroTargets(
   let carbPercent: number;
   let fatPercent: number;
 
-  switch (category) {
+  switch (normalizedCategory) {
     case 'suave':
       proteinMultiplier = 1.6;  // 1.6g per kg LBM
       carbPercent = 0.45;       // 45% carbs
@@ -35,12 +39,14 @@ export function calculateMacroTargets(
       carbPercent = 0.40;       // 40% carbs
       fatPercent = 0.25;        // 25% fat
       break;
-    case 'restritivo':  // Fixed typo: was 'restrictivo', should be 'restritivo'
+    case 'restritivo':
+    case 'restrictivo':  // Handle both variants
       proteinMultiplier = 2.0;  // 2.0g per kg LBM
       carbPercent = 0.35;       // 35% carbs
       fatPercent = 0.25;        // 25% fat
       break;
     default:
+      console.warn("⚠️ Unknown category:", category, "using default moderado values");
       proteinMultiplier = 1.8;
       carbPercent = 0.40;
       fatPercent = 0.25;
