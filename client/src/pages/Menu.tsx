@@ -8,6 +8,7 @@ import { ArrowLeft, Utensils, Target, Calculator, Home } from "lucide-react";
 import { 
   calculateMacroTargets, 
   convertToHouseholdMeasures, 
+  convertToHouseholdMeasuresSpanish,
   translateCategoryToPortuguese,
   translateFoodNameToSpanish,
   translateMealNameToSpanish
