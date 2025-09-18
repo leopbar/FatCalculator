@@ -1,4 +1,3 @@
-
 import { 
   type User, 
   type InsertUser,
@@ -39,43 +38,43 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Body metrics methods
   upsertBodyMetrics(userId: string, data: InsertBodyMetrics): Promise<BodyMetrics>;
   getBodyMetrics(userId: string): Promise<BodyMetrics | undefined>;
-  
+
   // Calculation methods
   saveCalculation(userId: string, data: InsertCalculation): Promise<Calculation>;
   getLatestCalculation(userId: string): Promise<Calculation | undefined>;
-  
+
   // Menu plan methods
   saveMenuPlan(userId: string, data: InsertMenuPlan): Promise<MenuPlanData>;
   getLatestMenuPlan(userId: string): Promise<MenuPlanData | undefined>;
   deleteMenuPlan(userId: string): Promise<void>;
-  
+
   // Alimentos hispanos methods
   createAlimento(data: InsertAlimentoHispano): Promise<AlimentoHispano>;
   getAllAlimentos(): Promise<AlimentoHispano[]>;
   getAlimentosByCategoria(categoria: string): Promise<AlimentoHispano[]>;
   bulkCreateAlimentos(alimentos: InsertAlimentoHispano[]): Promise<void>;
-  
+
   // User summary for dashboard
   getUserSummary(userId: string): Promise<{
     hasMetrics: boolean;
     hasCalculation: boolean;
     hasMenu: boolean;
   }>;
-  
+
   // Clear all user data
   clearAllUserData(userId: string): Promise<void>;
-  
+
   // Template menu methods
   createTemplateMenu(data: InsertTemplateMenu): Promise<TemplateMenuData>;
   getAllTemplateMenus(): Promise<TemplateMenuData[]>;
   getTemplateMenusByGenderAndCalories(gender: string, targetCalories: number): Promise<TemplateMenuData[]>;
   findBestMatchingTemplate(gender: string, targetCalories: number, targetProtein: number, targetCarb: number, targetFat: number): Promise<TemplateMenuData | undefined>;
   bulkCreateTemplateMenus(templates: InsertTemplateMenu[]): Promise<void>;
-  
+
   sessionStore: any; // Using any for compatibility with express-session types
 }
 
@@ -112,7 +111,7 @@ export class DatabaseStorage implements IStorage {
   async upsertBodyMetrics(userId: string, data: InsertBodyMetrics): Promise<BodyMetrics> {
     // First try to find existing metrics for this user
     const existingMetrics = await db.select().from(bodyMetrics).where(eq(bodyMetrics.userId, userId));
-    
+
     if (existingMetrics.length > 0) {
       // Update existing metrics
       const [updated] = await db
@@ -251,45 +250,39 @@ export class DatabaseStorage implements IStorage {
     return templateMenu;
   }
 
-  async getAllTemplateMenus(): Promise<TemplateMenuData[]> {
-    return await db.select().from(templateMenus);
-  }
+  // Get all template menus
+  async getAllTemplateMenus() {
+    return await this.db.select().from(templateMenus);
+  },
 
-  async getTemplateMenusByGenderAndCalories(gender: string, targetCalories: number): Promise<TemplateMenuData[]> {
-    return await db
-      .select()
-      .from(templateMenus)
-      .where(eq(templateMenus.gender, gender));
-  }
-
+  // Find best matching template based on calories and macros
   async findBestMatchingTemplate(
-    gender: string, 
-    targetCalories: number, 
-    targetProtein: number, 
-    targetCarb: number, 
+    gender: string,
+    targetCalories: number,
+    targetProtein: number,
+    targetCarb: number,
     targetFat: number
-  ): Promise<TemplateMenuData | undefined> {
-    // Get all templates for the gender
-    const templates = await db
+  ) {
+    const templates = await this.db
       .select()
       .from(templateMenus)
       .where(eq(templateMenus.gender, gender));
 
-    if (templates.length === 0) return undefined;
+    if (templates.length === 0) return null;
 
-    // Calculate score for each template (lower is better)
-    let bestTemplate = templates[0];
+    // Calculate similarity score for each template
+    let bestTemplate = null;
     let bestScore = Infinity;
 
     for (const template of templates) {
-      // Calculate differences (normalized)
-      const calorieDiff = Math.abs(template.total_calories - targetCalories) / targetCalories;
-      const proteinDiff = Math.abs(template.protein_grams - targetProtein) / targetProtein;
-      const carbDiff = Math.abs(template.carb_grams - targetCarb) / targetCarb;
-      const fatDiff = Math.abs(template.fat_grams - targetFat) / targetFat;
+      // Calculate normalized differences
+      const caloriesDiff = Math.abs(template.total_calories - targetCalories) / targetCalories;
+      const proteinDiff = Math.abs(template.protein_grams - targetProtein) / Math.max(targetProtein, 1);
+      const carbDiff = Math.abs(template.carb_grams - targetCarb) / Math.max(targetCarb, 1);
+      const fatDiff = Math.abs(template.fat_grams - targetFat) / Math.max(targetFat, 1);
 
-      // Weighted score (calories have higher weight)
-      const score = (calorieDiff * 0.4) + (proteinDiff * 0.2) + (carbDiff * 0.2) + (fatDiff * 0.2);
+      // Weighted similarity score (calories have higher weight)
+      const score = (caloriesDiff * 0.4) + (proteinDiff * 0.2) + (carbDiff * 0.2) + (fatDiff * 0.2);
 
       if (score < bestScore) {
         bestScore = score;
@@ -297,8 +290,9 @@ export class DatabaseStorage implements IStorage {
       }
     }
 
+    console.log(`✅ Best template found: ${bestTemplate?.name} with score: ${bestScore.toFixed(3)}`);
     return bestTemplate;
-  }
+  },
 
   async bulkCreateTemplateMenus(templates: InsertTemplateMenu[]): Promise<void> {
     if (templates.length > 0) {

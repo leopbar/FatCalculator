@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Utensils, Target, Calculator, Home } from "lucide-react";
-import { calculateMacroTargets, generateMealPlan, validateMealPlan, convertToHouseholdMeasures } from "@/lib/nutrition";
-import { MacroTarget, MenuPlan, AlimentoHispano, mapAlimentosToFoodItems } from "@shared/schema";
+import { calculateMacroTargets, convertToHouseholdMeasures } from "@/lib/nutrition";
+import { MacroTarget, MenuPlan } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -36,6 +36,8 @@ interface MenuPlanData {
   macroTarget: MacroTarget;
   meals: any[];
   dailyTotals: any;
+  templateName?: string;
+  smartSubstitutions?: string;
 }
 
 export default function MenuPage() {
@@ -67,12 +69,6 @@ export default function MenuPage() {
     enabled: !!user,
   });
 
-  // Fetch alimentos from database
-  const { data: alimentosData, isLoading: alimentosLoading } = useQuery<AlimentoHispano[]>({
-    queryKey: ['/api/alimentos'],
-    enabled: !!user,
-  });
-
   // Mutation to save menu plan
   const saveMenuMutation = useMutation({
     mutationFn: async (menuData: any) => {
@@ -81,17 +77,17 @@ export default function MenuPage() {
     },
   });
 
-  const isLoading = calculationLoading || metricsLoading || menuLoading || alimentosLoading || generatingMenu;
+  const isLoading = calculationLoading || metricsLoading || menuLoading || generatingMenu;
 
-  // Generate menu plan if needed
+  // Generate menu plan using templates
   useEffect(() => {
     if (!user) {
       navigate('/auth');
       return;
     }
 
-    if (!calculation || !bodyMetrics || !alimentosData) {
-      if (!calculationLoading && !metricsLoading && !alimentosLoading) {
+    if (!calculation || !bodyMetrics) {
+      if (!calculationLoading && !metricsLoading) {
         toast({
           title: "Dados não encontrados",
           description: "Realize o cálculo primeiro. Redirecionando...",
@@ -102,20 +98,19 @@ export default function MenuPage() {
       return;
     }
 
-    // If category is selected from URL params, ALWAYS generate new menu (delete old one first if exists)
-    if (selectedCategory && !generatingMenu && alimentosData) {
-      generateMenuPlan();
+    // If category is selected from URL params, ALWAYS generate new menu using templates
+    if (selectedCategory && !generatingMenu) {
+      generateMenuFromTemplate();
     }
     
     // If no category selected and no existing menu, redirect to results
-    // BUT NOT if we're currently generating a menu
     if (!selectedCategory && !existingMenu && !menuLoading && !menuError && !generatingMenu) {
       navigate('/results');
     }
-  }, [calculation, bodyMetrics, selectedCategory, user, calculationLoading, metricsLoading, alimentosData, alimentosLoading, generatingMenu]);
+  }, [calculation, bodyMetrics, selectedCategory, user, calculationLoading, metricsLoading, generatingMenu]);
 
-  const generateMenuPlan = async () => {
-    if (!calculation || !bodyMetrics || !alimentosData) return;
+  const generateMenuFromTemplate = async () => {
+    if (!calculation || !bodyMetrics) return;
 
     // Additional validation before starting generation
     if (isNaN(calculation.tdee) || isNaN(calculation.bodyFatPercent) || 
@@ -131,7 +126,7 @@ export default function MenuPage() {
 
     setGeneratingMenu(true);
     try {
-      // SEMPRE deletar qualquer cardápio existente primeiro (mesmo que existingMenu seja undefined devido ao cache)
+      // SEMPRE deletar qualquer cardápio existente primeiro
       try {
         await apiRequest("DELETE", "/api/menu");
         console.log("✅ Cardápio anterior deletado com sucesso");
@@ -142,10 +137,11 @@ export default function MenuPage() {
       
       // Invalidar cache para garantir que não há cardápio antigo
       await queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
+
       // Use selected category or default to 'moderado'
       const category = selectedCategory || 'moderado';
       
-      // Use calories from URL params (calculated correctly in Results) or fallback to calculation
+      // Calculate target calories
       let targetCalories: number;
       if (selectedCalories) {
         targetCalories = selectedCalories;
@@ -155,7 +151,7 @@ export default function MenuPage() {
         targetCalories = Math.max(1200, calculation.tdee - calorieReductions[category]);
       }
 
-      // Calculate macro targets
+      // Calculate macro targets for template matching
       const macroTarget = calculateMacroTargets(
         calculation.tdee,
         targetCalories,
@@ -164,87 +160,73 @@ export default function MenuPage() {
         category
       );
 
-      // Map database foods to FoodItem format
-      const foods = mapAlimentosToFoodItems(alimentosData);
+      // Find best matching template
+      const templateResponse = await apiRequest("POST", "/api/find-template", {
+        gender: bodyMetrics.gender,
+        targetCalories: targetCalories,
+        targetProtein: macroTarget.protein_g,
+        targetCarb: macroTarget.carb_g,
+        targetFat: macroTarget.fat_g
+      });
 
-      // Generate meal plan using foods from database
-      const meals = generateMealPlan(macroTarget, category, foods);
+      const bestTemplate = await templateResponse.json();
 
-      // Calculate daily totals
-      const dailyTotals = meals.reduce(
-        (acc, meal) => ({
-          protein: acc.protein + meal.totals.protein,
-          carb: acc.carb + meal.totals.carb,
-          fat: acc.fat + meal.totals.fat,
-          kcal: acc.kcal + meal.totals.kcal,
-        }),
-        { protein: 0, carb: 0, fat: 0, kcal: 0 }
-      );
-
-      // Validate meal plan doesn't exceed targets
-      const isValid = validateMealPlan(meals, macroTarget);
-      
-      if (!isValid) {
-        console.warn('Generated meal plan exceeds macro targets', {
-          dailyTotals,
-          macroTarget
-        });
-        toast({
-          title: "Aviso sobre o cardápio",
-          description: "O cardápio gerado pode ter pequenas variações nas metas nutricionais.",
-          variant: "default",
-        });
+      if (!bestTemplate) {
+        throw new Error("Nenhum template encontrado para seus critérios");
       }
 
+      console.log("✅ Template encontrado:", bestTemplate.name);
+
+      // Create menu data using the template
       const menuData = {
         category,
         tdee: calculation.tdee,
         targetCalories,
         macroTarget,
-        meals,
+        meals: bestTemplate.meals,
         dailyTotals: {
-          protein: Math.round(dailyTotals.protein * 10) / 10,
-          carb: Math.round(dailyTotals.carb * 10) / 10,
-          fat: Math.round(dailyTotals.fat * 10) / 10,
-          kcal: Math.round(dailyTotals.kcal),
+          protein: bestTemplate.protein_grams,
+          carb: bestTemplate.carb_grams,
+          fat: bestTemplate.fat_grams,
+          kcal: bestTemplate.total_calories,
         },
+        templateName: bestTemplate.name,
+        smartSubstitutions: bestTemplate.smart_substitutions
       };
 
       // Save to server
       await saveMenuMutation.mutateAsync(menuData);
 
-      // Invalidate cache to fetch updated menu - wait for invalidation
+      // Invalidate cache to fetch updated menu
       await queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
 
       toast({
         title: "Cardápio gerado!",
-        description: "Seu cardápio personalizado foi criado com sucesso.",
+        description: `Template "${bestTemplate.name}" aplicado com sucesso.`,
       });
 
       // Clear the category parameter from URL to prevent re-generation
       navigate('/menu', { replace: true });
 
     } catch (error) {
-      console.error('Error generating menu:', error);
+      console.error('Error generating menu from template:', error);
       
-      // Provide more specific error messages
       let errorMessage = "Não foi possível gerar o cardápio. Tente novamente.";
       if (error instanceof Error) {
         if (error.message.includes('inválidos') || error.message.includes('NaN')) {
           errorMessage = "Dados de cálculo inválidos. Por favor, refaça os cálculos.";
-        } else if (error.message.includes('foods')) {
-          errorMessage = "Base de alimentos indisponível. Tente novamente em alguns minutos.";
+        } else if (error.message.includes('template')) {
+          errorMessage = "Nenhum template compatível encontrado. Tente uma categoria diferente.";
         }
       }
       
       toast({
-        title: "Error al generar menú",
+        title: "Erro ao gerar cardápio",
         description: errorMessage,
         variant: "destructive",
       });
 
-      // If calculation data is invalid, redirect to calculator
       if (error instanceof Error && error.message.includes('inválidos')) {
         navigate('/calculator');
       }
@@ -337,6 +319,11 @@ export default function MenuPage() {
           >
             Plano {menuPlan.category.charAt(0).toUpperCase() + menuPlan.category.slice(1)}
           </Badge>
+          {existingMenu.templateName && (
+            <p className="text-sm text-muted-foreground">
+              Baseado em: {existingMenu.templateName}
+            </p>
+          )}
         </div>
 
         {/* Macro Targets */}
@@ -425,6 +412,27 @@ export default function MenuPage() {
           ))}
         </div>
 
+
+        {/* Smart Substitutions */}
+        {existingMenu.smartSubstitutions && (
+          <Card className="border-accent/30 bg-accent/20" data-testid="card-substitutions">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-foreground flex items-center space-x-2">
+                <span>💡</span>
+                <span>Sugestões de Substituição</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-foreground/80 leading-relaxed">
+                {existingMenu.smartSubstitutions.split('. ').map((substitution, index) => (
+                  <p key={index} className="mb-2">
+                    {substitution.endsWith('.') ? substitution : substitution + '.'}
+                  </p>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
