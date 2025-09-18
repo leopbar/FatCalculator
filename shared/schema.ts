@@ -134,14 +134,22 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
 });
 
-export const insertBodyMetricsSchema = createInsertSchema(bodyMetrics).omit({
-  id: true,
-  userId: true,
+export const insertBodyMetricsSchema = z.object({
+  age: z.coerce.number().int().positive().min(1).max(120),
+  gender: z.enum(["masculino", "feminino"]),
+  weight: z.coerce.number().positive().min(1).max(1000),
+  height: z.coerce.number().positive().min(1).max(300),
+  neck: z.coerce.number().positive().min(1).max(100),
+  waist: z.coerce.number().positive().min(1).max(200),
+  hip: z.coerce.number().positive().min(1).max(200).optional(),
+  activityLevel: z.enum(["sedentario", "ligero", "moderado", "intenso", "muito_intenso"])
 });
 
-export const insertCalculationSchema = createInsertSchema(calculations).omit({
-  id: true,
-  userId: true,
+export const insertCalculationSchema = z.object({
+  bodyFatPercent: z.coerce.number().min(0).max(100),
+  category: z.string().min(1),
+  bmr: z.coerce.number().positive(),
+  tdee: z.coerce.number().positive()
 });
 
 export const insertMenuPlanSchema = createInsertSchema(menuPlans).omit({
