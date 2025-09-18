@@ -46,7 +46,7 @@ export function calculateMacroTargets(
       fatPercent = 0.25;
   }
 
-  // Calculate macros
+  // Calculate macros with proper validation
   const protein_g = Math.round(leanBodyMass * proteinMultiplier);
   const protein_calories = protein_g * 4;
 
@@ -56,6 +56,16 @@ export function calculateMacroTargets(
   const fat_calories = Math.round(targetCalories * fatPercent);
   const fat_g = Math.round(fat_calories / 9);
 
+  // Validate all calculations are numbers
+  if (isNaN(protein_g) || isNaN(carb_g) || isNaN(fat_g) || 
+      protein_g <= 0 || carb_g <= 0 || fat_g <= 0) {
+    console.error("🚫 Invalid macro calculations:", { 
+      protein_g, carb_g, fat_g, 
+      leanBodyMass, proteinMultiplier, carbPercent, fatPercent 
+    });
+    throw new Error("Erro no cálculo de macronutrientes");
+  }
+
   // Calculate percentages
   const total_macro_calories = protein_calories + carb_calories + fat_calories;
   const protein_percent = Math.round((protein_calories / total_macro_calories) * 100);
@@ -64,21 +74,23 @@ export function calculateMacroTargets(
 
   const result = {
     calories: targetCalories,
-    protein_g,
-    carb_g, 
-    fat_g,
-    protein_percent,
+    protein_g: protein_g,
+    carb_g: carb_g, 
+    fat_g: fat_g,
+    protein_percent: protein_percent,
     carb_percent: carb_percent_final,
     fat_percent: fat_percent_final,
   };
 
   console.log("✅ Macro targets calculated:", result);
 
-  // Additional validation to prevent NaN values
-  if (isNaN(result.protein_g) || isNaN(result.carb_g) || isNaN(result.fat_g)) {
-    console.error("🚫 NaN detected in final macro targets:", result);
-    throw new Error("Invalid macro calculation resulted in NaN values");
-  }
+  // Final validation to ensure no null/undefined values
+  Object.entries(result).forEach(([key, value]) => {
+    if (value === null || value === undefined || isNaN(value)) {
+      console.error(`🚫 Invalid value for ${key}:`, value);
+      throw new Error(`Valor inválido para ${key}: ${value}`);
+    }
+  });
 
   return result;
 }

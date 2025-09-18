@@ -100,7 +100,7 @@ export default function MenuPage() {
     if (selectedCategory && !generatingMenu) {
       generateMenuFromTemplate();
     }
-    
+
     // If no category selected and no existing menu, redirect to results
     if (!selectedCategory && !existingMenu && !menuLoading && !menuError && !generatingMenu) {
       navigate('/results');
@@ -132,13 +132,13 @@ export default function MenuPage() {
         // Se erro 404 (não existe), tudo bem, continua
         console.log("ℹ️ Nenhum cardápio anterior para deletar (normal)");
       }
-      
+
       // Invalidar cache para garantir que não há cardápio antigo
       await queryClient.invalidateQueries({ queryKey: ['/api/menu'] });
 
       // Use selected category or default to 'moderado'
       const category = selectedCategory || 'moderado';
-      
+
       // Calculate target calories
       let targetCalories: number;
       if (selectedCalories) {
@@ -218,7 +218,7 @@ export default function MenuPage() {
 
     } catch (error) {
       console.error('Error generating menu from template:', error);
-      
+
       let errorMessage = "Não foi possível gerar o cardápio. Tente novamente.";
       if (error instanceof Error) {
         if (error.message.includes('inválidos') || error.message.includes('NaN')) {
@@ -227,7 +227,7 @@ export default function MenuPage() {
           errorMessage = "Nenhum template compatível encontrado. Tente uma categoria diferente.";
         }
       }
-      
+
       toast({
         title: "Erro ao gerar cardápio",
         description: errorMessage,
@@ -326,7 +326,7 @@ export default function MenuPage() {
           >
             Plano {menuPlan.category.charAt(0).toUpperCase() + menuPlan.category.slice(1)}
           </Badge>
-          
+
         </div>
 
         {/* Macro Targets */}
@@ -387,36 +387,76 @@ export default function MenuPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {meal.items.map((item, itemIndex) => (
-                    <div 
-                      key={itemIndex} 
-                      className="flex justify-between items-center py-2 border-b border-border/50 last:border-b-0"
-                      data-testid={`food-item-${itemIndex}`}
-                    >
+                  {meal.items?.map((item, itemIndex) => (
+                    <div key={itemIndex} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
                       <div className="flex-1">
-                        <p className="font-medium text-foreground">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {item.grams}g • {item.categoria}
-                        </p>
+                        <div className="font-medium text-sm">{item?.name || "Item sem nome"}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {item?.grams || 0}g {item?.name ? convertToHouseholdMeasures(item.name, item.grams || 0) : ""}
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-primary" data-testid={`food-grams-${itemIndex}`}>
-                          {item.grams}g
-                        </p>
-                        <p className="text-xs text-muted-foreground" data-testid={`food-measure-${itemIndex}`}>
-                          {convertToHouseholdMeasures(item.name, item.grams)}
-                        </p>
+                      <div className="text-right text-xs space-y-1">
+                        <div>{item?.protein || 0}g P</div>
+                        <div>{item?.carb || 0}g C</div>
+                        <div>{item?.fat || 0}g G</div>
+                        <div className="font-medium">{item?.kcal || 0} kcal</div>
                       </div>
                     </div>
-                  ))}
+                  )) || <div className="text-muted-foreground">Nenhum item disponível</div>}
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
+        <div className="flex justify-between items-center text-sm font-medium bg-muted/30 p-3 rounded">
+          <span>Total da Refeição:</span>
+          <div className="flex space-x-4">
+            <span>{menuPlan.totals?.protein || 0}g P</span>
+            <span>{menuPlan.totals?.carb || 0}g C</span>
+            <span>{menuPlan.totals?.fat || 0}g G</span>
+            <span className="font-bold">{menuPlan.totals?.kcal || 0} kcal</span>
+          </div>
+        </div>
 
-        
+        {/* Daily Totals */}
+        <Card className="border-primary/20 bg-accent/30">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Target className="w-5 h-5 text-primary" />
+              <span>Totais Diários</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary" data-testid="text-daily-calories">
+                  {menuPlan.dailyTotals?.kcal || 0}
+                </div>
+                <p className="text-xs text-muted-foreground">Calorías Totales</p>
+              </div>
+              <div className="text-center">
+                <div className="text-xl font-bold text-foreground" data-testid="text-daily-protein">
+                  {menuPlan.dailyTotals?.protein || 0}g
+                </div>
+                <p className="text-xs text-muted-foreground">Proteína</p>
+              </div>
+              <div className="text-center">
+                <div className="text-xl font-bold text-foreground" data-testid="text-daily-carb">
+                  {menuPlan.dailyTotals?.carb || 0}g
+                </div>
+                <p className="text-xs text-muted-foreground">Carbohidratos</p>
+              </div>
+              <div className="text-center">
+                <div className="text-xl font-bold text-foreground" data-testid="text-daily-fat">
+                  {menuPlan.dailyTotals?.fat || 0}g
+                </div>
+                <p className="text-xs text-muted-foreground">Grasas</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
