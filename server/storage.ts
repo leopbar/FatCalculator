@@ -459,6 +459,16 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async bulkCreateTemplateMenus(templates: InsertTemplateMenu[]): Promise<void> {
+    // Insert into database
+    for (const template of templates) {
+      const result = await db.insert(templateMenus).values(template).returning();
+      if (result[0]) {
+        this.templateMenus.set(result[0].id, result[0] as TemplateMenuData);
+      }
+    }
+  }
+
   async findBestMatchingTemplate(
     gender: string, 
     targetCalories: number, 
