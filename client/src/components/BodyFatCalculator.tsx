@@ -11,6 +11,20 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import GenderSelection from "./GenderSelection";
 import MeasurementInput from "./MeasurementInput";
 
+// Translation map from Spanish to Portuguese activity levels
+const activityLevelTranslations: { [key: string]: string } = {
+  'sedentario': 'sedentario',
+  'ligero': 'ligeiro',
+  'moderado': 'moderado', 
+  'intenso': 'intenso'
+};
+
+// Function to translate Spanish activity levels to Portuguese
+function translateActivityLevelToPortuguese(activityLevel: string): string {
+  const lowerActivityLevel = activityLevel.toLowerCase();
+  return activityLevelTranslations[lowerActivityLevel] || lowerActivityLevel;
+}
+
 interface FormData {
   gender: string;
   age: string;
@@ -233,6 +247,10 @@ export default function BodyFatCalculator() {
     }
 
     try {
+      // Translate activity level from Spanish to Portuguese
+      const translatedActivityLevel = translateActivityLevelToPortuguese(formData.activityLevel);
+      console.log("🌐 Activity level translation:", formData.activityLevel, "->", translatedActivityLevel);
+
       // Save body metrics to server
       const bodyMetricsData = {
         gender: formData.gender === "male" ? "masculino" : "feminino",
@@ -242,7 +260,7 @@ export default function BodyFatCalculator() {
         neck,
         waist,
         hip,
-        activityLevel: formData.activityLevel
+        activityLevel: translatedActivityLevel
       };
 
       await saveBodyMetricsMutation.mutateAsync(bodyMetricsData);
