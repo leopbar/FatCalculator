@@ -48,6 +48,23 @@ async function initializeTables() {
         grasas_por_100g real NOT NULL
       );
     `);
+
+    // Create the template_menus table if it doesn't exist
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS template_menus (
+        id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        name text NOT NULL,
+        gender text NOT NULL CHECK (gender IN ('masculino', 'feminino')),
+        calorie_level integer NOT NULL,
+        total_calories real NOT NULL,
+        protein_grams real NOT NULL,
+        carb_grams real NOT NULL,
+        fat_grams real NOT NULL,
+        meals jsonb NOT NULL,
+        smart_substitutions text NOT NULL,
+        created_at text DEFAULT CURRENT_TIMESTAMP
+      );
+    `);</old_str>
     
     console.log('Database tables initialized successfully');
   } catch (error) {

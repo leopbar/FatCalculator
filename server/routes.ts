@@ -247,7 +247,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Template menu endpoints
+  app.get("/api/template-menus", requireAuth, async (req: any, res) => {
+    try {
+      const { gender, calories } = req.query;
+      
+      let templates;
+      if (gender && calories) {
+        templates = await storage.getTemplateMenusByGenderAndCalories(gender as string, parseInt(calories as string));
+      } else {
+        templates = await storage.getAllTemplateMenus();
+      }
+      
+      res.json(templates);
+    } catch (error) {
+      console.error("Error getting template menus:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Find best matching template
+  app.post("/api/find-template", requireAuth, async (req: any, res) => {
+    try {
+      const { gender, targetCalories, targetProtein, targetCarb, targetFat } = req.body;
+      
+      if (!gender || !targetCalories || !targetProtein || !targetCarb || !targetFat) {
+        return res.status(400).json({ error: "Parâmetros obrigatórios: gender, targetCalories, targetProtein, targetCarb, targetFat" });
+      }
+
+      const bestTemplate = await storage.findBestMatchingTemplate(
+        gender,
+        targetCalories,
+        targetProtein,
+        targetCarb,
+        targetFat
+      );
+
+      if (!bestTemplate) {
+        return res.status(404).json({ error: "Nenhum template encontrado para os critérios especificados" });
+      }
+
+      res.json(bestTemplate);
+    } catch (error) {
+      console.error("Error finding matching template:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Seed template menus (temporary endpoint)
+  app.post("/api/seed-templates", requireAuth, async (req: any, res) => {
+    try {
+      // Check if templates already exist
+      const existingTemplates = await storage.getAllTemplateMenus();
+      if (existingTemplates.length > 0) {
+        return res.json({ 
+          message: "Templates já existem na base de dados", 
+          count: existingTemplates.length 
+        });
+      }
+
+      // Here you would add the parsed template data from the file you sent
+      // For now, just return success message
+      res.json({ 
+        message: "Endpoint preparado para receber templates de cardápios",
+        next_step: "Envie os templates parseados para serem inseridos"
+      });
+    } catch (error) {
+      console.error("Error seeding template menus:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   const httpServer = createServer(app);
 
-  return httpServer;
+  return httpServer;</old_str>
 }

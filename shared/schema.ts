@@ -154,6 +154,55 @@ export const insertAlimentoHispanoSchema = createInsertSchema(alimentosHispanos)
   id: true,
 });
 
+export const insertTemplateMenuSchema = createInsertSchema(templateMenus).omit({
+  id: true,
+  created_at: true,
+});</old_str>
+
+// Template menu schemas for pre-defined meal plans
+export const mealItemTemplateSchema = z.object({
+  name: z.string(),
+  grams: z.number(),
+  categoria: z.string(), // categoria do alimento hispano
+});
+
+export const mealTemplateSchema = z.object({
+  name: z.string(),
+  items: z.array(mealItemTemplateSchema),
+  approximate_calories: z.number(),
+});
+
+export const templateMenuSchema = z.object({
+  name: z.string(),
+  gender: z.enum(['masculino', 'feminino']),
+  calorie_level: z.number(), // 1200, 1500, 1800, 2000, 2300, 2500
+  total_calories: z.number(),
+  protein_grams: z.number(),
+  carb_grams: z.number(),
+  fat_grams: z.number(),
+  meals: z.array(mealTemplateSchema),
+  smart_substitutions: z.string(), // texto das substituições inteligentes
+});
+
+export type MealItemTemplate = z.infer<typeof mealItemTemplateSchema>;
+export type MealTemplate = z.infer<typeof mealTemplateSchema>;
+export type TemplateMenu = z.infer<typeof templateMenuSchema>;
+
+// Template menus table - stores pre-defined meal plan templates
+export const templateMenus = pgTable("template_menus", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(), // "Cardápio 1 – Mulheres – 1200 kcal"
+  gender: text("gender", { enum: ["masculino", "feminino"] }).notNull(),
+  calorie_level: integer("calorie_level").notNull(), // 1200, 1500, 1800, etc.
+  total_calories: real("total_calories").notNull(),
+  protein_grams: real("protein_grams").notNull(),
+  carb_grams: real("carb_grams").notNull(),
+  fat_grams: real("fat_grams").notNull(),
+  meals: json("meals").$type<MealTemplate[]>().notNull(),
+  smart_substitutions: text("smart_substitutions").notNull(),
+  created_at: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -165,6 +214,8 @@ export type MenuPlanData = typeof menuPlans.$inferSelect;
 export type InsertMenuPlan = z.infer<typeof insertMenuPlanSchema>;
 export type AlimentoHispano = typeof alimentosHispanos.$inferSelect;
 export type InsertAlimentoHispano = z.infer<typeof insertAlimentoHispanoSchema>;
+export type TemplateMenuData = typeof templateMenus.$inferSelect;
+export type InsertTemplateMenu = typeof templateMenus.$inferInsert;</old_str>
 
 // Mapper function to convert AlimentoHispano to FoodItem
 export function mapAlimentoToFoodItem(alimento: AlimentoHispano): FoodItem {

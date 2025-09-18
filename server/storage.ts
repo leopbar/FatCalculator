@@ -9,12 +9,15 @@ import {
   type InsertMenuPlan,
   type AlimentoHispano,
   type InsertAlimentoHispano,
+  type TemplateMenuData,
+  type InsertTemplateMenu,
   users,
   bodyMetrics,
   calculations,
   menuPlans,
-  alimentosHispanos
-} from "@shared/schema";
+  alimentosHispanos,
+  templateMenus
+} from "@shared/schema";</old_str>
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -63,7 +66,14 @@ export interface IStorage {
   // Clear all user data
   clearAllUserData(userId: string): Promise<void>;
   
-  sessionStore: any; // Using any for compatibility with express-session types
+  // Template menu methods
+  createTemplateMenu(data: InsertTemplateMenu): Promise<TemplateMenuData>;
+  getAllTemplateMenus(): Promise<TemplateMenuData[]>;
+  getTemplateMenusByGenderAndCalories(gender: string, targetCalories: number): Promise<TemplateMenuData[]>;
+  findBestMatchingTemplate(gender: string, targetCalories: number, targetProtein: number, targetCarb: number, targetFat: number): Promise<TemplateMenuData | undefined>;
+  bulkCreateTemplateMenus(templates: InsertTemplateMenu[]): Promise<void>;
+  
+  sessionStore: any; // Using any for compatibility with express-session types</old_str>
 }
 
 export class DatabaseStorage implements IStorage {
@@ -228,7 +238,71 @@ export class DatabaseStorage implements IStorage {
       await db.insert(alimentosHispanos).values(alimentos);
     }
   }
-}
+
+  // Template menu methods
+  async createTemplateMenu(data: InsertTemplateMenu): Promise<TemplateMenuData> {
+    const [templateMenu] = await db
+      .insert(templateMenus)
+      .values(data)
+      .returning();
+    return templateMenu;
+  }
+
+  async getAllTemplateMenus(): Promise<TemplateMenuData[]> {
+    return await db.select().from(templateMenus);
+  }
+
+  async getTemplateMenusByGenderAndCalories(gender: string, targetCalories: number): Promise<TemplateMenuData[]> {
+    return await db
+      .select()
+      .from(templateMenus)
+      .where(eq(templateMenus.gender, gender));
+  }
+
+  async findBestMatchingTemplate(
+    gender: string, 
+    targetCalories: number, 
+    targetProtein: number, 
+    targetCarb: number, 
+    targetFat: number
+  ): Promise<TemplateMenuData | undefined> {
+    // Get all templates for the gender
+    const templates = await db
+      .select()
+      .from(templateMenus)
+      .where(eq(templateMenus.gender, gender));
+
+    if (templates.length === 0) return undefined;
+
+    // Calculate score for each template (lower is better)
+    let bestTemplate = templates[0];
+    let bestScore = Infinity;
+
+    for (const template of templates) {
+      // Calculate differences (normalized)
+      const calorieDiff = Math.abs(template.total_calories - targetCalories) / targetCalories;
+      const proteinDiff = Math.abs(template.protein_grams - targetProtein) / targetProtein;
+      const carbDiff = Math.abs(template.carb_grams - targetCarb) / targetCarb;
+      const fatDiff = Math.abs(template.fat_grams - targetFat) / targetFat;
+
+      // Weighted score (calories have higher weight)
+      const score = (calorieDiff * 0.4) + (proteinDiff * 0.2) + (carbDiff * 0.2) + (fatDiff * 0.2);
+
+      if (score < bestScore) {
+        bestScore = score;
+        bestTemplate = template;
+      }
+    }
+
+    return bestTemplate;
+  }
+
+  async bulkCreateTemplateMenus(templates: InsertTemplateMenu[]): Promise<void> {
+    if (templates.length > 0) {
+      await db.insert(templateMenus).values(templates);
+    }
+  }
+}</old_str>
 
 // Keep MemStorage for fallback if needed
 export class MemStorage implements IStorage {
@@ -357,7 +431,76 @@ export class MemStorage implements IStorage {
       this.alimentos.set(id, alimento);
     });
   }
-}
+
+  // Template menu methods for MemStorage
+  private templateMenus: Map<string, TemplateMenuData> = new Map();
+
+  async createTemplateMenu(data: InsertTemplateMenu): Promise<TemplateMenuData> {
+    const id = randomUUID();
+    const templateMenu: TemplateMenuData = { 
+      ...data, 
+      id,
+      created_at: new Date().toISOString()
+    } as TemplateMenuData;
+    this.templateMenus.set(id, templateMenu);
+    return templateMenu;
+  }
+
+  async getAllTemplateMenus(): Promise<TemplateMenuData[]> {
+    return Array.from(this.templateMenus.values());
+  }
+
+  async getTemplateMenusByGenderAndCalories(gender: string, targetCalories: number): Promise<TemplateMenuData[]> {
+    return Array.from(this.templateMenus.values()).filter(
+      (template) => template.gender === gender
+    );
+  }
+
+  async findBestMatchingTemplate(
+    gender: string, 
+    targetCalories: number, 
+    targetProtein: number, 
+    targetCarb: number, 
+    targetFat: number
+  ): Promise<TemplateMenuData | undefined> {
+    const templates = Array.from(this.templateMenus.values()).filter(
+      (template) => template.gender === gender
+    );
+
+    if (templates.length === 0) return undefined;
+
+    let bestTemplate = templates[0];
+    let bestScore = Infinity;
+
+    for (const template of templates) {
+      const calorieDiff = Math.abs(template.total_calories - targetCalories) / targetCalories;
+      const proteinDiff = Math.abs(template.protein_grams - targetProtein) / targetProtein;
+      const carbDiff = Math.abs(template.carb_grams - targetCarb) / targetCarb;
+      const fatDiff = Math.abs(template.fat_grams - targetFat) / targetFat;
+
+      const score = (calorieDiff * 0.4) + (proteinDiff * 0.2) + (carbDiff * 0.2) + (fatDiff * 0.2);
+
+      if (score < bestScore) {
+        bestScore = score;
+        bestTemplate = template;
+      }
+    }
+
+    return bestTemplate;
+  }
+
+  async bulkCreateTemplateMenus(templates: InsertTemplateMenu[]): Promise<void> {
+    templates.forEach((data) => {
+      const id = randomUUID();
+      const templateMenu: TemplateMenuData = { 
+        ...data, 
+        id,
+        created_at: new Date().toISOString()
+      } as TemplateMenuData;
+      this.templateMenus.set(id, templateMenu);
+    });
+  }
+}</old_str>
 
 // Use DatabaseStorage instead of MemStorage for persistent data
 export const storage = new DatabaseStorage();
