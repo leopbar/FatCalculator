@@ -175,13 +175,24 @@ export default function MenuPage() {
 
       console.log("✅ Template encontrado:", bestTemplate.name);
 
-      // Create menu data using the template
+      // Process template meals to add missing totals
+      const processedMeals = bestTemplate.meals.map((meal: any) => ({
+        ...meal,
+        totals: {
+          protein: Math.round(meal.approximate_calories * 0.16 / 4), // Approximate protein from calories
+          carb: Math.round(meal.approximate_calories * 0.55 / 4), // Approximate carb from calories  
+          fat: Math.round(meal.approximate_calories * 0.29 / 9), // Approximate fat from calories
+          kcal: meal.approximate_calories
+        }
+      }));
+
+      // Create menu data using the processed template
       const menuData = {
         category,
         tdee: calculation.tdee,
         targetCalories,
         macroTarget,
-        meals: bestTemplate.meals,
+        meals: processedMeals,
         dailyTotals: {
           protein: bestTemplate.protein_grams,
           carb: bestTemplate.carb_grams,
