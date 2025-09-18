@@ -1,3 +1,4 @@
+
 import { 
   type User, 
   type InsertUser,
@@ -17,7 +18,7 @@ import {
   menuPlans,
   alimentosHispanos,
   templateMenus
-} from "@shared/schema";</old_str>
+} from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -73,7 +74,7 @@ export interface IStorage {
   findBestMatchingTemplate(gender: string, targetCalories: number, targetProtein: number, targetCarb: number, targetFat: number): Promise<TemplateMenuData | undefined>;
   bulkCreateTemplateMenus(templates: InsertTemplateMenu[]): Promise<void>;
   
-  sessionStore: any; // Using any for compatibility with express-session types</old_str>
+  sessionStore: any; // Using any for compatibility with express-session types
 }
 
 export class DatabaseStorage implements IStorage {
@@ -302,7 +303,7 @@ export class DatabaseStorage implements IStorage {
       await db.insert(templateMenus).values(templates);
     }
   }
-}</old_str>
+}
 
 // Keep MemStorage for fallback if needed
 export class MemStorage implements IStorage {
@@ -500,7 +501,7 @@ export class MemStorage implements IStorage {
       this.templateMenus.set(id, templateMenu);
     });
   }
-}</old_str>
+}
 
 // Use DatabaseStorage instead of MemStorage for persistent data
 export const storage = new DatabaseStorage();
