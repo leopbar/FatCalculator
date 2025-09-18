@@ -293,6 +293,28 @@
     display: none;  /* Chrome, Safari and Opera */
   }
 
+  /* Ensure better mobile text wrapping */
+  @media (max-width: 640px) {
+    .prose p, .prose li {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    /* Prevent horizontal overflow on mobile */
+    .overflow-x-auto {
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Better button spacing on mobile */
+    .flex.gap-2 {
+      gap: 0.25rem;
+    }
+    
+    .flex.gap-3 {
+      gap: 0.5rem;
+    }
+  }
+
   /* Does not work on elements with overflow:hidden! */
   .hover-elevate:not(.no-default-hover-elevate),
   .active-elevate:not(.no-default-active-elevate),

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -323,7 +322,7 @@ export default function MindStrengthening() {
                 <AlertCircle className="w-8 h-8 text-red-600" />
                 <h3 className="text-2xl font-bold text-gray-800">La Paradoja Universal</h3>
               </div>
-              
+
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Es una paradoja tan común como desoladora, especialmente en momentos que simbolizan un nuevo comienzo, 
                 como el inicio de un año o después de un evento de vida impactante: observar una explosión de promesas 
@@ -437,22 +436,24 @@ export default function MindStrengthening() {
           {/* Discipline Section */}
           <Card className="bg-gradient-to-br from-emerald-50 to-green-50 border-2 border-emerald-200">
             <CardHeader>
-              <div className="flex items-center gap-4">
-                <Gauge className="w-8 h-8 text-emerald-600" />
-                <CardTitle className="text-2xl text-emerald-800">Disciplina: La Acción Deliberada en Ausencia de Ganas</CardTitle>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                <Gauge className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600 flex-shrink-0" />
+                <CardTitle className="text-lg sm:text-xl lg:text-2xl text-emerald-800 leading-tight">
+                  Disciplina: La Acción Deliberada en Ausencia de Ganas
+                </CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="bg-white rounded-lg p-6 border border-emerald-200">
-                <h4 className="text-xl font-semibold text-emerald-800 mb-4">Decodificando "Motivación"</h4>
-                <div className="flex items-center justify-center space-x-4 mb-4">
-                  <div className="bg-emerald-100 px-4 py-2 rounded-lg font-semibold text-emerald-800">MOTIVO</div>
-                  <span className="text-2xl text-emerald-600">+</span>
-                  <div className="bg-emerald-100 px-4 py-2 rounded-lg font-semibold text-emerald-800">ACCIÓN</div>
-                  <span className="text-2xl text-emerald-600">=</span>
-                  <div className="bg-emerald-500 px-4 py-2 rounded-lg font-semibold text-white">MOTIVACIÓN</div>
+              <div className="bg-white rounded-lg p-4 sm:p-6 border border-emerald-200">
+                <h4 className="text-lg sm:text-xl font-semibold text-emerald-800 mb-4">Decodificando "Motivación"</h4>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 mb-4">
+                  <div className="bg-emerald-100 px-3 py-2 rounded-lg font-semibold text-emerald-800 text-sm sm:text-base">MOTIVO</div>
+                  <span className="text-xl sm:text-2xl text-emerald-600">+</span>
+                  <div className="bg-emerald-100 px-3 py-2 rounded-lg font-semibold text-emerald-800 text-sm sm:text-base">ACCIÓN</div>
+                  <span className="text-xl sm:text-2xl text-emerald-600">=</span>
+                  <div className="bg-emerald-500 px-3 py-2 rounded-lg font-semibold text-white text-sm sm:text-base">MOTIVACIÓN</div>
                 </div>
-                <p className="text-gray-700">
+                <p className="text-gray-700 text-sm sm:text-base">
                   La sabiduría popular invierte esta ecuación, esperando que el sentimiento preceda la acción. 
                   La dinámica real es más compleja.
                 </p>
@@ -469,7 +470,7 @@ export default function MindStrengthening() {
                     Deseo ardiente de cambiar, pero sin pasos prácticos = Estancamiento y parálisis por análisis
                   </p>
                 </div>
-                
+
                 <div className="bg-yellow-100 p-4 rounded-lg border border-yellow-200">
                   <h5 className="font-semibold text-yellow-800 mb-2 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4" />
@@ -479,7 +480,7 @@ export default function MindStrengthening() {
                     Acciones sin propósito profundo = Frágiles, se abandonan fácilmente
                   </p>
                 </div>
-                
+
                 <div className="bg-green-100 p-4 rounded-lg border border-green-200">
                   <h5 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
                     <CheckCircle className="w-4 h-4" />
@@ -562,7 +563,7 @@ export default function MindStrengthening() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="text-center">
                     <div className="w-20 h-20 bg-violet-500 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-white font-bold text-lg">2</span>
@@ -577,7 +578,7 @@ export default function MindStrengthening() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="text-center">
                     <div className="w-20 h-20 bg-violet-500 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-white font-bold text-lg">3</span>
@@ -593,7 +594,7 @@ export default function MindStrengthening() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="mt-8 bg-green-50 border-l-4 border-green-400 p-6">
                   <h5 className="font-semibold text-green-800 mb-3">La Clave del Cambio</h5>
                   <p className="text-green-700">
@@ -665,7 +666,7 @@ export default function MindStrengthening() {
               <p className="text-lg leading-relaxed text-gray-700 mb-6">
                 Con el entendimiento de que la disciplina, y no la motivación, es el motor del cambio, y que los hábitos son la automatización de esa disciplina, la siguiente pregunta lógica es: ¿de dónde sale la energía para ser disciplinado día tras día, especialmente cuando los resultados aún no son visibles? La respuesta reside en la claridad del propósito.
               </p>
-              
+
               <p className="text-lg leading-relaxed text-gray-700 mb-8">
                 Para cultivar la disciplina necesaria para reescribir décadas de hábitos arraigados, es imperativo tener una claridad absoluta y visceral sobre el "porqué" del cambio. No se trata de un deseo vago de "ser más sano" o "bajar de peso", sino de una conexión profunda con los dolores actuales y los placeres futuros asociados a este viaje.
               </p>
@@ -676,7 +677,7 @@ export default function MindStrengthening() {
                   <Target className="w-8 h-8 text-amber-600" />
                   <h3 className="text-2xl font-bold text-amber-800">La Tarjeta de Motivos</h3>
                 </div>
-                
+
                 <p className="text-lg text-gray-700 mb-6">
                   La herramienta más poderosa para excavar y articular este propósito es la "Tarjeta de Motivos". Este no es un mero ejercicio de pensamiento positivo; es un acto de confrontación honesta y de visualización deliberada. Se trata de un documento personal, un manifiesto intransferible que servirá como tu brújula emocional y tu puerto seguro en los momentos de tormenta.
                 </p>
@@ -689,7 +690,7 @@ export default function MindStrengthening() {
                       <h4 className="text-xl font-bold text-red-800">1. El Diagnóstico del Dolor</h4>
                     </div>
                     <p className="text-red-700 mb-4 text-sm">El costo de no hacer nada</p>
-                    
+
                     <div className="space-y-4">
                       <div className="bg-white p-4 rounded-lg border border-red-200">
                         <h5 className="font-semibold text-red-800 mb-2">Sentimientos Actuales</h5>
@@ -699,7 +700,7 @@ export default function MindStrengthening() {
                           <li>• Usa palabras específicas y evocadoras</li>
                         </ul>
                       </div>
-                      
+
                       <div className="bg-white p-4 rounded-lg border border-red-200">
                         <h5 className="font-semibold text-red-800 mb-2">Limitaciones Prácticas</h5>
                         <ul className="text-sm text-red-700 space-y-1">
@@ -708,7 +709,7 @@ export default function MindStrengthening() {
                           <li>• "Pequeñas muertes" cotidianas</li>
                         </ul>
                       </div>
-                      
+
                       <div className="bg-white p-4 rounded-lg border border-red-200">
                         <h5 className="font-semibold text-red-800 mb-2">Proyección del Dolor</h5>
                         <ul className="text-sm text-red-700 space-y-1">
@@ -727,7 +728,7 @@ export default function MindStrengthening() {
                       <h4 className="text-xl font-bold text-green-800">2. La Visualización del Placer</h4>
                     </div>
                     <p className="text-green-700 mb-4 text-sm">La recompensa de la acción</p>
-                    
+
                     <div className="space-y-4">
                       <div className="bg-white p-4 rounded-lg border border-green-200">
                         <h5 className="font-semibold text-green-800 mb-2">Nuevos Sentimientos</h5>
@@ -737,7 +738,7 @@ export default function MindStrengthening() {
                           <li>• Libre de ansiedad corporal</li>
                         </ul>
                       </div>
-                      
+
                       <div className="bg-white p-4 rounded-lg border border-green-200">
                         <h5 className="font-semibold text-green-800 mb-2">Nuevas Experiencias</h5>
                         <ul className="text-sm text-green-700 space-y-1">
@@ -746,7 +747,7 @@ export default function MindStrengthening() {
                           <li>• Mirarse al espejo con respeto</li>
                         </ul>
                       </div>
-                      
+
                       <div className="bg-white p-4 rounded-lg border border-green-200">
                         <h5 className="font-semibold text-green-800 mb-2">Impacto Holístico</h5>
                         <ul className="text-sm text-green-700 space-y-1">
@@ -773,7 +774,7 @@ export default function MindStrengthening() {
                   <Wrench className="w-8 h-8 text-indigo-600" />
                   <h3 className="text-2xl font-bold text-indigo-800">La Ingeniería de Metas: El Método SMART</h3>
                 </div>
-                
+
                 <p className="text-lg text-gray-700 mb-6">
                   Con los motivos profundos sirviendo como combustible, el siguiente paso es canalizar esa energía en un plan de acción concreto. Metas vagas como "quiero bajar de peso" son como decirle a un capitán de barco que "navegue hacia el oeste"; son inútiles, pues no ofrecen un destino claro ni un medio para medir el progreso.
                 </p>
@@ -787,7 +788,7 @@ export default function MindStrengthening() {
                     <p className="text-xs text-indigo-600">Específica</p>
                     <p className="text-xs text-gray-600 mt-2">Clara e inequívoca</p>
                   </div>
-                  
+
                   <div className="bg-white p-4 rounded-lg text-center border-2 border-indigo-200">
                     <div className="w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-white font-bold">M</span>
@@ -796,7 +797,7 @@ export default function MindStrengthening() {
                     <p className="text-xs text-indigo-600">Medible</p>
                     <p className="text-xs text-gray-600 mt-2">Cuantificable</p>
                   </div>
-                  
+
                   <div className="bg-white p-4 rounded-lg text-center border-2 border-indigo-200">
                     <div className="w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-white font-bold">A</span>
@@ -805,7 +806,7 @@ export default function MindStrengthening() {
                     <p className="text-xs text-indigo-600">Alcanzable</p>
                     <p className="text-xs text-gray-600 mt-2">Realista para ti</p>
                   </div>
-                  
+
                   <div className="bg-white p-4 rounded-lg text-center border-2 border-indigo-200">
                     <div className="w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-white font-bold">R</span>
@@ -814,7 +815,7 @@ export default function MindStrengthening() {
                     <p className="text-xs text-indigo-600">Relevante</p>
                     <p className="text-xs text-gray-600 mt-2">Alineada con motivos</p>
                   </div>
-                  
+
                   <div className="bg-white p-4 rounded-lg text-center border-2 border-indigo-200">
                     <div className="w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-white font-bold">T</span>
@@ -875,7 +876,7 @@ export default function MindStrengthening() {
                   <Users className="w-8 h-8 text-pink-600" />
                   <h3 className="text-2xl font-bold text-pink-800">Caso de Estudio 1: El Perfil Principiante</h3>
                 </div>
-                
+
                 <div className="bg-white rounded-lg p-6 mb-6 border border-pink-200">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center">
@@ -886,7 +887,7 @@ export default function MindStrengthening() {
                       <p className="text-pink-600 text-sm">45 años, sedentaria, madre de dos hijos</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <p><strong>Situación:</strong> IMC 29, sedentaria 10+ años</p>
@@ -911,7 +912,7 @@ export default function MindStrengthening() {
                       "Reducir 8 kg de peso corporal y caminar 5 km sin parar"
                     </p>
                   </div>
-                  
+
                   <div className="bg-white p-4 rounded-lg border border-pink-200">
                     <div className="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-white font-bold text-sm">M</span>
@@ -921,7 +922,7 @@ export default function MindStrengthening() {
                       Peso semanal, cintura quincenal, distancia por app, fotos mensuales
                     </p>
                   </div>
-                  
+
                   <div className="bg-white p-4 rounded-lg border border-pink-200">
                     <div className="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-white font-bold text-sm">A</span>
@@ -931,7 +932,7 @@ export default function MindStrengthening() {
                       8 kg en 4 meses (0.5 kg/semana) es seguro y realista
                     </p>
                   </div>
-                  
+
                   <div className="bg-white p-4 rounded-lg border border-pink-200">
                     <div className="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-white font-bold text-sm">R</span>
@@ -941,7 +942,7 @@ export default function MindStrengthening() {
                       Alivia presión articular, reduce riesgo diabetes, energía para hijos
                     </p>
                   </div>
-                  
+
                   <div className="bg-white p-4 rounded-lg border border-pink-200">
                     <div className="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-white font-bold text-sm">T</span>
@@ -960,7 +961,7 @@ export default function MindStrengthening() {
                   <TrendingUp className="w-8 h-8 text-blue-600" />
                   <h3 className="text-2xl font-bold text-blue-800">Caso de Estudio 2: El Perfil Intermedio</h3>
                 </div>
-                
+
                 <div className="bg-white rounded-lg p-6 mb-6 border border-blue-200">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
@@ -971,7 +972,7 @@ export default function MindStrengthening() {
                       <p className="text-blue-600 text-sm">32 años, entrena inconsistentemente</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <p><strong>Situación:</strong> "Gordiflaco" - peso normal, alta grasa</p>
@@ -996,7 +997,7 @@ export default function MindStrengthening() {
                       "Reducir grasa de 20% a 15% y aumentar 20kg en sentadilla"
                     </p>
                   </div>
-                  
+
                   <div className="bg-white p-4 rounded-lg border border-blue-200">
                     <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-white font-bold text-sm">M</span>
@@ -1006,7 +1007,7 @@ export default function MindStrengthening() {
                       % grasa mensual (plicómetro), cargas en bitácora de entrenamiento
                     </p>
                   </div>
-                  
+
                   <div className="bg-white p-4 rounded-lg border border-blue-200">
                     <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-white font-bold text-sm">A</span>
@@ -1016,7 +1017,7 @@ export default function MindStrengthening() {
                       5% grasa en 5 meses (1%/mes) + 20kg carga es desafiante pero factible
                     </p>
                   </div>
-                  
+
                   <div className="bg-white p-4 rounded-lg border border-blue-200">
                     <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-white font-bold text-sm">R</span>
@@ -1026,7 +1027,7 @@ export default function MindStrengthening() {
                       15% grasa = definición visible = autoconfianza + rendimiento atlético
                     </p>
                   </div>
-                  
+
                   <div className="bg-white p-4 rounded-lg border border-blue-200">
                     <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-white font-bold text-sm">T</span>
@@ -1045,7 +1046,7 @@ export default function MindStrengthening() {
                   <Trophy className="w-8 h-8 text-purple-600" />
                   <h3 className="text-2xl font-bold text-purple-800">La Implementación de Rutinas y el Poder de la Modelación</h3>
                 </div>
-                
+
                 <p className="text-lg text-gray-700 mb-6">
                   Con motivos claros y metas definidas, la ejecución diaria sucede a través de la implementación de rutinas estratégicas. Son los pequeños hábitos, ejecutados con una consistencia de hierro, los que pavimentan el camino hacia la meta final. En lugar de intentar reinventar la rueda o descubrir todo por prueba y error, una de las estrategias de aprendizaje e implementación más eficaces es la "modelación".
                 </p>
@@ -1075,7 +1076,7 @@ export default function MindStrengthening() {
                       <li>• Transformación sostenible comprobada</li>
                     </ul>
                   </div>
-                  
+
                   <div className="bg-white p-6 rounded-lg border border-purple-200">
                     <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-white font-bold">2</span>
@@ -1088,7 +1089,7 @@ export default function MindStrengthening() {
                       <li>• Mentalidad y resiliencia</li>
                     </ul>
                   </div>
-                  
+
                   <div className="bg-white p-6 rounded-lg border border-purple-200">
                     <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-white font-bold">3</span>
@@ -1104,7 +1105,7 @@ export default function MindStrengthening() {
                 </div>
 
                 <div className="bg-violet-100 rounded-lg p-6">
-                  <h5 className="font-bold text-violet-800 mb-4">Ejemplo de Adaptación Inteligente</h5>
+                  <h5 className="font-bold text-violet-700 mb-4">Ejemplo de Adaptación Inteligente</h5>
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <h6 className="font-semibold text-violet-700 mb-2">Tu Modelo:</h6>
@@ -1277,11 +1278,11 @@ export default function MindStrengthening() {
                       <AlertCircle className="w-6 h-6 text-red-600" />
                       <h4 className="text-lg font-bold text-red-800">La Consecuencia (El Dolor)</h4>
                     </div>
-                    
+
                     <p className="text-gray-700 mb-4 text-sm">
                       Si cumplo menos del 80% de mis hábitos, habrá una consecuencia inmediata y significativa.
                     </p>
-                    
+
                     <div className="space-y-3">
                       <div className="p-3 bg-red-50 rounded-lg border border-red-200">
                         <h5 className="font-semibold text-red-800 mb-1">💰 Financiera</h5>
@@ -1308,11 +1309,11 @@ export default function MindStrengthening() {
                       <Star className="w-6 h-6 text-green-600" />
                       <h4 className="text-lg font-bold text-green-800">La Recompensa (El Placer)</h4>
                     </div>
-                    
+
                     <p className="text-gray-700 mb-4 text-sm">
                       Si cumplo el 95% o más de mis hábitos, tendré derecho a una recompensa genuinamente valiosa.
                     </p>
-                    
+
                     <div className="space-y-3">
                       <div className="p-3 bg-green-50 rounded-lg border border-green-200">
                         <h5 className="font-semibold text-green-800 mb-1">🍽️ Experiencial</h5>
@@ -1347,7 +1348,7 @@ export default function MindStrengthening() {
                   <TrendingUp className="w-8 h-8 text-emerald-600" />
                   <h3 className="text-2xl font-bold text-emerald-800">La Evolución Natural del Sistema</h3>
                 </div>
-                
+
                 <p className="text-lg text-gray-700 leading-relaxed mb-6">
                   Con el tiempo, a medida que las vías neuronales de los nuevos hábitos se fortalecen, la necesidad 
                   del Guardián disminuye. Los comportamientos se vuelven automáticos y la motivación intrínseca, 
@@ -1364,7 +1365,7 @@ export default function MindStrengthening() {
                       Dependencia del Guardián para mantener accountability y ejecutar consecuencias/recompensas
                     </p>
                   </div>
-                  
+
                   <div className="bg-white p-6 rounded-lg border border-emerald-200 text-center">
                     <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-white font-bold text-lg">2</span>
@@ -1374,7 +1375,7 @@ export default function MindStrengthening() {
                       Fortalecimiento de vías neuronales, hábitos se vuelven más automáticos y naturales
                     </p>
                   </div>
-                  
+
                   <div className="bg-white p-6 rounded-lg border border-emerald-200 text-center">
                     <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-white font-bold text-lg">3</span>
@@ -1393,7 +1394,7 @@ export default function MindStrengthening() {
                   <Trophy className="w-8 h-8 text-yellow-400" />
                   <h3 className="text-2xl font-bold">Conclusión: La Transformación como un Viaje Infinito</h3>
                 </div>
-                
+
                 <p className="text-lg leading-relaxed mb-6 text-gray-200">
                   Llegamos al final de esta guía, pero al inicio de tu verdadero viaje. Lo que se ha presentado aquí 
                   no es una fórmula mágica, sino una arquitectura, un sistema operativo para el cambio. Cubrimos la 
@@ -1532,7 +1533,7 @@ export default function MindStrengthening() {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
               <div className="text-xs sm:text-sm text-muted-foreground">
                 {completedSections.length}/{totalSections} completadas
@@ -1553,7 +1554,7 @@ export default function MindStrengthening() {
               const Icon = section.icon;
               const isCompleted = completedSections.includes(section.id);
               const isCurrent = currentSection === section.id;
-              
+
               return (
                 <div key={section.id} className="flex items-center flex-shrink-0">
                   <button
@@ -1622,7 +1623,7 @@ export default function MindStrengthening() {
             <ArrowLeft className="w-4 h-4" />
             Anterior
           </Button>
-          
+
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <Button
               variant="outline"
@@ -1644,7 +1645,7 @@ export default function MindStrengthening() {
                 </>
               )}
             </Button>
-            
+
             {currentSection < totalSections ? (
               <Button
                 onClick={handleNext}
