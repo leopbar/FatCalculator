@@ -295,7 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Seed template menus (temporary endpoint)
-  app.post("/api/seed-templates", requireAuth, async (req: any, res) => {
+  app.post("/api/seed-templates", async (req: any, res) => {
     try {
       // Check if templates already exist
       const existingTemplates = await storage.getAllTemplateMenus();
