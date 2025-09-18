@@ -64,7 +64,7 @@ async function initializeTables() {
         smart_substitutions text NOT NULL,
         created_at text DEFAULT CURRENT_TIMESTAMP
       );
-    `);</old_str>
+    `);
     
     console.log('Database tables initialized successfully');
   } catch (error) {

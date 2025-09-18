@@ -69,13 +69,14 @@ export type Meal = z.infer<typeof mealSchema>;
 export type MacroTarget = z.infer<typeof macroTargetSchema>;
 export type MenuPlan = z.infer<typeof menuPlanSchema>;
 
+// Tables
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
 });
 
-// Body metrics table - stores user measurements
 export const bodyMetrics = pgTable("body_metrics", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
@@ -83,25 +84,23 @@ export const bodyMetrics = pgTable("body_metrics", {
   age: integer("age").notNull(),
   height: real("height").notNull(), // cm
   weight: real("weight").notNull(), // kg
-  neck: real("neck").notNull(), // cm
-  waist: real("waist").notNull(), // cm
-  hip: real("hip"), // cm (optional for males)
-  activityLevel: text("activity_level", { 
-    enum: ["sedentario", "leve", "moderado", "intenso", "muito_intenso"] 
+  neck: real("neck").notNull(),     // cm
+  waist: real("waist").notNull(),   // cm
+  hip: real("hip"),                 // cm (optional for males)
+  activityLevel: text("activity_level", {
+    enum: ["sedentario", "leve", "moderado", "intenso", "muito_intenso"]
   }).notNull(),
 });
 
-// Calculation results table - stores body fat, BMR, TDEE calculations
 export const calculations = pgTable("calculations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
   bodyFatPercent: real("body_fat_percent").notNull(),
   category: text("category").notNull(), // fitness category
-  bmr: real("bmr").notNull(), // basal metabolic rate
-  tdee: real("tdee").notNull(), // total daily energy expenditure
+  bmr: real("bmr").notNull(),           // basal metabolic rate
+  tdee: real("tdee").notNull(),         // total daily energy expenditure
 });
 
-// Menu plans table - stores generated meal plans
 export const menuPlans = pgTable("menu_plans", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
@@ -118,11 +117,10 @@ export const menuPlans = pgTable("menu_plans", {
   }>().notNull(),
 });
 
-// Alimentos hispanos table - stores Hispanic food nutritional data
 export const alimentosHispanos = pgTable("alimentos_hispanos", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  nombre: text("nombre").notNull(), // Spanish food name
-  categoria: text("categoria").notNull(), // Category (A-Cereales, B-Verduras, etc.)
+  nombre: text("nombre").notNull(),
+  categoria: text("categoria").notNull(),
   calorias_por_100g: real("calorias_por_100g").notNull(),
   carbohidratos_por_100g: real("carbohidratos_por_100g").notNull(),
   proteinas_por_100g: real("proteinas_por_100g").notNull(),
@@ -130,6 +128,7 @@ export const alimentosHispanos = pgTable("alimentos_hispanos", {
 });
 
 // Insert schemas
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -154,18 +153,33 @@ export const insertAlimentoHispanoSchema = createInsertSchema(alimentosHispanos)
   id: true,
 });
 
+// Template menus table – stores pre-defined meal plan templates
+
+export const templateMenus = pgTable("template_menus", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  gender: text("gender", { enum: ["masculino", "feminino"] }).notNull(),
+  calorie_level: integer("calorie_level").notNull(),
+  total_calories: real("total_calories").notNull(),
+  protein_grams: real("protein_grams").notNull(),
+  carb_grams: real("carb_grams").notNull(),
+  fat_grams: real("fat_grams").notNull(),
+  meals: json("meals").$type<MealTemplate[]>().notNull(),
+  smart_substitutions: text("smart_substitutions").notNull(),
+  created_at: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const insertTemplateMenuSchema = createInsertSchema(templateMenus).omit({
   id: true,
   created_at: true,
 });
 
-// Template menu schemas for pre-defined meal plans</old_str>
-
 // Template menu schemas for pre-defined meal plans
+
 export const mealItemTemplateSchema = z.object({
   name: z.string(),
   grams: z.number(),
-  categoria: z.string(), // categoria do alimento hispano
+  categoria: z.string(),
 });
 
 export const mealTemplateSchema = z.object({
@@ -177,35 +191,21 @@ export const mealTemplateSchema = z.object({
 export const templateMenuSchema = z.object({
   name: z.string(),
   gender: z.enum(['masculino', 'feminino']),
-  calorie_level: z.number(), // 1200, 1500, 1800, 2000, 2300, 2500
+  calorie_level: z.number(),
   total_calories: z.number(),
   protein_grams: z.number(),
   carb_grams: z.number(),
   fat_grams: z.number(),
   meals: z.array(mealTemplateSchema),
-  smart_substitutions: z.string(), // texto das substituições inteligentes
+  smart_substitutions: z.string(),
 });
 
 export type MealItemTemplate = z.infer<typeof mealItemTemplateSchema>;
 export type MealTemplate = z.infer<typeof mealTemplateSchema>;
 export type TemplateMenu = z.infer<typeof templateMenuSchema>;
 
-// Template menus table - stores pre-defined meal plan templates
-export const templateMenus = pgTable("template_menus", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(), // "Cardápio 1 – Mulheres – 1200 kcal"
-  gender: text("gender", { enum: ["masculino", "feminino"] }).notNull(),
-  calorie_level: integer("calorie_level").notNull(), // 1200, 1500, 1800, etc.
-  total_calories: real("total_calories").notNull(),
-  protein_grams: real("protein_grams").notNull(),
-  carb_grams: real("carb_grams").notNull(),
-  fat_grams: real("fat_grams").notNull(),
-  meals: json("meals").$type<MealTemplate[]>().notNull(),
-  smart_substitutions: text("smart_substitutions").notNull(),
-  created_at: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-});
-
 // Types
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type BodyMetrics = typeof bodyMetrics.$inferSelect;
@@ -217,9 +217,9 @@ export type InsertMenuPlan = z.infer<typeof insertMenuPlanSchema>;
 export type AlimentoHispano = typeof alimentosHispanos.$inferSelect;
 export type InsertAlimentoHispano = z.infer<typeof insertAlimentoHispanoSchema>;
 export type TemplateMenuData = typeof templateMenus.$inferSelect;
-export type InsertTemplateMenu = typeof templateMenus.$inferInsert;</old_str>
 
 // Mapper function to convert AlimentoHispano to FoodItem
+
 export function mapAlimentoToFoodItem(alimento: AlimentoHispano): FoodItem {
   return {
     id: alimento.id,
@@ -229,12 +229,11 @@ export function mapAlimentoToFoodItem(alimento: AlimentoHispano): FoodItem {
     carb_per_100g: alimento.carbohidratos_por_100g,
     fat_per_100g: alimento.grasas_por_100g,
     kcal_per_100g: alimento.calorias_por_100g,
-    fiber_per_100g: 0, // Default for now, can be updated later if data is available
-    energy_density: alimento.calorias_por_100g / 100, // kcal/g
+    fiber_per_100g: 0,
+    energy_density: alimento.calorias_por_100g / 100,
   };
 }
 
-// Helper function to map array of AlimentoHispano to FoodItem array
 export function mapAlimentosToFoodItems(alimentos: AlimentoHispano[]): FoodItem[] {
   return alimentos.map(mapAlimentoToFoodItem);
 }
