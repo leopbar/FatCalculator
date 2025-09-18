@@ -174,7 +174,10 @@ export default function Dashboard() {
             </Card>
 
             {/* Fortaleciendo su Mente */}
-            <Card className="hover-elevate cursor-pointer">
+            <Card 
+              className="hover-elevate cursor-pointer" 
+              onClick={() => navigate("/mind-strengthening")}
+            >
               <CardHeader className="text-center">
                 <Brain className="w-12 h-12 text-primary mx-auto mb-2" />
                 <CardTitle>Fortaleciendo su Mente</CardTitle>
@@ -183,8 +186,8 @@ export default function Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button className="w-full" variant="outline">
-                  Próximamente
+                <Button className="w-full" variant="default">
+                  Iniciar Guía Mental
                 </Button>
               </CardContent>
             </Card>

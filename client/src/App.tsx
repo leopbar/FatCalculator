@@ -9,6 +9,7 @@ import Dashboard from "@/pages/Dashboard";
 import Home from "@/pages/Home";
 import Results from "@/pages/Results";
 import Menu from "@/pages/Menu";
+import MindStrengthening from "@/pages/MindStrengthening";
 import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
 
@@ -20,6 +21,7 @@ function Router() {
       <ProtectedRoute path="/calculator" component={() => <Home />} />
       <ProtectedRoute path="/results" component={() => <Results />} />
       <ProtectedRoute path="/menu" component={() => <Menu />} />
+      <ProtectedRoute path="/mind-strengthening" component={MindStrengthening} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
