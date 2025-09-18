@@ -88,7 +88,7 @@ export const bodyMetrics = pgTable("body_metrics", {
   waist: real("waist").notNull(),   // cm
   hip: real("hip"),                 // cm (optional for males)
   activityLevel: text("activity_level", {
-    enum: ["sedentario", "ligero", "moderado", "intenso", "muito_intenso"]
+    enum: ["sedentario", "leve", "ligero", "moderado", "intenso", "muito_intenso"]
   }).notNull(),
 });
 
@@ -142,7 +142,7 @@ export const insertBodyMetricsSchema = z.object({
   neck: z.coerce.number().positive().min(1).max(100),
   waist: z.coerce.number().positive().min(1).max(200),
   hip: z.coerce.number().positive().min(1).max(200).optional(),
-  activityLevel: z.enum(["sedentario", "ligero", "moderado", "intenso", "muito_intenso"])
+  activityLevel: z.enum(["sedentario", "leve", "ligero", "moderado", "intenso", "muito_intenso"])
 });
 
 export const insertCalculationSchema = z.object({
