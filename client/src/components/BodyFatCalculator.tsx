@@ -94,7 +94,7 @@ export default function BodyFatCalculator() {
     }
     if (!formData.activityLevel) {
       newErrors.activityLevel = "El nivel de actividad física es obligatorio";
-    } else if (!['sedentary', 'light', 'moderate', 'intense'].includes(formData.activityLevel)) {
+    } else if (!['sedentario', 'ligero', 'moderado', 'intenso'].includes(formData.activityLevel)) {
       newErrors.activityLevel = "Nivel de actividad física inválido";
     }
 
@@ -204,10 +204,10 @@ export default function BodyFatCalculator() {
 
     // Apply activity level factor to get TDEE (Total Daily Energy Expenditure)
     const activityFactors = {
-      sedentary: 1.2,
-      light: 1.375,
-      moderate: 1.55,
-      intense: 1.725
+      sedentario: 1.2,
+      ligero: 1.375,
+      moderado: 1.55,
+      intenso: 1.725
     };
     
     const activityFactor = activityFactors[formData.activityLevel as keyof typeof activityFactors];
@@ -446,10 +446,10 @@ export default function BodyFatCalculator() {
               </h3>
               <div className="space-y-2">
                 {[
-                  { value: "sedentary", label: "Sedentario", description: "poco o ningún ejercicio" },
-                  { value: "light", label: "Ligero", description: "ejercicio ligero 1-3 días/semana" },
-                  { value: "moderate", label: "Moderado", description: "ejercicio moderado 3-5 días/semana" },
-                  { value: "intense", label: "Intenso", description: "ejercicio intenso 6-7 días/semana" }
+                  { value: "sedentario", label: "Sedentario", description: "poco o ningún ejercicio" },
+                  { value: "ligero", label: "Ligero", description: "ejercicio ligero 1-3 días/semana" },
+                  { value: "moderado", label: "Moderado", description: "ejercicio moderado 3-5 días/semana" },
+                  { value: "intenso", label: "Intenso", description: "ejercicio intenso 6-7 días/semana" }
                 ].map((level) => (
                   <label
                     key={level.value}
