@@ -694,14 +694,14 @@ export function convertToHouseholdMeasures(foodName: string, grams: number): str
     return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
   }
 
-  // Abacate - 1 unidade média = ~200g
-  if (name.includes('abacate') || name.includes('aguacate')) {
+  // Aguacate - 1 unidad mediana = ~200g
+  if (name.includes('aguacate') || name.includes('abacate')) {
     if (grams >= 100) {
       const units = Math.round(grams / 200 * 10) / 10;
-      return `(${units} ${units === 1 ? 'abacate médio' : 'abacates médios'})`;
+      return `(${units} ${units === 1 ? 'aguacate mediano' : 'aguacates medianos'})`;
     } else {
       const spoons = Math.round(grams / 20);
-      return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+      return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
     }
   }
 
@@ -757,16 +757,16 @@ export function convertToHouseholdMeasures(foodName: string, grams: number): str
     return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
   }
 
-  // Para outros alimentos, usar colheres como medida padrão
+  // Para outros alimentos, usar cucharadas como medida estándar
   if (grams >= 60) {
     const spoons = Math.round(grams / 15);
-    return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+    return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
   } else if (grams >= 15) {
     const spoons = Math.round(grams / 15);
-    return `(${spoons} ${spoons === 1 ? 'colher de sopa' : 'colheres de sopa'})`;
+    return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
   } else {
     const teaspoons = Math.round(grams / 5);
-    return `(${teaspoons} ${teaspoons === 1 ? 'colher de chá' : 'colheres de chá'})`;
+    return `(${teaspoons} ${teaspoons === 1 ? 'cucharadita' : 'cucharaditas'})`;
   }
 }
 

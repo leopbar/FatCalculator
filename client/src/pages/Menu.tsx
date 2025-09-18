@@ -87,8 +87,8 @@ export default function MenuPage() {
     if (!calculation || !bodyMetrics) {
       if (!calculationLoading && !metricsLoading) {
         toast({
-          title: "Dados não encontrados",
-          description: "Realize o cálculo primeiro. Redirecionando...",
+          title: "Datos no encontrados",
+          description: "Realice el cálculo primero. Redirigiendo...",
           variant: "destructive",
         });
         navigate('/calculator');
@@ -211,8 +211,8 @@ export default function MenuPage() {
       await queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
 
       toast({
-        title: "Cardápio gerado!",
-        description: "Seu cardápio personalizado foi criado com sucesso.",
+        title: "¡Menú generado!",
+        description: "Su menú personalizado ha sido creado con éxito.",
       });
 
       // Clear the category parameter from URL to prevent re-generation
@@ -221,17 +221,17 @@ export default function MenuPage() {
     } catch (error) {
       console.error('Error generating menu from template:', error);
 
-      let errorMessage = "Não foi possível gerar o cardápio. Tente novamente.";
+      let errorMessage = "No se pudo generar el menú. Inténtelo de nuevo.";
       if (error instanceof Error) {
         if (error.message.includes('inválidos') || error.message.includes('NaN')) {
-          errorMessage = "Dados de cálculo inválidos. Por favor, refaça os cálculos.";
+          errorMessage = "Datos de cálculo inválidos. Por favor, recalcule.";
         } else if (error.message.includes('template')) {
-          errorMessage = "Nenhum template compatível encontrado. Tente uma categoria diferente.";
+          errorMessage = "No se encontró ninguna plantilla compatible. Intente una categoría diferente.";
         }
       }
 
       toast({
-        title: "Erro ao gerar cardápio",
+        title: "Error al generar menú",
         description: errorMessage,
         variant: "destructive",
       });
@@ -286,7 +286,7 @@ export default function MenuPage() {
             </p>
             <Button onClick={handleGoBack} data-testid="button-back-to-results">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar aos Resultados
+              Volver a Resultados
             </Button>
           </CardContent>
         </Card>
@@ -326,7 +326,7 @@ export default function MenuPage() {
             className="text-sm px-3 py-1"
             data-testid={`badge-category-${menuPlan.category}`}
           >
-            Plano {menuPlan.category.charAt(0).toUpperCase() + menuPlan.category.slice(1)}
+            Plan {menuPlan.category.charAt(0).toUpperCase() + menuPlan.category.slice(1)}
           </Badge>
 
         </div>
@@ -392,7 +392,7 @@ export default function MenuPage() {
                   {meal.items?.map((item, itemIndex) => (
                     <div key={itemIndex} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
                       <div className="flex-1">
-                        <div className="font-medium text-sm">{item?.name || "Item sem nome"}</div>
+                        <div className="font-medium text-sm">{item?.name || "Item sin nombre"}</div>
                         <div className="text-xs text-muted-foreground">
                           {item?.grams || 0}g {item?.name ? convertToHouseholdMeasures(item.name, item.grams || 0) : ""}
                         </div>
@@ -404,7 +404,7 @@ export default function MenuPage() {
                         <div className="font-medium">{item?.kcal || 0} kcal</div>
                       </div>
                     </div>
-                  )) || <div className="text-muted-foreground">Nenhum item disponível</div>}
+                  )) || <div className="text-muted-foreground">Ningún item disponible</div>}
                 </div>
               </CardContent>
             </Card>
@@ -412,12 +412,12 @@ export default function MenuPage() {
         </div>
 
         <div className="flex justify-between items-center text-sm font-medium bg-muted/30 p-3 rounded">
-          <span>Total da Refeição:</span>
+          <span>Total de la Comida:</span>
           <div className="flex space-x-4">
-            <span>{menuPlan.totals?.protein || 0}g P</span>
-            <span>{menuPlan.totals?.carb || 0}g C</span>
-            <span>{menuPlan.totals?.fat || 0}g G</span>
-            <span className="font-bold">{menuPlan.totals?.kcal || 0} kcal</span>
+            <span>{menuPlan.dailyTotals?.protein || 0}g P</span>
+            <span>{menuPlan.dailyTotals?.carb || 0}g C</span>
+            <span>{menuPlan.dailyTotals?.fat || 0}g G</span>
+            <span className="font-bold">{menuPlan.dailyTotals?.kcal || 0} kcal</span>
           </div>
         </div>
 
@@ -426,7 +426,7 @@ export default function MenuPage() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Target className="w-5 h-5 text-primary" />
-              <span>Totais Diários</span>
+              <span>Totales Diarios</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
