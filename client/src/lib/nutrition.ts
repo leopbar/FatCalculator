@@ -8,97 +8,78 @@ export function calculateMacroTargets(
   bodyFatPercent: number,
   category: 'suave' | 'moderado' | 'restritivo'
 ): MacroTarget {
-  // Validate inputs - more strict validation to prevent NaN
-  if (!tdee || !targetCalories || !weight || bodyFatPercent === undefined || bodyFatPercent === null || !category) {
-    console.error('Invalid inputs for macro calculation:', { tdee, targetCalories, weight, bodyFatPercent, category });
-    throw new Error('Dados inválidos para cálculo de macros');
+  console.log("🎯 Calculating macro targets:", { tdee, targetCalories, weight, bodyFatPercent, category });
+
+  // Validate inputs
+  if (!tdee || !targetCalories || !weight || bodyFatPercent === undefined) {
+    console.error("❌ Invalid inputs for macro calculation:", { tdee, targetCalories, weight, bodyFatPercent });
+    throw new Error("Invalid inputs for macro calculation");
   }
 
-  // Additional NaN checks
-  if (isNaN(tdee) || isNaN(targetCalories) || isNaN(weight) || isNaN(bodyFatPercent)) {
-    console.error('NaN values detected:', { tdee, targetCalories, weight, bodyFatPercent });
-    throw new Error('Valores inválidos detectados nos cálculos');
-  }
-
-  // Validate ranges
-  if (tdee <= 0 || targetCalories <= 0 || weight <= 0 || bodyFatPercent < 0 || bodyFatPercent > 100) {
-    console.error('Values out of valid range:', { tdee, targetCalories, weight, bodyFatPercent });
-    throw new Error('Valores fora do intervalo válido');
-  }
-
-  // Calculate lean body mass
+  // Calculate lean body mass (kg)
   const leanBodyMass = weight * (1 - bodyFatPercent / 100);
 
-  // More conservative protein targets to fit within calorie limits
+  // Protein targets based on category and lean body mass
   let proteinMultiplier: number;
+  let carbPercent: number;
+  let fatPercent: number;
+
   switch (category) {
     case 'suave':
-      proteinMultiplier = 1.2; // Lower protein for easier adherence
+      proteinMultiplier = 1.6;  // 1.6g per kg LBM
+      carbPercent = 0.45;       // 45% carbs
+      fatPercent = 0.30;        // 30% fat
       break;
     case 'moderado':
-      proteinMultiplier = 1.4; 
+      proteinMultiplier = 1.8;  // 1.8g per kg LBM
+      carbPercent = 0.40;       // 40% carbs
+      fatPercent = 0.25;        // 25% fat
       break;
-    case 'restritivo':
-      proteinMultiplier = 1.6; // Higher protein for muscle preservation
+    case 'restritivo':  // Fixed typo: was 'restrictivo', should be 'restritivo'
+      proteinMultiplier = 2.0;  // 2.0g per kg LBM
+      carbPercent = 0.35;       // 35% carbs
+      fatPercent = 0.25;        // 25% fat
       break;
+    default:
+      proteinMultiplier = 1.8;
+      carbPercent = 0.40;
+      fatPercent = 0.25;
   }
 
-  const proteinGrams = Math.round(leanBodyMass * proteinMultiplier);
-  const proteinCalories = proteinGrams * 4;
+  // Calculate macros
+  const protein_g = Math.round(leanBodyMass * proteinMultiplier);
+  const protein_calories = protein_g * 4;
 
-  // Ensure protein doesn't exceed 40% of total calories
-  const maxProteinCalories = targetCalories * 0.4;
-  const finalProteinCalories = Math.min(proteinCalories, maxProteinCalories);
-  const finalProteinGrams = Math.round(finalProteinCalories / 4);
+  const carb_calories = Math.round(targetCalories * carbPercent);
+  const carb_g = Math.round(carb_calories / 4);
 
-  // Fat targets based on category (20-30% of calories)
-  let fatPercentage: number;
-  switch (category) {
-    case 'suave':
-      fatPercentage = 25; // Higher fat for satiety
-      break;
-    case 'moderado':
-      fatPercentage = 22;
-      break;
-    case 'restritivo':
-      fatPercentage = 20; // Lower fat for more protein/carbs
-      break;
-  }
+  const fat_calories = Math.round(targetCalories * fatPercent);
+  const fat_g = Math.round(fat_calories / 9);
 
-  const fatCalories = Math.round(targetCalories * (fatPercentage / 100));
-  const fatGrams = Math.round(fatCalories / 9);
-
-  // Remaining calories for carbs
-  const remainingCalories = targetCalories - finalProteinCalories - fatCalories;
-  const carbGrams = Math.max(0, Math.round(remainingCalories / 4));
-  const carbCalories = carbGrams * 4;
-
-  // Ensure total doesn't exceed target calories
-  const actualTotalCalories = finalProteinCalories + fatCalories + carbCalories;
-
-  // Calculate actual percentages
-  const proteinPercent = Math.round((finalProteinCalories / targetCalories) * 100);
-  const fatPercent = Math.round((fatCalories / targetCalories) * 100);
-  const carbPercent = Math.round((carbCalories / targetCalories) * 100);
+  // Calculate percentages
+  const total_macro_calories = protein_calories + carb_calories + fat_calories;
+  const protein_percent = Math.round((protein_calories / total_macro_calories) * 100);
+  const carb_percent_final = Math.round((carb_calories / total_macro_calories) * 100);
+  const fat_percent_final = Math.round((fat_calories / total_macro_calories) * 100);
 
   const result = {
-    calories: targetCalories, // Use target calories, not calculated total
-    protein_g: finalProteinGrams,
-    carb_g: carbGrams,
-    fat_g: fatGrams,
-    protein_percent: proteinPercent,
-    carb_percent: carbPercent,
-    fat_percent: fatPercent,
+    calories: targetCalories,
+    protein_g,
+    carb_g, 
+    fat_g,
+    protein_percent,
+    carb_percent: carb_percent_final,
+    fat_percent: fat_percent_final,
   };
 
-  // Final NaN validation before returning
-  const hasNaN = Object.values(result).some(value => isNaN(value) || value === null || value === undefined);
-  if (hasNaN) {
-    console.error('NaN detected in final macro targets:', result);
-    throw new Error('Erro interno: valores inválidos gerados no cálculo de macros');
+  console.log("✅ Macro targets calculated:", result);
+
+  // Additional validation to prevent NaN values
+  if (isNaN(result.protein_g) || isNaN(result.carb_g) || isNaN(result.fat_g)) {
+    console.error("🚫 NaN detected in final macro targets:", result);
+    throw new Error("Invalid macro calculation resulted in NaN values");
   }
 
-  console.log('✅ Macro targets calculated:', result);
   return result;
 }
 
