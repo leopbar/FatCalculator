@@ -133,14 +133,6 @@ export default function BodyFatCalculator() {
     const waist = parseFloat(formData.waist);
     const hip = formData.gender === "female" ? parseFloat(formData.hip) : null;
 
-    // Map activity levels to Spanish values expected by the API
-    const activityLevelMap: Record<string, string> = {
-      'sedentary': 'sedentario',
-      'light': 'leve',
-      'moderate': 'moderado',
-      'intense': 'intenso'
-    };
-
     let bodyFatPercentage: number;
 
     if (formData.gender === "male") {
@@ -243,14 +235,14 @@ export default function BodyFatCalculator() {
     try {
       // Save body metrics to server
       const bodyMetricsData = {
-        gender: formData.gender === "male" ? "masculino" : "femenino",
+        gender: formData.gender === "male" ? "masculino" : "feminino",
         age,
         height,
         weight,
         neck,
         waist,
         hip,
-        activityLevel: activityLevelMap[formData.activityLevel] || 'sedentario'
+        activityLevel: formData.activityLevel
       };
 
       await saveBodyMetricsMutation.mutateAsync(bodyMetricsData);

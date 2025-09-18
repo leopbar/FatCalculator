@@ -142,7 +142,7 @@ export const insertBodyMetricsSchema = z.object({
   neck: z.coerce.number().positive().min(1).max(100),
   waist: z.coerce.number().positive().min(1).max(200),
   hip: z.coerce.number().positive().min(1).max(200).optional(),
-  activityLevel: z.enum(["sedentario", "ligero", "moderado", "intenso", "muito_intenso"])
+  activityLevel: z.enum(["sedentary", "light", "moderate", "intense", "muito_intenso"])
 });
 
 export const insertCalculationSchema = z.object({
