@@ -250,28 +250,33 @@ export class DatabaseStorage implements IStorage {
     return templateMenu;
   }
 
-  // Get all template menus
-  async getAllTemplateMenus() {
-    return await this.db.select().from(templateMenus);
-  },
+  async getAllTemplateMenus(): Promise<TemplateMenuData[]> {
+    return await db.select().from(templateMenus);
+  }
 
-  // Find best matching template based on calories and macros
+  async getTemplateMenusByGenderAndCalories(gender: string, targetCalories: number): Promise<TemplateMenuData[]> {
+    return await db
+      .select()
+      .from(templateMenus)
+      .where(eq(templateMenus.gender, gender));
+  }
+
   async findBestMatchingTemplate(
     gender: string,
     targetCalories: number,
     targetProtein: number,
     targetCarb: number,
     targetFat: number
-  ) {
-    const templates = await this.db
+  ): Promise<TemplateMenuData | undefined> {
+    const templates = await db
       .select()
       .from(templateMenus)
       .where(eq(templateMenus.gender, gender));
 
-    if (templates.length === 0) return null;
+    if (templates.length === 0) return undefined;
 
     // Calculate similarity score for each template
-    let bestTemplate = null;
+    let bestTemplate = templates[0];
     let bestScore = Infinity;
 
     for (const template of templates) {
@@ -292,7 +297,7 @@ export class DatabaseStorage implements IStorage {
 
     console.log(`✅ Best template found: ${bestTemplate?.name} with score: ${bestScore.toFixed(3)}`);
     return bestTemplate;
-  },
+  }
 
   async bulkCreateTemplateMenus(templates: InsertTemplateMenu[]): Promise<void> {
     if (templates.length > 0) {
@@ -451,16 +456,6 @@ export class MemStorage implements IStorage {
     return Array.from(this.templateMenus.values()).filter(
       (template) => template.gender === gender
     );
-  }
-
-  async bulkCreateTemplateMenus(templates: InsertTemplateMenu[]): Promise<void> {
-    // Insert into database
-    for (const template of templates) {
-      const result = await db.insert(templateMenus).values(template).returning();
-      if (result[0]) {
-        this.templateMenus.set(result[0].id, result[0] as TemplateMenuData);
-      }
-    }
   }
 
   async findBestMatchingTemplate(
