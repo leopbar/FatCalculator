@@ -13,6 +13,149 @@ export function translateCategoryToPortuguese(category: string): string {
   return categoryTranslations[lowerCategory] || lowerCategory;
 }
 
+// Translation map from Portuguese to Mexican Spanish for food names
+const foodNameTranslations: { [key: string]: string } = {
+  // Proteins
+  'ovo inteiro': 'huevo entero',
+  'ovo': 'huevo',
+  'ovos': 'huevos',
+  'clara': 'clara de huevo',
+  'frango': 'pollo',
+  'frango desfiado': 'pollo deshebrado',
+  'frango assado': 'pollo asado',
+  'peito de frango': 'pechuga de pollo',
+  'carne magra bovina': 'carne magra de res',
+  'carne moída magra': 'carne molida magra',
+  'carne suína magra': 'carne magra de cerdo',
+  'peixe grelhado': 'pescado a la plancha',
+  'pescado branco': 'pescado blanco',
+  'filé de tilápia': 'filete de tilapia',
+  'tilápia': 'tilapia',
+  'atum': 'atún',
+  'atum grelhado': 'atún a la plancha',
+  'salmão': 'salmón',
+  
+  // Dairy
+  'leite desnatado': 'leche descremada',
+  'leite de coco': 'leche de coco',
+  'leite de amêndoas': 'leche de almendras',
+  'iogurte grego': 'yogur griego',
+  'iogurte natural': 'yogur natural',
+  'queijo cottage': 'queso cottage',
+  'queijo fresco': 'queso fresco',
+  'queijo parmesão': 'queso parmesano',
+  'kefir': 'kéfir',
+  
+  // Carbs
+  'arroz integral': 'arroz integral',
+  'quinoa': 'quinoa',
+  'quinoa cozida': 'quinoa cocida',
+  'aveia': 'avena',
+  'panqueca de aveia': 'panqueque de avena',
+  'granola': 'granola',
+  'tortilla de milho integral': 'tortilla de maíz integral',
+  'pão integral': 'pan integral',
+  'batata doce': 'camote',
+  'batata-doce assada': 'camote asado',
+  'batata doce assada': 'camote asado',
+  'batata doce cozida': 'camote cocido',
+  'mandioca': 'yuca',
+  'inhame': 'ñame',
+  'tapioca': 'tapioca',
+  
+  // Vegetables
+  'salada completa': 'ensalada completa',
+  'salada verde': 'ensalada verde',
+  'salada tropical': 'ensalada tropical',
+  'vegetais salteados': 'verduras salteadas',
+  'vegetais': 'verduras',
+  'brócolis': 'brócoli',
+  'brócolis cozido': 'brócoli cocido',
+  'brócolis e couve-flor': 'brócoli y coliflor',
+  'brócolis e cenoura': 'brócoli y zanahoria',
+  'couve refogada': 'col rizada salteada',
+  'couve-flor': 'coliflor',
+  'espinafre': 'espinacas',
+  'alface': 'lechuga',
+  'tomate': 'tomate',
+  'pepino': 'pepino',
+  'cenoura': 'zanahoria',
+  'vagem refogada': 'ejotes salteados',
+  'abóbora': 'calabaza',
+  'abóbora em cubos': 'calabaza en cubos',
+  'ratatouille': 'ratatouille',
+  
+  // Fruits
+  'banana': 'plátano',
+  'açaí': 'açaí',
+  'acaí': 'açaí',
+  'manga': 'mango',
+  'abacate': 'aguacate',
+  'frutas vermelhas': 'frutos rojos',
+  'mix de frutas': 'mezcla de frutas',
+  'suco de laranja': 'jugo de naranja',
+  'mel': 'miel',
+  
+  // Fats & nuts
+  'azeite': 'aceite de oliva',
+  'amêndoas': 'almendras',
+  'pasta de amendoim': 'mantequilla de maní',
+  'pasta de amendoim integral': 'mantequilla de maní integral',
+  'sementes de chia': 'semillas de chía',
+  'sementes de girassol': 'semillas de girasol',
+  
+  // Legumes
+  'feijão preto': 'frijoles negros',
+  'lentilha': 'lentejas',
+  'lentilhas': 'lentejas',
+  'grão-de-bico': 'garbanzos',
+  
+  // Other
+  'canela em pó': 'canela en polvo',
+  'smoothie de iogurte': 'batido de yogur'
+};
+
+// Translation map for meal names
+const mealNameTranslations: { [key: string]: string } = {
+  'café da manhã': 'desayuno',
+  'almoço': 'almuerzo',
+  'lanche da tarde': 'merienda',
+  'jantar': 'cena',
+  'ceia': 'colación nocturna'
+};
+
+// Translation map for UI text
+const uiTextTranslations: { [key: string]: string } = {
+  'menú personalizado': 'menú personalizado',
+  'metas de macronutrientes': 'metas de macronutrientes',
+  'calorías': 'calorías',
+  'proteína': 'proteína',
+  'carbohidratos': 'carbohidratos',
+  'grasas': 'grasas',
+  'totales diarios': 'totales diarios',
+  'calorías totales': 'calorías totales',
+  'total de la comida': 'total del día',
+  'plan': 'plan'
+};
+
+// Function to translate food names from Portuguese to Mexican Spanish
+export function translateFoodNameToSpanish(foodName: string): string {
+  const lowerName = foodName.toLowerCase();
+  return foodNameTranslations[lowerName] || foodName;
+}
+
+// Function to translate meal names from Portuguese to Mexican Spanish
+export function translateMealNameToSpanish(mealName: string): string {
+  const lowerName = mealName.toLowerCase();
+  return mealNameTranslations[lowerName] || mealName;
+}
+
+// Function to translate UI text to Mexican Spanish
+export function translateUITextToSpanish(text: string): string {
+  const lowerText = text.toLowerCase();
+  return uiTextTranslations[lowerText] || text;
+}
+
 // Calculate macronutrient targets based on international standards (AMDR)
 export function calculateMacroTargets(
   tdee: number,
@@ -111,6 +254,156 @@ export function calculateMacroTargets(
   });
 
   return result;
+}
+
+// Função para converter gramas em medidas caseiras em espanhol mexicano
+export function convertToHouseholdMeasuresSpanish(foodName: string, grams: number): string {
+  const name = foodName.toLowerCase();
+
+  // Huevos - 1 huevo mediano = ~50g
+  if (name.includes('huevo') || name.includes('clara')) {
+    const eggs = Math.round(grams / 50);
+    return `(${eggs} ${eggs === 1 ? 'huevo' : 'huevos'})`;
+  }
+
+  // Leche y líquidos - 1 taza = ~240ml = ~240g
+  if (name.includes('leche') || name.includes('yogur')) {
+    if (grams >= 240) {
+      const cups = Math.round(grams / 240 * 10) / 10;
+      return `(${cups} ${cups === 1 ? 'taza' : 'tazas'})`;
+    } else {
+      const ml = Math.round(grams);
+      return `(${ml}ml)`;
+    }
+  }
+
+  // Quesos - 1 rebanada mediana = ~30g
+  if (name.includes('queso')) {
+    const slices = Math.round(grams / 30);
+    return `(${slices} ${slices === 1 ? 'rebanada' : 'rebanadas'})`;
+  }
+
+  // Arroz cocido - 1 cucharada = ~20g
+  if (name.includes('arroz') && name.includes('integral')) {
+    const spoons = Math.round(grams / 20);
+    return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
+  }
+
+  // Avena - 1 cucharada = ~15g
+  if (name.includes('avena')) {
+    const spoons = Math.round(grams / 15);
+    return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
+  }
+
+  // Camote - 1 unidad mediana = ~150g
+  if (name.includes('camote')) {
+    if (grams >= 75) {
+      const units = Math.round(grams / 150 * 10) / 10;
+      return `(${units} ${units === 1 ? 'camote mediano' : 'camotes medianos'})`;
+    } else {
+      const spoons = Math.round(grams / 20);
+      return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
+    }
+  }
+
+  // Plátano - 1 unidad mediana = ~100g
+  if (name.includes('plátano')) {
+    const units = Math.round(grams / 100 * 10) / 10;
+    return `(${units} ${units === 1 ? 'plátano' : 'plátanos'})`;
+  }
+
+  // Pan integral - 1 rebanada = ~25g
+  if (name.includes('pan')) {
+    const slices = Math.round(grams / 25);
+    return `(${slices} ${slices === 1 ? 'rebanada' : 'rebanadas'})`;
+  }
+
+  // Aceite de oliva - 1 cucharada = ~15ml = ~15g
+  if (name.includes('aceite')) {
+    const spoons = Math.round(grams / 15);
+    return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
+  }
+
+  // Almendras y nueces - 1 cucharada = ~15g
+  if (name.includes('almendra') || name.includes('mantequilla de maní') || name.includes('nuez')) {
+    const spoons = Math.round(grams / 15);
+    return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
+  }
+
+  // Aguacate - 1 unidad mediana = ~200g
+  if (name.includes('aguacate')) {
+    if (grams >= 100) {
+      const units = Math.round(grams / 200 * 10) / 10;
+      return `(${units} ${units === 1 ? 'aguacate mediano' : 'aguacates medianos'})`;
+    } else {
+      const spoons = Math.round(grams / 20);
+      return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
+    }
+  }
+
+  // Mantequilla de maní - 1 cucharada = ~15g
+  if (name.includes('mantequilla')) {
+    const spoons = Math.round(grams / 15);
+    return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
+  }
+
+  // Verduras de hoja (brócoli, espinacas, lechuga) - 1 taza = ~30g
+  if (name.includes('brócoli') || name.includes('espinacas') || name.includes('lechuga')) {
+    const cups = Math.round(grams / 30);
+    return `(${cups} ${cups === 1 ? 'taza' : 'tazas'})`;
+  }
+
+  // Tomate - 1 unidad mediana = ~120g
+  if (name.includes('tomate')) {
+    if (grams >= 60) {
+      const units = Math.round(grams / 120 * 10) / 10;
+      return `(${units} ${units === 1 ? 'tomate mediano' : 'tomates medianos'})`;
+    } else {
+      const spoons = Math.round(grams / 20);
+      return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
+    }
+  }
+
+  // Pepino - 1 unidad mediana = ~200g
+  if (name.includes('pepino')) {
+    if (grams >= 100) {
+      const units = Math.round(grams / 200 * 10) / 10;
+      return `(${units} ${units === 1 ? 'pepino mediano' : 'pepinos medianos'})`;
+    } else {
+      const slices = Math.round(grams / 10);
+      return `(${slices} rebanadas)`;
+    }
+  }
+
+  // Carnes (pollo, tilapia, etc) - usar cucharadas o porciones
+  if (name.includes('pollo') || name.includes('tilapia') || 
+      name.includes('pescado') || name.includes('carne') || name.includes('salmón') || name.includes('atún')) {
+    if (grams >= 100) {
+      const portions = Math.round(grams / 100 * 10) / 10;
+      return `(${portions} ${portions === 1 ? 'porción' : 'porciones'})`;
+    } else {
+      const spoons = Math.round(grams / 20);
+      return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
+    }
+  }
+
+  // Quinoa cocida - 1 cucharada = ~20g
+  if (name.includes('quinoa')) {
+    const spoons = Math.round(grams / 20);
+    return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
+  }
+
+  // Para otros alimentos, usar cucharadas como medida estándar
+  if (grams >= 60) {
+    const spoons = Math.round(grams / 15);
+    return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
+  } else if (grams >= 15) {
+    const spoons = Math.round(grams / 15);
+    return `(${spoons} ${spoons === 1 ? 'cucharada' : 'cucharadas'})`;
+  } else {
+    const teaspoons = Math.round(grams / 5);
+    return `(${teaspoons} ${teaspoons === 1 ? 'cucharadita' : 'cucharaditas'})`;
+  }
 }
 
 // Calculate macros for a specific amount of food

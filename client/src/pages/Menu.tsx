@@ -5,7 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Utensils, Target, Calculator, Home } from "lucide-react";
-import { calculateMacroTargets, convertToHouseholdMeasures, translateCategoryToPortuguese } from "@/lib/nutrition";
+import { 
+  calculateMacroTargets, 
+  convertToHouseholdMeasures, 
+  translateCategoryToPortuguese,
+  translateFoodNameToSpanish,
+  translateMealNameToSpanish
+} from "@/lib/nutrition";
 import { MacroTarget, MenuPlan } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -375,7 +381,7 @@ export default function MenuPage() {
             <Card key={meal.name} className="border-primary/20 bg-accent/30" data-testid={`card-meal-${meal.name.toLowerCase().replace(/\s+/g, '-')}`}>
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-foreground">
-                  {meal.name}
+                  {translateMealNameToSpanish(meal.name)}
                 </CardTitle>
                 <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
                   <span>{meal.approximate_calories} kcal</span>
@@ -392,9 +398,9 @@ export default function MenuPage() {
                   {meal.items?.map((item, itemIndex) => (
                     <div key={itemIndex} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
                       <div className="flex-1">
-                        <div className="font-medium text-sm">{item?.name || "Item sin nombre"}</div>
+                        <div className="font-medium text-sm">{item?.name ? translateFoodNameToSpanish(item.name) : "Artículo sin nombre"}</div>
                         <div className="text-xs text-muted-foreground">
-                          {item?.grams || 0}g {item?.name ? convertToHouseholdMeasures(item.name, item.grams || 0) : ""}
+                          {item?.grams || 0}g {item?.name ? convertToHouseholdMeasuresSpanish(translateFoodNameToSpanish(item.name), item.grams || 0) : ""}
                         </div>
                       </div>
                       <div className="text-right text-xs space-y-1">
@@ -404,7 +410,7 @@ export default function MenuPage() {
                         <div className="font-medium">{item?.kcal || 0} kcal</div>
                       </div>
                     </div>
-                  )) || <div className="text-muted-foreground">Ningún item disponible</div>}
+                  )) || <div className="text-muted-foreground">Ningún artículo disponible</div>}
                 </div>
               </CardContent>
             </Card>
