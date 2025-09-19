@@ -14,7 +14,11 @@ import { insertUserSchema, type InsertUser } from "@shared/schema";
 import { z } from "zod";
 import { Shield, Calculator } from "lucide-react";
 
-const loginSchema = insertUserSchema;
+const loginSchema = z.object({
+  email: z.string().email("Email inválido"),
+  password: z.string().min(1, "Senha é obrigatória"),
+});
+
 const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("Email inválido"),
@@ -36,7 +40,7 @@ export default function AuthPage() {
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
@@ -118,16 +122,17 @@ export default function AuthPage() {
                         <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
                           <FormField
                             control={loginForm.control}
-                            name="username"
+                            name="email"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Usuario</FormLabel>
+                                <FormLabel>Email</FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
-                                    placeholder="Ingrese su usuario"
-                                    data-testid="input-username-login"
-                                    autoComplete="username"
+                                    type="email"
+                                    placeholder="Digite seu email"
+                                    data-testid="input-email-login"
+                                    autoComplete="email"
                                   />
                                 </FormControl>
                                 <FormMessage />
