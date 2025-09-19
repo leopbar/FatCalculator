@@ -73,7 +73,9 @@ export type MenuPlan = z.infer<typeof menuPlanSchema>;
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
+  username: text("username").notNull().unique(), // Manter por compatibilidade
+  email: text("email").notNull().unique(),
+  name: text("name"),
   password: text("password").notNull(),
 });
 
@@ -129,9 +131,15 @@ export const alimentosHispanos = pgTable("alimentos_hispanos", {
 
 // Insert schemas
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const insertUserSchema = z.object({
+  email: z.string().email("E-mail inválido"),
+  name: z.string().optional(),
+  password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("E-mail inválido"),
+  password: z.string().min(1, "Senha é obrigatória"),
 });
 
 export const insertBodyMetricsSchema = z.object({

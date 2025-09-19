@@ -96,8 +96,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
+    // Primeiro tenta por e-mail, depois por username (compatibilidade)
+    const userByEmail = await db.select().from(users).where(eq(users.email, username)).limit(1);
+    if (userByEmail.length > 0) {
+      return userByEmail[0];
+    }
+
+    return await db.select().from(users).where(eq(users.username, username)).limit(1).then(rows => rows[0]);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
