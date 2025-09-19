@@ -1,5 +1,4 @@
 
-```typescript
 import rateLimit from "express-rate-limit";
 
 /**
@@ -42,4 +41,3 @@ export const registerRateLimiter = rateLimit({
   legacyHeaders: false,
   skipSuccessfulRequests: true,
 });
-```

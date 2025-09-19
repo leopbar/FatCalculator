@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
 
-export function ProtectedRoute({
+function ProtectedRoute({
   path,
   component: Component,
 }: {
@@ -35,3 +35,5 @@ export function ProtectedRoute({
 
   return <Route path={path} component={Component} />;
 }
+
+export default ProtectedRoute;
