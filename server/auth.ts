@@ -3,30 +3,14 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
 import session from "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
+import { hashPassword, comparePassword, isPasswordValid } from "./authUtils";
 
 declare global {
   namespace Express {
     interface User extends SelectUser {}
   }
-}
-
-const scryptAsync = promisify(scrypt);
-
-async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
-}
-
-async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
 export function setupAuth(app: Express) {
@@ -46,12 +30,18 @@ export function setupAuth(app: Express) {
     new LocalStrategy(async (username, password, done) => {
       try {
         const user = await storage.getUserByUsername(username);
-        if (!user || !(await comparePasswords(password, user.password))) {
-          return done(null, false);
-        } else {
-          return done(null, user);
+        if (!user) {
+          return done(null, false, { message: "Usuário não encontrado" });
         }
+        
+        const isValidPassword = await comparePassword(password, user.password);
+        if (!isValidPassword) {
+          return done(null, false, { message: "Senha incorreta" });
+        }
+        
+        return done(null, user);
       } catch (error) {
+        console.error("Erro na autenticação:", error);
         return done(error);
       }
     }),
@@ -69,27 +59,78 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      const existingUser = await storage.getUserByUsername(req.body.username);
-      if (existingUser) {
-        return res.status(400).send("Username already exists");
+      const { username, password } = req.body;
+      
+      // Validar se os campos obrigatórios estão presentes
+      if (!username || !password) {
+        return res.status(400).json({ 
+          error: "Username e password são obrigatórios" 
+        });
       }
 
+      // Validar força da senha
+      if (!isPasswordValid(password)) {
+        return res.status(400).json({ 
+          error: "A senha deve ter pelo menos 8 caracteres, incluindo letras e números" 
+        });
+      }
+
+      // Verificar se usuário já existe
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ 
+          error: "Usuário já existe" 
+        });
+      }
+
+      // Criar hash da senha e salvar usuário
+      const hashedPassword = await hashPassword(password);
       const user = await storage.createUser({
-        ...req.body,
-        password: await hashPassword(req.body.password),
+        username,
+        password: hashedPassword,
       });
 
+      // Fazer login automático após registro
       req.login(user, (err) => {
-        if (err) return next(err);
-        res.status(201).json(user);
+        if (err) {
+          console.error("Erro no login automático:", err);
+          return next(err);
+        }
+        
+        // Remover senha do retorno por segurança
+        const { password: _, ...userWithoutPassword } = user;
+        res.status(201).json(userWithoutPassword);
       });
     } catch (error) {
+      console.error("Erro no registro:", error);
       next(error);
     }
   });
 
-  app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    res.status(200).json(req.user);
+  app.post("/api/login", (req, res, next) => {
+    passport.authenticate("local", (err, user, info) => {
+      if (err) {
+        console.error("Erro na autenticação:", err);
+        return next(err);
+      }
+      
+      if (!user) {
+        return res.status(401).json({ 
+          error: info?.message || "Credenciais inválidas" 
+        });
+      }
+      
+      req.login(user, (loginErr) => {
+        if (loginErr) {
+          console.error("Erro no login:", loginErr);
+          return next(loginErr);
+        }
+        
+        // Remover senha do retorno por segurança
+        const { password: _, ...userWithoutPassword } = user;
+        res.status(200).json(userWithoutPassword);
+      });
+    })(req, res, next);
   });
 
   app.post("/api/logout", (req, res, next) => {
