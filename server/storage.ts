@@ -127,8 +127,7 @@ export class DatabaseStorage implements IStorage {
       .insert(users)
       .values({
         id: randomUUID(),
-        username: userData.email,
-        name: userData.name,
+        username: userData.name, // Use name as username
         email: userData.email,
         password: userData.password,
       })
@@ -382,8 +381,7 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const user: User = {
       id,
-      username: userData.email,
-      name: userData.name,
+      username: userData.name, // Use name as username  
       email: userData.email,
       password: userData.password,
     };
