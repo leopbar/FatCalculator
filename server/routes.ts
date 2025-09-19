@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth } from "./auth";
+import { authRoutes, authenticateJWT } from "./routes/auth";
 import {
   insertBodyMetricsSchema,
   insertCalculationSchema,
@@ -9,20 +9,11 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Based on javascript_auth_all_persistance blueprint
-  // sets up /api/register, /api/login, /api/logout, /api/user
-  setupAuth(app);
-
-  // Helper to check authentication
-  const requireAuth = (req: any, res: any, next: any) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: "Autenticação necessária" });
-    }
-    next();
-  };
+  // Setup JWT authentication routes
+  app.use('/api', authRoutes);
 
   // Dashboard summary endpoint
-  app.get("/api/me/summary", requireAuth, async (req: any, res) => {
+  app.get("/api/me/summary", authenticateJWT, async (req: any, res) => {
     try {
       const summary = await storage.getUserSummary(req.user.id);
       res.json(summary);
@@ -33,7 +24,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Body metrics endpoints
-  app.get("/api/body-metrics", requireAuth, async (req: any, res) => {
+  app.get("/api/body-metrics", authenticateJWT, async (req: any, res) => {
     try {
       const bodyMetrics = await storage.getBodyMetrics(req.user.id);
       if (!bodyMetrics) {
@@ -46,7 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/body-metrics", requireAuth, async (req: any, res) => {
+  app.post("/api/body-metrics", authenticateJWT, async (req: any, res) => {
     try {
       const validation = insertBodyMetricsSchema.safeParse(req.body);
       if (!validation.success) {
@@ -62,7 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Calculation endpoints
-  app.get("/api/calculation", requireAuth, async (req: any, res) => {
+  app.get("/api/calculation", authenticateJWT, async (req: any, res) => {
     try {
       const calculation = await storage.getLatestCalculation(req.user.id);
       if (!calculation) {
@@ -75,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/calculation", requireAuth, async (req: any, res) => {
+  app.post("/api/calculation", authenticateJWT, async (req: any, res) => {
     try {
       const validation = insertCalculationSchema.safeParse(req.body);
       if (!validation.success) {
@@ -91,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Menu plan endpoints
-  app.get("/api/menu", requireAuth, async (req: any, res) => {
+  app.get("/api/menu", authenticateJWT, async (req: any, res) => {
     try {
       const menuPlan = await storage.getLatestMenuPlan(req.user.id);
       if (!menuPlan) {
@@ -104,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/menu", requireAuth, async (req: any, res) => {
+  app.post("/api/menu", authenticateJWT, async (req: any, res) => {
     try {
       const validation = insertMenuPlanSchema.safeParse(req.body);
       if (!validation.success) {
@@ -119,7 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/menu", requireAuth, async (req: any, res) => {
+  app.delete("/api/menu", authenticateJWT, async (req: any, res) => {
     try {
       await storage.deleteMenuPlan(req.user.id);
       res.json({ message: "Cardápio deletado com sucesso" });
@@ -130,7 +121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Clear all user data (for recalculation)
-  app.delete("/api/clear-data", requireAuth, async (req: any, res) => {
+  app.delete("/api/clear-data", authenticateJWT, async (req: any, res) => {
     try {
       await storage.clearAllUserData(req.user.id);
       res.json({ message: "Todos os dados foram limpos com sucesso" });
@@ -141,7 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get alimentos hispanos
-  app.get("/api/alimentos", requireAuth, async (req: any, res) => {
+  app.get("/api/alimentos", authenticateJWT, async (req: any, res) => {
     try {
       const { categoria } = req.query;
 
@@ -160,7 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Seed alimentos hispanos (temporary endpoint)
-  app.post("/api/seed-alimentos", requireAuth, async (req: any, res) => {
+  app.post("/api/seed-alimentos", authenticateJWT, async (req: any, res) => {
     try {
       // Check if alimentos already exist
       const existingAlimentos = await storage.getAllAlimentos();
@@ -248,7 +239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Template menu endpoints
-  app.get("/api/template-menus", requireAuth, async (req: any, res) => {
+  app.get("/api/template-menus", authenticateJWT, async (req: any, res) => {
     try {
       const { gender, calories } = req.query;
 
@@ -267,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Find best matching template
-  app.post("/api/find-template", requireAuth, async (req: any, res) => {
+  app.post("/api/find-template", authenticateJWT, async (req: any, res) => {
     try {
       const { gender, targetCalories, targetProtein, targetCarb, targetFat } = req.body;
 

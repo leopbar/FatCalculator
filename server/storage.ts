@@ -1,5 +1,5 @@
-import { 
-  type User, 
+import {
+  type User,
   type InsertUser,
   type BodyMetrics,
   type InsertBodyMetrics,
@@ -27,7 +27,7 @@ import ConnectPgSimple from "connect-pg-simple";
 
 // Based on javascript_auth_all_persistance blueprint
 
-// Based on javascript_auth_all_persistance blueprint  
+// Based on javascript_auth_all_persistance blueprint
 const MemoryStore = createMemoryStore(session);
 const PgStore = ConnectPgSimple(session);
 
@@ -37,7 +37,9 @@ const PgStore = ConnectPgSimple(session);
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | null>;
   createUser(user: InsertUser): Promise<User>;
+  createUserWithEmail(userData: { name: string; email: string; password: string }): Promise<User>;
 
   // Body metrics methods
   upsertBodyMetrics(userId: string, data: InsertBodyMetrics): Promise<BodyMetrics>;
@@ -100,13 +102,40 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async getUserByEmail(email: string): Promise<User | null> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+    return user || null;
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
-      .values(insertUser)
+      .values({
+        id: randomUUID(),
+        ...userData,
+      })
       .returning();
     return user;
   }
+
+  async createUserWithEmail(userData: { name: string; email: string; password: string }): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values({
+        id: randomUUID(),
+        username: userData.email,
+        name: userData.name,
+        email: userData.email,
+        password: userData.password,
+      })
+      .returning();
+    return user;
+  }
+
 
   async upsertBodyMetrics(userId: string, data: InsertBodyMetrics): Promise<BodyMetrics> {
     // First try to find existing metrics for this user
@@ -123,8 +152,7 @@ export class DatabaseStorage implements IStorage {
           weight: data.weight,
           neck: data.neck,
           waist: data.waist,
-          hip: data.hip ?? null,
-          activityLevel: data.activityLevel
+          hip: data.hip ?? null
         })
         .where(eq(bodyMetrics.userId, userId))
         .returning();
@@ -337,6 +365,12 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async getUserByEmail(email: string): Promise<User | null> {
+    return Array.from(this.users.values()).find(
+      (user) => user.email === email,
+    ) || null;
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const user: User = { ...insertUser, id };
@@ -344,11 +378,25 @@ export class MemStorage implements IStorage {
     return user;
   }
 
+  async createUserWithEmail(userData: { name: string; email: string; password: string }): Promise<User> {
+    const id = randomUUID();
+    const user: User = {
+      id,
+      username: userData.email,
+      name: userData.name,
+      email: userData.email,
+      password: userData.password,
+    };
+    this.users.set(id, user);
+    return user;
+  }
+
+
   async upsertBodyMetrics(userId: string, data: InsertBodyMetrics): Promise<BodyMetrics> {
     const id = randomUUID();
-    const bodyMetrics: BodyMetrics = { 
-      ...data, 
-      id, 
+    const bodyMetrics: BodyMetrics = {
+      ...data,
+      id,
       userId,
       hip: data.hip ?? null // Convert undefined to null
     };
@@ -373,9 +421,9 @@ export class MemStorage implements IStorage {
 
   async saveMenuPlan(userId: string, data: InsertMenuPlan): Promise<MenuPlanData> {
     const id = randomUUID();
-    const menuPlan: MenuPlanData = { 
-      ...data, 
-      id, 
+    const menuPlan: MenuPlanData = {
+      ...data,
+      id,
       userId
     } as MenuPlanData;
     this.menuPlans.set(userId, menuPlan);
@@ -439,8 +487,8 @@ export class MemStorage implements IStorage {
 
   async createTemplateMenu(data: InsertTemplateMenu): Promise<TemplateMenuData> {
     const id = randomUUID();
-    const templateMenu: TemplateMenuData = { 
-      ...data, 
+    const templateMenu: TemplateMenuData = {
+      ...data,
       id,
       created_at: new Date().toISOString()
     } as TemplateMenuData;
@@ -459,10 +507,10 @@ export class MemStorage implements IStorage {
   }
 
   async findBestMatchingTemplate(
-    gender: string, 
-    targetCalories: number, 
-    targetProtein: number, 
-    targetCarb: number, 
+    gender: string,
+    targetCalories: number,
+    targetProtein: number,
+    targetCarb: number,
     targetFat: number
   ): Promise<TemplateMenuData | undefined> {
     const templates = Array.from(this.templateMenus.values()).filter(
@@ -494,8 +542,8 @@ export class MemStorage implements IStorage {
   async bulkCreateTemplateMenus(templates: InsertTemplateMenu[]): Promise<void> {
     templates.forEach((data) => {
       const id = randomUUID();
-      const templateMenu: TemplateMenuData = { 
-        ...data, 
+      const templateMenu: TemplateMenuData = {
+        ...data,
         id,
         created_at: new Date().toISOString()
       } as TemplateMenuData;
