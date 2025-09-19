@@ -3,7 +3,7 @@ import { Switch, Route } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/hooks/use-auth";
-import ProtectedRoute from "@/lib/protected-route";
+import { ProtectedRoute } from "@/lib/protected-route";
 
 // Pages
 import Dashboard from "@/pages/Dashboard";
@@ -26,19 +26,13 @@ function AppRoutes() {
   return (
     <Switch>
       <Route path="/auth" component={AuthPage} />
-      <Route path="/" nest>
-        <ProtectedRoute>
-          <Switch>
-            <Route path="/" component={Dashboard} />
-            <Route path="/dashboard" component={Dashboard} />
-            <Route path="/calculator" component={Home} />
-            <Route path="/results" component={Results} />
-            <Route path="/menu" component={Menu} />
-            <Route path="/mind-strengthening" component={MindStrengthening} />
-            <Route component={NotFound} />
-          </Switch>
-        </ProtectedRoute>
-      </Route>
+      <ProtectedRoute path="/" component={Dashboard} />
+      <ProtectedRoute path="/dashboard" component={Dashboard} />
+      <ProtectedRoute path="/calculator" component={Home} />
+      <ProtectedRoute path="/results" component={Results} />
+      <ProtectedRoute path="/menu" component={Menu} />
+      <ProtectedRoute path="/mind-strengthening" component={MindStrengthening} />
+      <Route component={NotFound} />
     </Switch>
   );
 }
