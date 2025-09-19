@@ -6,6 +6,18 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+  // Middleware para debug
+  app.use((req, res, next) => {
+    if (req.method === 'POST' && (req.path === '/api/login' || req.path === '/api/register')) {
+      console.log(`📨 ${req.method} ${req.path}:`, {
+        contentType: req.headers['content-type'],
+        body: req.body,
+        hasBody: !!req.body && Object.keys(req.body).length > 0
+      });
+    }
+    next();
+  });
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
