@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
+import { forgotPassword, resetPassword, validateToken } from "./passwordResetController";
+import { loginRateLimiter } from "./rateLimiter";
 import {
   insertBodyMetricsSchema,
   insertCalculationSchema,
@@ -12,6 +14,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Based on javascript_auth_all_persistance blueprint
   // sets up /api/register, /api/login, /api/logout, /api/user
   setupAuth(app);
+
+  // Password reset endpoints
+  app.post("/api/forgot-password", loginRateLimiter, forgotPassword);
+  app.post("/api/reset-password", loginRateLimiter, resetPassword);
+  app.get("/api/validate-token", validateToken);
 
   // Helper to check authentication
   const requireAuth = (req: any, res: any, next: any) => {
