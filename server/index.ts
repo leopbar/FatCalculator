@@ -1,10 +1,18 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { generalRateLimiter } from "./rateLimiter";
 
 const app = express();
+
+// Configurar proxy confiável para obter IP real do cliente
+app.set("trust proxy", 1);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Aplicar rate limiter geral
+app.use(generalRateLimiter);
 
   // Middleware para debug
   app.use((req, res, next) => {

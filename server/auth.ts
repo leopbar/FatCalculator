@@ -6,6 +6,7 @@ import session from "express-session";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import { hashPassword, comparePassword, isPasswordValid } from "./authUtils";
+import { loginRateLimiter, registerRateLimiter } from "./rateLimiter";
 
 declare global {
   namespace Express {
@@ -69,9 +70,9 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/register", async (req, res, next) => {
+  app.post("/api/register", registerRateLimiter, async (req, res, next) => {
     try {
-      console.log("📝 Request de registro recebido para:", req.body.username);
+      console.log("📝 Request de registro recebido para:", req.body.username, "IP:", req.ip);
       const { username, password } = req.body;
 
       // Validar se os campos obrigatórios estão presentes
@@ -129,8 +130,12 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/login", (req, res, next) => {
-    console.log("📝 Request de login recebido:", { body: req.body });
+  app.post("/api/login", loginRateLimiter, (req, res, next) => {
+    console.log("📝 Request de login recebido:", { 
+      body: req.body, 
+      ip: req.ip,
+      userAgent: req.get('User-Agent')?.substring(0, 100) 
+    });
 
     // Verificar se as credenciais estão presentes no body
     const { username, password } = req.body;
