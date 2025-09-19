@@ -1,3 +1,4 @@
+
 // Based on javascript_auth_all_persistance blueprint
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";

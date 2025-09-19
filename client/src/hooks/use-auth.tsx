@@ -49,11 +49,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: (user: SelectUser) => {
+      // Atualizar o contexto primeiro
       queryClient.setQueryData(["/api/user"], user);
-      toast({
-        title: "Login realizado com sucesso",
-        description: "Bem-vindo ao aplicativo!",
-      });
+      
+      // Aguardar um tick para garantir que o estado seja atualizado
+      setTimeout(() => {
+        toast({
+          title: "Login realizado com sucesso",
+          description: "Bem-vindo ao aplicativo!",
+        });
+      }, 100);
     },
     onError: (error: Error) => {
       toast({
@@ -70,11 +75,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: (user: SelectUser) => {
+      // Atualizar o contexto primeiro
       queryClient.setQueryData(["/api/user"], user);
-      toast({
-        title: "Conta criada com sucesso",
-        description: "Bem-vindo ao aplicativo!",
-      });
+      
+      // Aguardar um tick para garantir que o estado seja atualizado
+      setTimeout(() => {
+        toast({
+          title: "Conta criada com sucesso",
+          description: "Bem-vindo ao aplicativo!",
+        });
+      }, 100);
     },
     onError: (error: Error) => {
       toast({

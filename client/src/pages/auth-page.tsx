@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
@@ -10,24 +11,28 @@ export default function AuthPage() {
   const [, navigate] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
 
-  // Redirect if already authenticated using useEffect to avoid side effects during render
+  // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate("/dashboard");
     }
   }, [user, navigate]);
 
-  // Show loading state while redirecting - but AFTER all hooks are called
+  // Show loading state while redirecting
   if (user) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">
-      <p className="text-muted-foreground">Redirigiendo...</p>
-    </div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Redirigiendo al dashboard...</p>
+      </div>
+    );
   }
 
   const onLogin = (data: { email: string; password: string }) => {
     loginMutation.mutate(data, {
       onSuccess: () => {
-        navigate("/");
+        // O redirecionamento será feito automaticamente pelo useEffect
+        // quando o user for atualizado no contexto
+        console.log("Login successful, redirecting...");
       },
     });
   };
@@ -35,7 +40,9 @@ export default function AuthPage() {
   const onRegister = (data: { email: string; name?: string; password: string }) => {
     registerMutation.mutate(data, {
       onSuccess: () => {
-        navigate("/");
+        // O redirecionamento será feito automaticamente pelo useEffect
+        // quando o user for atualizado no contexto
+        console.log("Registration successful, redirecting...");
       },
     });
   };
@@ -80,36 +87,30 @@ export default function AuthPage() {
             </div>
           </div>
 
-          {/* Hero Section */}
-          <div className="flex items-center justify-center lg:border-l lg:pl-8">
-            <div className="text-center lg:text-left max-w-lg">
-              <div className="flex items-center justify-center lg:justify-start mb-6">
-                <Calculator className="h-16 w-16 text-primary" />
-              </div>
-              <h2 className="text-4xl font-bold text-foreground mb-4">
+          {/* Calculator Preview */}
+          <div className="flex items-center justify-center bg-muted/30 rounded-lg p-8">
+            <div className="text-center">
+              <Calculator className="h-24 w-24 text-primary mx-auto mb-6" />
+              <h2 className="text-2xl font-bold text-foreground mb-4">
                 Calculadora de Grasa Corporal
               </h2>
-              <p className="text-lg text-muted-foreground mb-6">
-                Sistema completo para cálculo de grasa corporal usando el método oficial de la
-                Marina de los EE.UU., con recomendaciones personalizadas de menús basadas en
-                estándares internacionales de nutrición.
+              <p className="text-muted-foreground leading-relaxed">
+                Herramienta precisa para calcular tu porcentaje de grasa corporal,
+                tasa metabólica basal (TMB) y gasto energético total (TDEE).
+                Obtén resultados personalizados y recomendaciones nutricionales.
               </p>
-              <div className="space-y-3 text-sm text-muted-foreground">
-                <div className="flex items-center justify-center lg:justify-start">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Cálculo preciso de porcentaje de grasa corporal</span>
+              <div className="mt-6 grid grid-cols-3 gap-4 text-sm">
+                <div className="text-center">
+                  <div className="font-semibold text-primary">95%</div>
+                  <div className="text-muted-foreground">Precisión</div>
                 </div>
-                <div className="flex items-center justify-center lg:justify-start">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Tasa metabólica basal (TDEE) personalizada</span>
+                <div className="text-center">
+                  <div className="font-semibold text-primary">7</div>
+                  <div className="text-muted-foreground">Medidas</div>
                 </div>
-                <div className="flex items-center justify-center lg:justify-start">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Menús con 5 comidas balanceadas</span>
-                </div>
-                <div className="flex items-center justify-center lg:justify-start">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Basado en datos nutricionales USDA</span>
+                <div className="text-center">
+                  <div className="font-semibold text-primary">30s</div>
+                  <div className="text-muted-foreground">Tiempo</div>
                 </div>
               </div>
             </div>
