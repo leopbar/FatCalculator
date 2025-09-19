@@ -1,25 +1,15 @@
 
-import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield, Calculator } from "lucide-react";
 import { LoginForm } from "@/components/ui/LoginForm";
 import { RegisterForm } from "@/components/ui/RegisterForm";
 
 export default function AuthPage() {
-  const [, navigate] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
 
-  // Redirecionamento reativo quando o usuário for autenticado
-  useEffect(() => {
-    if (user && !loginMutation.isPending && !registerMutation.isPending) {
-      console.log("User authenticated, redirecting to dashboard...");
-      navigate("/dashboard");
-    }
-  }, [user, navigate, loginMutation.isPending, registerMutation.isPending]);
-
-  // Se o usuário já está autenticado, mostrar estado de carregamento
+  // Si el usuario ya está autenticado, mostrar estado de carga
+  // El AuthProvider ya maneja la redirección automáticamente
   if (user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

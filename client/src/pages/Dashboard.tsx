@@ -1,11 +1,11 @@
-
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { Calculator, TrendingUp, UtensilsCrossed, User, Play, Utensils, Target, BookOpen, Pill, Brain } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calculator, User, Menu, Brain, BarChart3, Utensils, LogOut } from "lucide-react";
 
 interface UserSummary {
   hasMetrics: boolean;
@@ -54,6 +54,11 @@ export default function Dashboard() {
     }
   };
 
+  const handleLogout = () => {
+    console.log("Logout button clicked");
+    logoutMutation.mutate();
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -71,232 +76,148 @@ export default function Dashboard() {
             <User className="w-8 h-8 text-primary" />
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                ¡Hola, {user.username}!
+                ¡Hola, {user.name || user.email}!
               </h1>
               <p className="text-muted-foreground">
                 Bienvenido a tu calculadora de grasa corporal
               </p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={() => logoutMutation.mutate()}
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
             data-testid="button-logout"
+            className="flex items-center gap-2"
           >
-            Cerrar sesión
+            <LogOut className="h-4 w-4" />
+            {logoutMutation.isPending ? "Cerrando..." : "Cerrar sesión"}
           </Button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto p-6 space-y-8">
-        {/* Recursos Adicionales */}
-        <section>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* Comience Aquí */}
-            <Card className="hover-elevate cursor-pointer">
-              <CardHeader className="text-center">
-                <Play className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle>Comience Aquí</CardTitle>
-                <CardDescription>
-                  Guía completa para iniciar su transformación corporal
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="outline">
-                  Próximamente
-                </Button>
+      <main className="max-w-4xl mx-auto p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Calculadora Card */}
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleCalculatorClick}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <Calculator className="h-8 w-8 text-primary" />
+                {summary?.hasCalculation && <Badge variant="secondary">Completado</Badge>}
+              </div>
+              <CardTitle className="text-lg">Calculadora</CardTitle>
+              <CardDescription>
+                {summary?.hasCalculation ? "Ver último cálculo" : "Calcular grasa corporal"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                {summary?.hasCalculation
+                  ? "Revisa tus resultados o realiza un nuevo cálculo"
+                  : "Ingresa tus medidas corporales para obtener tu porcentaje de grasa"
+                }
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Resultados Card */}
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleResultsClick}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <BarChart3 className="h-8 w-8 text-primary" />
+                {summary?.hasCalculation && <Badge variant="secondary">Disponible</Badge>}
+              </div>
+              <CardTitle className="text-lg">Mis Resultados</CardTitle>
+              <CardDescription>
+                {summary?.hasCalculation ? "Ver análisis completo" : "Calcula primero"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                {summary?.hasCalculation
+                  ? "Análisis detallado de tu composición corporal y recomendaciones"
+                  : "Primero debes realizar el cálculo para ver tus resultados"
+                }
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Menú Nutricional Card */}
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleMenuClick}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <Utensils className="h-8 w-8 text-primary" />
+                {summary?.hasMenu && <Badge variant="secondary">Generado</Badge>}
+              </div>
+              <CardTitle className="text-lg">Menú Nutricional</CardTitle>
+              <CardDescription>
+                {summary?.hasMenu ? "Ver menú personalizado" : "Generar menú"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                {summary?.hasMenu
+                  ? "Menú personalizado basado en tus objetivos nutricionales"
+                  : "Obtén un menú personalizado basado en tu cálculo de grasa corporal"
+                }
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Fortalecimiento Mental Card */}
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/mind-strengthening")}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <Brain className="h-8 w-8 text-primary" />
+                <Badge variant="outline">Nuevo</Badge>
+              </div>
+              <CardTitle className="text-lg">Fortalecimiento Mental</CardTitle>
+              <CardDescription>
+                Ejercicios de mindfulness
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Técnicas de respiración, meditación y ejercicios mentales para complementar tu bienestar físico
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Stats */}
+        {!isLoading && (
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary">
+                    {summary?.hasCalculation ? "✓" : "○"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Cálculo Realizado</p>
+                </div>
               </CardContent>
             </Card>
 
-            {/* Orientación Alimentaria */}
-            <Card className="hover-elevate cursor-pointer">
-              <CardHeader className="text-center">
-                <Utensils className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle>Orientación Alimentaria</CardTitle>
-                <CardDescription>
-                  Fundamentos de una alimentación saludable y equilibrada
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="outline">
-                  Próximamente
-                </Button>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary">
+                    {summary?.hasMenu ? "✓" : "○"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Menú Generado</p>
+                </div>
               </CardContent>
             </Card>
 
-            {/* Estrategias Alimentarias */}
-            <Card className="hover-elevate cursor-pointer">
-              <CardHeader className="text-center">
-                <Target className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle>Estrategias Alimentarias</CardTitle>
-                <CardDescription>
-                  Técnicas avanzadas para optimizar su dieta y resultados
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="outline">
-                  Próximamente
-                </Button>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary">100%</p>
+                  <p className="text-sm text-muted-foreground">Perfil Completo</p>
+                </div>
               </CardContent>
             </Card>
-
-            {/* Libro de Recetas */}
-            <Card className="hover-elevate cursor-pointer">
-              <CardHeader className="text-center">
-                <BookOpen className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle>Libro de Recetas</CardTitle>
-                <CardDescription>
-                  Recetas sabrosas y nutritivas para todos los momentos
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="outline">
-                  Próximamente
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Suplementación sin Secretos */}
-            <Card className="hover-elevate cursor-pointer">
-              <CardHeader className="text-center">
-                <Pill className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle>Suplementación sin Secretos</CardTitle>
-                <CardDescription>
-                  Guía completa sobre suplementos: lo que realmente funciona
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="outline">
-                  Próximamente
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Fortaleciendo su Mente */}
-            <Card 
-              className="hover-elevate cursor-pointer" 
-              onClick={() => navigate("/mind-strengthening")}
-            >
-              <CardHeader className="text-center">
-                <Brain className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle>Fortaleciendo su Mente</CardTitle>
-                <CardDescription>
-                  Estrategias psicológicas para mantener la motivación y disciplina
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="default">
-                  Iniciar Guía Mental
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* Herramientas */}
-        <section>
-          <h2 className="text-2xl font-bold mb-6 text-foreground">Herramientas</h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            {/* Calculadora de Grasa */}
-            <Card className="hover-elevate cursor-pointer" onClick={handleCalculatorClick}>
-              <CardHeader className="text-center">
-                <Calculator className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle data-testid="card-title-calculator">
-                  Calculadora de Grasa
-                </CardTitle>
-                <CardDescription>
-                  {summary?.hasMetrics
-                    ? "Recalcular las medidas corporales"
-                    : "Calcular porcentaje de grasa corporal"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  className="w-full" 
-                  variant={summary?.hasMetrics ? "secondary" : "default"}
-                  data-testid="button-calculator"
-                >
-                  {summary?.hasMetrics ? "Recalcular" : "Comenzar"}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Resultados TMB/TDEE */}
-            <Card className="hover-elevate cursor-pointer" onClick={handleResultsClick}>
-              <CardHeader className="text-center">
-                <TrendingUp className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle data-testid="card-title-results">
-                  Tasa Metabólica
-                </CardTitle>
-                <CardDescription>
-                  {summary?.hasCalculation
-                    ? "Ver sus resultados de TMB y TDEE"
-                    : "Aún no hay cálculos disponibles"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  className="w-full"
-                  variant={summary?.hasCalculation ? "default" : "outline"}
-                  disabled={!summary?.hasCalculation && !isLoading}
-                  data-testid="button-results"
-                >
-                  {summary?.hasCalculation ? "Ver Resultados" : "Calcular Primero"}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Menú Personalizado */}
-            <Card className="hover-elevate cursor-pointer" onClick={handleMenuClick}>
-              <CardHeader className="text-center">
-                <UtensilsCrossed className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle data-testid="card-title-menu">
-                  Menú Personalizado
-                </CardTitle>
-                <CardDescription>
-                  {summary?.hasMenu
-                    ? "Ver su menú personalizado"
-                    : "Menú basado en sus objetivos"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  className="w-full"
-                  variant={summary?.hasMenu ? "default" : "outline"}
-                  disabled={!summary?.hasMenu && !isLoading}
-                  data-testid="button-menu"
-                >
-                  {summary?.hasMenu ? "Ver Menú" : "Calcular Primero"}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* Status Summary */}
-        {!isLoading && summary && (
-          <div className="mt-8 p-4 bg-muted rounded-lg">
-            <h3 className="font-semibold mb-2" data-testid="text-status-title">
-              Estado de sus datos:
-            </h3>
-            <div className="flex gap-4 text-sm">
-              <span className={`${summary.hasMetrics ? 'text-green-600' : 'text-muted-foreground'}`}>
-                ✓ Medidas corporales: {summary.hasMetrics ? 'Guardadas' : 'Pendiente'}
-              </span>
-              <span className={`${summary.hasCalculation ? 'text-green-600' : 'text-muted-foreground'}`}>
-                ✓ Cálculos: {summary.hasCalculation ? 'Completado' : 'Pendiente'}
-              </span>
-              <span className={`${summary.hasMenu ? 'text-green-600' : 'text-muted-foreground'}`}>
-                ✓ Menú: {summary.hasMenu ? 'Generado' : 'Pendiente'}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {isLoading && (
-          <div className="mt-8 text-center">
-            <p className="text-muted-foreground">Cargando sus datos...</p>
           </div>
         )}
       </main>
