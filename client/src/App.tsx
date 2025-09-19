@@ -3,7 +3,7 @@ import { Switch, Route } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/hooks/use-auth";
-import { ProtectedRoute } from "@/lib/protected-route";
+import ProtectedRoute from "@/lib/protected-route";
 
 // Pages
 import Dashboard from "@/pages/Dashboard";
