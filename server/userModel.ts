@@ -96,22 +96,3 @@ export async function emailExists(email: string): Promise<boolean> {
     return false;
   }
 }
-
-/**
- * Atualiza a senha do usuário
- */
-export async function updateUserPassword(userId: string, newPassword: string): Promise<boolean> {
-  try {
-    console.log("🔐 Atualizando senha para usuário:", userId);
-    
-    await db.update(users)
-      .set({ password: newPassword })
-      .where(eq(users.id, userId));
-    
-    console.log("✅ Senha atualizada com sucesso");
-    return true;
-  } catch (error) {
-    console.error("💥 Erro ao atualizar senha:", error);
-    throw new Error("Falha ao atualizar senha");
-  }
-}
