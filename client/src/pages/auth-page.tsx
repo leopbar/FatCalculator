@@ -15,7 +15,10 @@ import { z } from "zod";
 import { Shield, Calculator } from "lucide-react";
 
 const loginSchema = insertUserSchema;
-const registerSchema = insertUserSchema.extend({
+const registerSchema = z.object({
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  email: z.string().email("Email inválido"),
+  password: z.string().min(8, "Senha deve ter pelo menos 8 caracteres"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Las contraseñas no coinciden",
@@ -41,7 +44,8 @@ export default function AuthPage() {
   const registerForm = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      username: "",
+      name: "",
+      email: "",
       password: "",
       confirmPassword: "",
     },
@@ -176,16 +180,35 @@ export default function AuthPage() {
                         <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
                           <FormField
                             control={registerForm.control}
-                            name="username"
+                            name="name"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Usuario</FormLabel>
+                                <FormLabel>Nome</FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
-                                    placeholder="Elija un nombre de usuario"
-                                    data-testid="input-username-register"
-                                    autoComplete="username"
+                                    placeholder="Digite seu nome completo"
+                                    data-testid="input-name-register"
+                                    autoComplete="name"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={registerForm.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="email"
+                                    placeholder="Digite seu email"
+                                    data-testid="input-email-register"
+                                    autoComplete="email"
                                   />
                                 </FormControl>
                                 <FormMessage />
