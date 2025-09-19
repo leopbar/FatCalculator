@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, User, Menu, Brain, BarChart3, Utensils, LogOut, Loader2 } from "lucide-react";
+import { Calculator, User, Menu, Brain, BarChart3, Utensils, LogOut, Loader2, Settings, Activity, Heart, Target } from "lucide-react";
 
 interface UserSummary {
   hasMetrics: boolean;
@@ -91,7 +91,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-white border-b border-border p-4">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <User className="w-8 h-8 text-primary" />
             <div>
@@ -121,8 +121,9 @@ export default function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <main className="max-w-6xl mx-auto p-6">
+        {/* Main Feature Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Calculadora Card */}
           <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleCalculatorClick}>
             <CardHeader className="pb-2">
@@ -209,9 +210,69 @@ export default function Dashboard() {
           </Card>
         </div>
 
+        {/* Additional Feature Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {/* Configuraciones Card */}
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/settings")}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <Settings className="h-8 w-8 text-primary" />
+                <Badge variant="outline">Config</Badge>
+              </div>
+              <CardTitle className="text-lg">Configuraciones</CardTitle>
+              <CardDescription>
+                Personalizar preferencias
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Ajusta tus preferencias, unidades de medida y configuraciones del perfil
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Seguimiento Card */}
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/tracking")}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <Activity className="h-8 w-8 text-primary" />
+                <Badge variant="outline">Progress</Badge>
+              </div>
+              <CardTitle className="text-lg">Seguimiento</CardTitle>
+              <CardDescription>
+                Historial de progreso
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Visualiza tu progreso a lo largo del tiempo y mantén un registro de tus mediciones
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Objetivos Card */}
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/goals")}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <Target className="h-8 w-8 text-primary" />
+                <Badge variant="outline">Goals</Badge>
+              </div>
+              <CardTitle className="text-lg">Mis Objetivos</CardTitle>
+              <CardDescription>
+                Definir metas personales
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Establece y gestiona tus objetivos de composición corporal y salud
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Quick Stats */}
         {!summaryLoading && (
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center">
@@ -237,6 +298,17 @@ export default function Dashboard() {
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center">
+                  <p className="text-2xl font-bold text-primary">
+                    <Heart className="h-6 w-6 mx-auto" />
+                  </p>
+                  <p className="text-sm text-muted-foreground">Salud Integral</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
                   <p className="text-2xl font-bold text-primary">100%</p>
                   <p className="text-sm text-muted-foreground">Perfil Completo</p>
                 </div>
@@ -244,6 +316,19 @@ export default function Dashboard() {
             </Card>
           </div>
         )}
+
+        {/* Welcome Message */}
+        <Card className="mt-8 bg-gradient-to-r from-primary/10 to-secondary/10">
+          <CardContent className="p-6">
+            <div className="text-center">
+              <h3 className="text-xl font-semibold mb-2">¡Bienvenido a tu centro de bienestar!</h3>
+              <p className="text-muted-foreground">
+                Aquí puedes gestionar tu salud física y mental de forma integral. 
+                Comienza calculando tu porcentaje de grasa corporal y explora todas nuestras herramientas.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
