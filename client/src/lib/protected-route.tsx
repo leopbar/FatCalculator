@@ -1,9 +1,9 @@
-
+// Based on javascript_auth_all_persistance blueprint
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
 
-function ProtectedRoute({
+export function ProtectedRoute({
   path,
   component: Component,
 }: {
@@ -18,7 +18,7 @@ function ProtectedRoute({
         <div className="flex items-center justify-center min-h-screen bg-background">
           <div className="flex flex-col items-center space-y-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">Verificando autenticación...</p>
+            <p className="text-sm text-muted-foreground">Carregando...</p>
           </div>
         </div>
       </Route>
@@ -28,12 +28,10 @@ function ProtectedRoute({
   if (!user) {
     return (
       <Route path={path}>
-        <Redirect to="/auth" replace />
+        <Redirect to="/auth" />
       </Route>
     );
   }
 
   return <Route path={path} component={Component} />;
 }
-
-export default ProtectedRoute;

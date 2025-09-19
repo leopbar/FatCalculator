@@ -1,59 +1,81 @@
 
-import { useEffect } from "react";
-import { useLocation } from "wouter";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Calculator, Loader2 } from "lucide-react";
-import { LoginForm } from "@/components/ui/LoginForm";
-import { RegisterForm } from "@/components/ui/RegisterForm";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { insertUserSchema, type InsertUser } from "@shared/schema";
+import { z } from "zod";
+import { Shield, Calculator } from "lucide-react";
+
+const loginSchema = insertUserSchema;
+const registerSchema = insertUserSchema.extend({
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Las contraseñas no coinciden",
+  path: ["confirmPassword"],
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function AuthPage() {
-  const { user, loginMutation, registerMutation, isLoading } = useAuth();
   const [, navigate] = useLocation();
+  const { user, loginMutation, registerMutation } = useAuth();
 
-  // Redirecionamento reativo baseado no estado do usuário
+  // Always call all hooks first before any conditional logic
+  const loginForm = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
+
+  const registerForm = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  // Redirect if already authenticated using useEffect to avoid side effects during render
   useEffect(() => {
-    console.log("AuthPage useEffect triggered", { user, isLoading });
-    
-    // Se o usuário está logado e não está carregando, redirecionar
-    if (user && !isLoading) {
-      console.log("User is authenticated, navigating to dashboard...");
-      navigate("/dashboard", { replace: true });
+    if (user) {
+      navigate("/");
     }
-  }, [user, isLoading, navigate]);
+  }, [user, navigate]);
 
-  // Mostrar loading enquanto verifica autenticação
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 text-primary mx-auto mb-4 animate-spin" />
-          <p className="text-muted-foreground">Verificando autenticação...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Se o usuário já está autenticado, mostrar estado de redirecionamento
+  // Show loading state while redirecting - but AFTER all hooks are called
   if (user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Shield className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
-          <p className="text-muted-foreground">Redirigiendo al dashboard...</p>
-        </div>
-      </div>
-    );
+    return <div className="min-h-screen bg-background flex items-center justify-center">
+      <p className="text-muted-foreground">Redirigiendo...</p>
+    </div>;
   }
 
-  const onLogin = (data: { email: string; password: string }) => {
-    console.log("Initiating login...");
-    loginMutation.mutate(data);
+  const onLogin = (data: LoginFormData) => {
+    loginMutation.mutate(data, {
+      onSuccess: () => {
+        navigate("/");
+      },
+    });
   };
 
-  const onRegister = (data: { email: string; name?: string; password: string }) => {
-    console.log("Initiating registration...");
-    registerMutation.mutate(data);
+  const onRegister = (data: RegisterFormData) => {
+    const { confirmPassword, ...registerData } = data;
+    registerMutation.mutate(registerData, {
+      onSuccess: () => {
+        navigate("/");
+      },
+    });
   };
 
   return (
@@ -80,46 +102,181 @@ export default function AuthPage() {
                 </TabsList>
 
                 <TabsContent value="login">
-                  <LoginForm
-                    onSubmit={onLogin}
-                    isLoading={loginMutation.isPending}
-                  />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Iniciar Sesión</CardTitle>
+                      <CardDescription>
+                        Ingrese sus credenciales para acceder a su cuenta
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Form {...loginForm}>
+                        <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
+                          <FormField
+                            control={loginForm.control}
+                            name="username"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Usuario</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Ingrese su usuario"
+                                    data-testid="input-username-login"
+                                    autoComplete="username"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={loginForm.control}
+                            name="password"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Contraseña</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="password"
+                                    placeholder="Ingrese su contraseña"
+                                    data-testid="input-password-login"
+                                    autoComplete="current-password"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="submit"
+                            className="w-full"
+                            disabled={loginMutation.isPending}
+                            data-testid="button-login"
+                          >
+                            {loginMutation.isPending ? "Ingresando..." : "Ingresar"}
+                          </Button>
+                        </form>
+                      </Form>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 <TabsContent value="register">
-                  <RegisterForm
-                    onSubmit={onRegister}
-                    isLoading={registerMutation.isPending}
-                  />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Crear Cuenta</CardTitle>
+                      <CardDescription>
+                        Cree una nueva cuenta para acceder a la calculadora
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Form {...registerForm}>
+                        <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
+                          <FormField
+                            control={registerForm.control}
+                            name="username"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Usuario</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Elija un nombre de usuario"
+                                    data-testid="input-username-register"
+                                    autoComplete="username"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={registerForm.control}
+                            name="password"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Contraseña</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="password"
+                                    placeholder="Cree una contraseña segura"
+                                    data-testid="input-password-register"
+                                    autoComplete="new-password"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={registerForm.control}
+                            name="confirmPassword"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Confirmar Contraseña</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="password"
+                                    placeholder="Confirme su contraseña"
+                                    data-testid="input-confirm-password"
+                                    autoComplete="new-password"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="submit"
+                            className="w-full"
+                            disabled={registerMutation.isPending}
+                            data-testid="button-register"
+                          >
+                            {registerMutation.isPending ? "Creando cuenta..." : "Crear Cuenta"}
+                          </Button>
+                        </form>
+                      </Form>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
               </Tabs>
             </div>
           </div>
 
-          {/* Calculator Preview */}
-          <div className="flex items-center justify-center bg-muted/30 rounded-lg p-8">
-            <div className="text-center">
-              <Calculator className="h-24 w-24 text-primary mx-auto mb-6" />
-              <h2 className="text-2xl font-bold text-foreground mb-4">
+          {/* Hero Section */}
+          <div className="flex items-center justify-center lg:border-l lg:pl-8">
+            <div className="text-center lg:text-left max-w-lg">
+              <div className="flex items-center justify-center lg:justify-start mb-6">
+                <Calculator className="h-16 w-16 text-primary" />
+              </div>
+              <h2 className="text-4xl font-bold text-foreground mb-4">
                 Calculadora de Grasa Corporal
               </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Herramienta precisa para calcular tu porcentaje de grasa corporal,
-                tasa metabólica basal (TMB) y gasto energético total (TDEE).
-                Obtén resultados personalizados y recomendaciones nutricionales.
+              <p className="text-lg text-muted-foreground mb-6">
+                Sistema completo para cálculo de grasa corporal usando el método oficial de la 
+                Marina de los EE.UU., con recomendaciones personalizadas de menús basadas en 
+                estándares internacionales de nutrición.
               </p>
-              <div className="mt-6 grid grid-cols-3 gap-4 text-sm">
-                <div className="text-center">
-                  <div className="font-semibold text-primary">95%</div>
-                  <div className="text-muted-foreground">Precisión</div>
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <div className="flex items-center justify-center lg:justify-start">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Cálculo preciso de porcentaje de grasa corporal</span>
                 </div>
-                <div className="text-center">
-                  <div className="font-semibold text-primary">7</div>
-                  <div className="text-muted-foreground">Medidas</div>
+                <div className="flex items-center justify-center lg:justify-start">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Tasa metabólica basal (TDEE) personalizada</span>
                 </div>
-                <div className="text-center">
-                  <div className="font-semibold text-primary">30s</div>
-                  <div className="text-muted-foreground">Tiempo</div>
+                <div className="flex items-center justify-center lg:justify-start">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Menús con 5 comidas balanceadas</span>
+                </div>
+                <div className="flex items-center justify-center lg:justify-start">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Basado en datos nutricionales USDA</span>
                 </div>
               </div>
             </div>

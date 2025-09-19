@@ -36,30 +36,6 @@ export const db = drizzle({ client: pool, schema });
 // Initialize database tables and seed data
 async function initializeTables() {
   try {
-    // Add email and name columns to users table if they don't exist
-    await db.execute(sql`
-      ALTER TABLE users 
-      ADD COLUMN IF NOT EXISTS email text,
-      ADD COLUMN IF NOT EXISTS name text;
-    `);
-
-    // Create unique index on email if it doesn't exist
-    await db.execute(sql`
-      CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users(email);
-    `);
-
-    // Update existing users to have email = username for compatibility
-    await db.execute(sql`
-      UPDATE users SET email = username WHERE email IS NULL;
-    `);
-
-    // Make email NOT NULL after populating it
-    await db.execute(sql`
-      ALTER TABLE users ALTER COLUMN email SET NOT NULL;
-    `);
-
-    console.log('User table migration completed successfully');
-
     // Create the alimentos_hispanos table if it doesn't exist
     await db.execute(sql`
       CREATE TABLE IF NOT EXISTS alimentos_hispanos (
