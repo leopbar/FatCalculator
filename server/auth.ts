@@ -30,26 +30,26 @@ export function setupAuth(app: Express) {
     new LocalStrategy(async (username, password, done) => {
       try {
         console.log("🔍 Tentativa de login para:", username);
-        
+
         if (!username || !password) {
           console.log("❌ Credenciais em falta");
-          return done(null, false, { message: "Username e password são obrigatórios" });
+          return done(null, false, { message: "Username y password son obligatorios" });
         }
 
         const user = await storage.getUserByUsername(username);
         if (!user) {
           console.log("❌ Usuário não encontrado:", username);
-          return done(null, false, { message: "Usuário não encontrado" });
+          return done(null, false, { message: "Usuario no encontrado" });
         }
-        
+
         console.log("🔐 Verificando senha para usuário:", username);
         const isValidPassword = await comparePassword(password, user.password);
-        
+
         if (!isValidPassword) {
           console.log("❌ Senha incorreta para usuário:", username);
-          return done(null, false, { message: "Senha incorreta" });
+          return done(null, false, { message: "Contraseña incorrecta" });
         }
-        
+
         console.log("✅ Login bem-sucedido para usuário:", username);
         return done(null, user);
       } catch (error) {
@@ -73,20 +73,20 @@ export function setupAuth(app: Express) {
     try {
       console.log("📝 Request de registro recebido para:", req.body.username);
       const { username, password } = req.body;
-      
+
       // Validar se os campos obrigatórios estão presentes
       if (!username || !password) {
         console.log("❌ Campos obrigatórios ausentes");
         return res.status(400).json({ 
-          error: "Username e password são obrigatórios" 
+          error: "Username y password son obligatorios" 
         });
       }
 
       // Validar força da senha
       if (!isPasswordValid(password)) {
-        console.log("❌ Senha não atende aos critérios");
+        console.log("❌ Contraseña no cumple con los criterios");
         return res.status(400).json({ 
-          error: "A senha deve ter pelo menos 8 caracteres, incluindo letras e números" 
+          error: "La contraseña debe tener al menos 8 caracteres, incluyendo letra mayúscula, minúscula, número y símbolo" 
         });
       }
 
@@ -95,7 +95,7 @@ export function setupAuth(app: Express) {
       if (existingUser) {
         console.log("❌ Usuário já existe:", username);
         return res.status(400).json({ 
-          error: "Usuário já existe" 
+          error: "Usuario ya existe" 
         });
       }
 
@@ -103,7 +103,7 @@ export function setupAuth(app: Express) {
       console.log("🔐 Gerando hash da senha...");
       const hashedPassword = await hashPassword(password);
       console.log("💾 Salvando usuário no banco...");
-      
+
       const user = await storage.createUser({
         username,
         password: hashedPassword,
@@ -117,7 +117,7 @@ export function setupAuth(app: Express) {
           console.error("💥 Erro no login automático:", err);
           return next(err);
         }
-        
+
         console.log("✅ Login automático realizado para:", username);
         // Remover senha do retorno por segurança
         const { password: _, ...userWithoutPassword } = user;
@@ -131,7 +131,7 @@ export function setupAuth(app: Express) {
 
   app.post("/api/login", (req, res, next) => {
     console.log("📝 Request de login recebido:", { body: req.body });
-    
+
     // Verificar se as credenciais estão presentes no body
     const { username, password } = req.body;
     if (!username || !password) {
@@ -146,20 +146,20 @@ export function setupAuth(app: Express) {
         console.error("💥 Erro na autenticação:", err);
         return next(err);
       }
-      
+
       if (!user) {
         console.log("❌ Autenticação falhou:", info?.message);
         return res.status(401).json({ 
           error: info?.message || "Credenciais inválidas" 
         });
       }
-      
+
       req.login(user, (loginErr) => {
         if (loginErr) {
           console.error("💥 Erro no login:", loginErr);
           return next(loginErr);
         }
-        
+
         console.log("✅ Login realizado com sucesso para:", user.username);
         // Remover senha do retorno por segurança
         const { password: _, ...userWithoutPassword } = user;

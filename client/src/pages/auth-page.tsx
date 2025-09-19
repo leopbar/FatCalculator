@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { insertUserSchema, type InsertUser } from "@shared/schema";
 import { z } from "zod";
 import { Shield, Calculator } from "lucide-react";
+import { PasswordField } from "@/components/ui/PasswordField";
 
 const loginSchema = insertUserSchema;
 const registerSchema = insertUserSchema.extend({
@@ -197,11 +198,11 @@ export default function AuthPage() {
                             name="password"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Contraseña</FormLabel>
                                 <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="password"
+                                  <PasswordField
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    label="Contraseña"
                                     placeholder="Cree una contraseña segura"
                                     data-testid="input-password-register"
                                     autoComplete="new-password"

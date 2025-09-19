@@ -43,15 +43,17 @@ export async function comparePassword(password: string, hashedPassword: string):
 }
 
 /**
- * Valida força da senha (opcional - pode ser expandido)
- * @param password - Senha a ser validada
- * @returns boolean - true se a senha atende aos critérios
+ * Valida la fortaleza de la contraseña
+ * @param password - Contraseña a validar
+ * @returns boolean - true si la contraseña cumple con los criterios
  */
 export function isPasswordValid(password: string): boolean {
-  // Mínimo 8 caracteres, pelo menos 1 letra e 1 número
+  // Mínimo 8 caracteres, al menos 1 mayúscula, 1 minúscula, 1 número y 1 símbolo
   const minLength = password.length >= 8;
-  const hasLetter = /[a-zA-Z]/.test(password);
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
+  const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
   
-  return minLength && hasLetter && hasNumber;
+  return minLength && hasUppercase && hasLowercase && hasNumber && hasSymbol;
 }
