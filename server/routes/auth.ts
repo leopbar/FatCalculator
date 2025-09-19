@@ -217,4 +217,4 @@ router.get('/user', authenticateJWT, (req: Request, res: Response) => {
   res.json(req.user);
 });
 
-export { router as authRoutes, authenticateJWT };
+export { router as authRoutes };
