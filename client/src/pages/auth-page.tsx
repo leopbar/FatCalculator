@@ -1,15 +1,40 @@
 
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Calculator } from "lucide-react";
+import { Shield, Calculator, Loader2 } from "lucide-react";
 import { LoginForm } from "@/components/ui/LoginForm";
 import { RegisterForm } from "@/components/ui/RegisterForm";
 
 export default function AuthPage() {
-  const { user, loginMutation, registerMutation } = useAuth();
+  const { user, loginMutation, registerMutation, isLoading } = useAuth();
+  const [, navigate] = useLocation();
 
-  // Si el usuario ya está autenticado, mostrar estado de carga
-  // El AuthProvider ya maneja la redirección automáticamente
+  // Redirecionamento reativo baseado no estado do usuário
+  useEffect(() => {
+    console.log("AuthPage useEffect triggered", { user, isLoading });
+    
+    // Se o usuário está logado e não está carregando, redirecionar
+    if (user && !isLoading) {
+      console.log("User is authenticated, navigating to dashboard...");
+      navigate("/dashboard", { replace: true });
+    }
+  }, [user, isLoading, navigate]);
+
+  // Mostrar loading enquanto verifica autenticação
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 text-primary mx-auto mb-4 animate-spin" />
+          <p className="text-muted-foreground">Verificando autenticação...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Se o usuário já está autenticado, mostrar estado de redirecionamento
   if (user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

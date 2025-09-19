@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -5,7 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, User, Menu, Brain, BarChart3, Utensils, LogOut } from "lucide-react";
+import { Calculator, User, Menu, Brain, BarChart3, Utensils, LogOut, Loader2 } from "lucide-react";
 
 interface UserSummary {
   hasMetrics: boolean;
@@ -15,20 +16,47 @@ interface UserSummary {
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
-  const { user, logoutMutation } = useAuth();
+  const { user, logoutMutation, isLoading } = useAuth();
 
   // Fetch user summary to determine navigation
-  const { data: summary, isLoading } = useQuery<UserSummary>({
+  const { data: summary, isLoading: summaryLoading } = useQuery<UserSummary>({
     queryKey: ['/api/me/summary'],
     enabled: !!user,
   });
 
-  // Redirect to auth if not logged in
+  // Redirecionamento reativo se não autenticado
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
+    console.log("Dashboard useEffect triggered", { user, isLoading });
+    
+    if (!isLoading && !user) {
+      console.log("User is not authenticated, navigating to auth...");
+      navigate("/auth", { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, isLoading, navigate]);
+
+  // Mostrar loading enquanto verifica autenticação
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 text-primary mx-auto mb-4 animate-spin" />
+          <p className="text-muted-foreground">Cargando dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Se não há usuário autenticado, mostrar estado de redirecionamento
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <User className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+          <p className="text-muted-foreground">Redirigiendo a la página de login...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleCalculatorClick = () => {
     if (summary?.hasCalculation) {
@@ -59,14 +87,6 @@ export default function Dashboard() {
     logoutMutation.mutate();
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Redirigiendo...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -90,7 +110,11 @@ export default function Dashboard() {
             data-testid="button-logout"
             className="flex items-center gap-2"
           >
-            <LogOut className="h-4 w-4" />
+            {logoutMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <LogOut className="h-4 w-4" />
+            )}
             {logoutMutation.isPending ? "Cerrando..." : "Cerrar sesión"}
           </Button>
         </div>
@@ -186,7 +210,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Stats */}
-        {!isLoading && (
+        {!summaryLoading && (
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardContent className="pt-6">
