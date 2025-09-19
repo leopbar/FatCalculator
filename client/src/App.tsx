@@ -1,10 +1,11 @@
+
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
-import { ProtectedRoute } from "@/lib/protected-route";
+import ProtectedRoute from "@/lib/protected-route";
+
+// Pages
 import Dashboard from "@/pages/Dashboard";
 import Home from "@/pages/Home";
 import Results from "@/pages/Results";
@@ -13,17 +14,31 @@ import MindStrengthening from "@/pages/MindStrengthening";
 import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
 
-function Router() {
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
+
+function AppRoutes() {
   return (
     <Switch>
-      <ProtectedRoute path="/" component={() => <Dashboard />} />
-      <ProtectedRoute path="/dashboard" component={() => <Dashboard />} />
-      <ProtectedRoute path="/calculator" component={() => <Home />} />
-      <ProtectedRoute path="/results" component={() => <Results />} />
-      <ProtectedRoute path="/menu" component={() => <Menu />} />
-      <ProtectedRoute path="/mind-strengthening" component={MindStrengthening} />
       <Route path="/auth" component={AuthPage} />
-      <Route component={NotFound} />
+      <Route path="/" nest>
+        <ProtectedRoute>
+          <Switch>
+            <Route path="/" component={Dashboard} />
+            <Route path="/dashboard" component={Dashboard} />
+            <Route path="/calculator" component={Home} />
+            <Route path="/results" component={Results} />
+            <Route path="/menu" component={Menu} />
+            <Route path="/mind-strengthening" component={MindStrengthening} />
+            <Route component={NotFound} />
+          </Switch>
+        </ProtectedRoute>
+      </Route>
     </Switch>
   );
 }
@@ -32,10 +47,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
+        <div className="min-h-screen bg-background">
+          <AppRoutes />
           <Toaster />
-          <Router />
-        </TooltipProvider>
+        </div>
       </AuthProvider>
     </QueryClientProvider>
   );
