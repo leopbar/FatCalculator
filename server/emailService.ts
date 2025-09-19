@@ -1,4 +1,3 @@
-
 import nodemailer from 'nodemailer';
 
 // Configuração do PHPMailer-style usando nodemailer
@@ -34,7 +33,7 @@ export async function sendPasswordResetEmail(
   token: string
 ): Promise<void> {
   const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:5000'}/reset-password?token=${token}`;
-  
+
   const mailOptions = {
     from: `"${process.env.FROM_NAME || 'Sistema'}" <${process.env.FROM_EMAIL || process.env.SMTP_USER}>`,
     to: to,

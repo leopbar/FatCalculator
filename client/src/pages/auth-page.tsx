@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,40 +11,34 @@ export default function AuthPage() {
   const [, navigate] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
 
-  // Redirect if already authenticated
+  // Redirecionamento reativo quando o usuário for autenticado
   useEffect(() => {
-    if (user) {
+    if (user && !loginMutation.isPending && !registerMutation.isPending) {
+      console.log("User authenticated, redirecting to dashboard...");
       navigate("/dashboard");
     }
-  }, [user, navigate]);
+  }, [user, navigate, loginMutation.isPending, registerMutation.isPending]);
 
-  // Show loading state while redirecting
+  // Se o usuário já está autenticado, mostrar estado de carregamento
   if (user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Redirigiendo al dashboard...</p>
+        <div className="text-center">
+          <Shield className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+          <p className="text-muted-foreground">Redirigiendo al dashboard...</p>
+        </div>
       </div>
     );
   }
 
   const onLogin = (data: { email: string; password: string }) => {
-    loginMutation.mutate(data, {
-      onSuccess: () => {
-        // O redirecionamento será feito automaticamente pelo useEffect
-        // quando o user for atualizado no contexto
-        console.log("Login successful, redirecting...");
-      },
-    });
+    console.log("Initiating login...");
+    loginMutation.mutate(data);
   };
 
   const onRegister = (data: { email: string; name?: string; password: string }) => {
-    registerMutation.mutate(data, {
-      onSuccess: () => {
-        // O redirecionamento será feito automaticamente pelo useEffect
-        // quando o user for atualizado no contexto
-        console.log("Registration successful, redirecting...");
-      },
-    });
+    console.log("Initiating registration...");
+    registerMutation.mutate(data);
   };
 
   return (
