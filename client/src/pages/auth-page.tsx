@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
@@ -130,7 +129,7 @@ export default function AuthPage() {
                                   <Input
                                     {...field}
                                     type="email"
-                                    placeholder="Digite seu email"
+                                    placeholder="Ingrese su email"
                                     data-testid="input-email-login"
                                     autoComplete="email"
                                   />
@@ -192,7 +191,7 @@ export default function AuthPage() {
                                 <FormControl>
                                   <Input
                                     {...field}
-                                    placeholder="Digite seu nome completo"
+                                    placeholder="Ingrese su nombre completo"
                                     data-testid="input-name-register"
                                     autoComplete="name"
                                   />
@@ -211,7 +210,7 @@ export default function AuthPage() {
                                   <Input
                                     {...field}
                                     type="email"
-                                    placeholder="Digite seu email"
+                                    placeholder="Ingrese su email"
                                     data-testid="input-email-register"
                                     autoComplete="email"
                                   />
@@ -285,8 +284,8 @@ export default function AuthPage() {
                 Calculadora de Grasa Corporal
               </h2>
               <p className="text-lg text-muted-foreground mb-6">
-                Sistema completo para cálculo de grasa corporal usando el método oficial de la 
-                Marina de los EE.UU., con recomendaciones personalizadas de menús basadas en 
+                Sistema completo para cálculo de grasa corporal usando el método oficial de la
+                Marina de los EE.UU., con recomendaciones personalizadas de menús basadas en
                 estándares internacionales de nutrición.
               </p>
               <div className="space-y-3 text-sm text-muted-foreground">
