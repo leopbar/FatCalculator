@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -258,7 +257,7 @@ export default function RecipeBook() {
         fiber: "0g",
         calories: "137kcal"
       },
-      image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop",
+      image: "https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=400&h=300&fit=crop",
       prepTime: "10 min",
       difficulty: "Fácil"
     },
@@ -333,7 +332,7 @@ export default function RecipeBook() {
         fiber: "2g",
         calories: "308kcal"
       },
-      image: "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=400&h=300&fit=crop",
+      image: "https://images.unsplash.com/photo-1625938145312-cee937085b3b?w=400&h=300&fit=crop",
       prepTime: "40 min",
       difficulty: "Intermedio"
     },
@@ -357,7 +356,7 @@ export default function RecipeBook() {
         fiber: "4g",
         calories: "300kcal"
       },
-      image: "https://images.unsplash.com/photo-1553909489-cd47e0ef937f?w=400&h=300&fit=crop",
+      image: "https://images.unsplash.com/photo-1539252554453-80ab65ce3586?w=400&h=300&fit=crop",
       prepTime: "10 min",
       difficulty: "Fácil"
     },
@@ -382,7 +381,7 @@ export default function RecipeBook() {
         fiber: "8g",
         calories: "222kcal"
       },
-      image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop",
+      image: "https://images.unsplash.com/photo-1625938145312-cee937085b3b?w=400&h=300&fit=crop",
       prepTime: "50 min",
       difficulty: "Intermedio"
     },
@@ -409,7 +408,7 @@ export default function RecipeBook() {
         fiber: "3g",
         calories: "318kcal"
       },
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop",
+      image: "https://images.unsplash.com/photo-1546833999-b9f581a19138-271246814262?w=400&h=300&fit=crop",
       prepTime: "35 min",
       difficulty: "Intermedio"
     },
@@ -433,7 +432,7 @@ export default function RecipeBook() {
         fiber: "3g",
         calories: "285kcal"
       },
-      image: "https://images.unsplash.com/photo-1572441713132-51c75654db73?w=400&h=300&fit=crop",
+      image: "https://images.unsplash.com/photo-1529042410759-befb1204b468?w=400&h=300&fit=crop",
       prepTime: "30 min",
       difficulty: "Intermedio"
     },
@@ -480,7 +479,7 @@ export default function RecipeBook() {
         fiber: "1g",
         calories: "230kcal"
       },
-      image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop",
+      image: "https://images.unsplash.com/photo-1513104890138-271246814262?w=400&h=300&fit=crop",
       prepTime: "20 min",
       difficulty: "Intermedio"
     }
@@ -803,7 +802,7 @@ export default function RecipeBook() {
                   </Badge>
                 </div>
               </div>
-              
+
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg leading-tight">{recipe.title}</CardTitle>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -817,7 +816,7 @@ export default function RecipeBook() {
                   </div>
                 </div>
               </CardHeader>
-              
+
               <CardContent>
                 <div className="grid grid-cols-4 gap-2 text-xs">
                   <div className="text-center p-2 bg-blue-50 rounded">
