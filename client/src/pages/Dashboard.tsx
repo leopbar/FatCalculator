@@ -151,7 +151,7 @@ export default function Dashboard() {
             >
               <CardHeader className="text-center">
                 <BookOpen className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle>Libro de Recetas</CardTitle>
+                <CardTitle>De regalo – Libro de recetas</CardTitle>
                 <CardDescription>
                   Recetas sabrosas y nutritivas para todos los momentos
                 </CardDescription>
