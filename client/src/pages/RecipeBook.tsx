@@ -94,7 +94,7 @@ export default function RecipeBook() {
         fiber: "9g",
         calories: "521kcal"
       },
-      image: "https://images.unsplash.com/photo-1508599589920-14cfa1c1fe1d?w=400&h=300&fit=crop",
+      image: "https://images.unsplash.com/photo-1571167530149-c72971b39cea?w=400&h=300&fit=crop",
       prepTime: "10 min",
       difficulty: "Fácil"
     },
@@ -258,7 +258,7 @@ export default function RecipeBook() {
         fiber: "0g",
         calories: "137kcal"
       },
-      image: "https://images.unsplash.com/photo-1587573089043-1c42d4b5ba51?w=400&h=300&fit=crop",
+      image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop",
       prepTime: "10 min",
       difficulty: "Fácil"
     },
@@ -357,7 +357,7 @@ export default function RecipeBook() {
         fiber: "4g",
         calories: "300kcal"
       },
-      image: "https://images.unsplash.com/photo-1582234479550-8ba3e58e7dac?w=400&h=300&fit=crop",
+      image: "https://images.unsplash.com/photo-1553909489-cd47e0ef937f?w=400&h=300&fit=crop",
       prepTime: "10 min",
       difficulty: "Fácil"
     },
@@ -382,7 +382,7 @@ export default function RecipeBook() {
         fiber: "8g",
         calories: "222kcal"
       },
-      image: "https://images.unsplash.com/photo-1609501676725-7186f734b2e8?w=400&h=300&fit=crop",
+      image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop",
       prepTime: "50 min",
       difficulty: "Intermedio"
     },
@@ -433,7 +433,7 @@ export default function RecipeBook() {
         fiber: "3g",
         calories: "285kcal"
       },
-      image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop",
+      image: "https://images.unsplash.com/photo-1572441713132-51c75654db73?w=400&h=300&fit=crop",
       prepTime: "30 min",
       difficulty: "Intermedio"
     },
