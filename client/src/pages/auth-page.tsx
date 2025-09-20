@@ -15,13 +15,13 @@ import { Shield, Calculator } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
-  password: z.string().min(1, "Senha é obrigatória"),
+  password: z.string().min(1, "La contraseña es obligatoria"),
 });
 
 const registerSchema = z.object({
-  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
   email: z.string().email("Email inválido"),
-  password: z.string().min(8, "Senha deve ter pelo menos 8 caracteres"),
+  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Las contraseñas no coinciden",
@@ -187,7 +187,7 @@ export default function AuthPage() {
                             name="name"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Nome</FormLabel>
+                                <FormLabel>Nombre</FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
