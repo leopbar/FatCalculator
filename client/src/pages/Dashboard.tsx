@@ -145,7 +145,10 @@ export default function Dashboard() {
             </Card>
 
             {/* Libro de Recetas */}
-            <Card className="hover-elevate cursor-pointer">
+            <Card 
+              className="hover-elevate cursor-pointer" 
+              onClick={() => navigate("/recipe-book")}
+            >
               <CardHeader className="text-center">
                 <BookOpen className="w-12 h-12 text-primary mx-auto mb-2" />
                 <CardTitle>Libro de Recetas</CardTitle>
@@ -154,8 +157,8 @@ export default function Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button className="w-full" variant="outline">
-                  Próximamente
+                <Button className="w-full" variant="default">
+                  Ver Recetas
                 </Button>
               </CardContent>
             </Card>
