@@ -12,6 +12,7 @@ import Menu from "@/pages/Menu";
 import MindStrengthening from "@/pages/MindStrengthening";
 import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
+import FoodStrategies from "@/pages/FoodStrategies";
 
 function Router() {
   return (
@@ -22,6 +23,7 @@ function Router() {
       <ProtectedRoute path="/results" component={() => <Results />} />
       <ProtectedRoute path="/menu" component={() => <Menu />} />
       <ProtectedRoute path="/mind-strengthening" component={MindStrengthening} />
+        <Route path="/food-strategies" component={FoodStrategies} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>

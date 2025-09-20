@@ -126,7 +126,10 @@ export default function Dashboard() {
             </Card>
 
             {/* Estrategias Alimentarias */}
-            <Card className="hover-elevate cursor-pointer">
+            <Card 
+              className="hover-elevate cursor-pointer" 
+              onClick={() => navigate("/food-strategies")}
+            >
               <CardHeader className="text-center">
                 <Target className="w-12 h-12 text-primary mx-auto mb-2" />
                 <CardTitle>Estrategias Alimentarias</CardTitle>
@@ -135,8 +138,8 @@ export default function Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button className="w-full" variant="outline">
-                  Próximamente
+                <Button className="w-full" variant="default">
+                  Iniciar Guía Alimentaria
                 </Button>
               </CardContent>
             </Card>
