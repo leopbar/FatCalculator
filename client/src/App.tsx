@@ -14,6 +14,7 @@ import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
 import FoodStrategies from "@/pages/FoodStrategies";
 import RecipeBook from "@/pages/RecipeBook";
+import Supplementation from "@/pages/Supplementation";
 
 function Router() {
   return (
@@ -26,6 +27,7 @@ function Router() {
       <ProtectedRoute path="/mind-strengthening" component={MindStrengthening} />
       <Route path="/food-strategies" component={FoodStrategies} />
       <Route path="/recipe-book" component={RecipeBook} />
+      <Route path="/supplementation" component={Supplementation} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
