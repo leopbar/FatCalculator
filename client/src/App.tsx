@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/lib/protected-route";
 import Dashboard from "@/pages/Dashboard";
 import Home from "@/pages/Home";
 import Results from "@/pages/Results";
+import MacroDistribution from "@/pages/MacroDistribution";
 import MindStrengthening from "@/pages/MindStrengthening";
 import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
@@ -22,6 +23,7 @@ function Router() {
       <ProtectedRoute path="/dashboard" component={() => <Dashboard />} />
       <ProtectedRoute path="/calculator" component={() => <Home />} />
       <ProtectedRoute path="/results" component={() => <Results />} />
+      <ProtectedRoute path="/macro-distribution" component={() => <MacroDistribution />} />
       <ProtectedRoute path="/mind-strengthening" component={MindStrengthening} />
       <Route path="/food-strategies" component={FoodStrategies} />
       <Route path="/recipe-book" component={RecipeBook} />

@@ -196,7 +196,14 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
                   <Button
                     className="w-full"
                     variant="outline"
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => {
+                      // Store selected category data in localStorage
+                      localStorage.setItem('selectedDietCategory', JSON.stringify({
+                        dailyCalories: dietCategory.dailyCalories,
+                        categoryName: dietCategory.name
+                      }));
+                      navigate('/macro-distribution');
+                    }}
                   >
                     <Utensils className="w-4 h-4 mr-2" />
                     Generar Menú
