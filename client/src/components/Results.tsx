@@ -228,7 +228,7 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
         </Card>
 
         {/* Action Buttons */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 mt-8">
           <Button
             onClick={() => navigate('/dashboard')}
             variant="outline"
