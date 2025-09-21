@@ -1,6 +1,15 @@
 
-import { db } from '../server/db.js';
-import { menus, comidas, alimentos, categorias_alimentos } from '../shared/schema.js';
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Import using require to avoid ES module issues
+const { db } = require('../server/db.js');
+const { menus, comidas, alimentos, categorias_alimentos } = require('../shared/schema.js');
 
 async function insertSampleMenu() {
   try {
