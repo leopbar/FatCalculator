@@ -1,7 +1,6 @@
 
 import { db } from '../server/db.js';
 import { menus, comidas, alimentos, categorias_alimentos } from '../shared/schema.js';
-import { eq } from 'drizzle-orm';
 
 async function insertSampleMenu() {
   try {
@@ -16,16 +15,36 @@ async function insertSampleMenu() {
 
     console.log('📋 Categorias encontradas:', Object.keys(categoriasMap));
 
+    // Se não há categorias, vamos criar as básicas
+    if (categorias.length === 0) {
+      console.log('📝 Criando categorias básicas...');
+      const categoriasBasicas = [
+        { nombre: 'proteínas', descripcion: 'Alimentos ricos em proteína' },
+        { nombre: 'carbohidratos', descripcion: 'Alimentos ricos em carboidratos' },
+        { nombre: 'grasas', descripcion: 'Alimentos ricos em gorduras saudáveis' },
+        { nombre: 'vegetales', descripcion: 'Verduras e legumes' },
+        { nombre: 'frutas', descripcion: 'Frutas frescas' },
+        { nombre: 'lácteos', descripcion: 'Produtos lácteos' },
+        { nombre: 'legumbres', descripcion: 'Feijões, lentilhas e similares' }
+      ];
+
+      for (const cat of categoriasBasicas) {
+        const [newCat] = await db.insert(categorias_alimentos).values(cat).returning();
+        categoriasMap[newCat.nombre] = newCat.id;
+      }
+      console.log('✅ Categorias criadas');
+    }
+
     // 2. Inserir o menu principal
     const [menu] = await db.insert(menus).values({
       nombre: 'Menú 1200 kcal – Pérdida de peso, alta proteína',
-      calorias_totales: 1200,
+      calorias_totales: 1290,
       proteina_total_gramos: 126,
       carbohidratos_total_gramos: 126,
       grasas_total_gramos: 39,
-      proteina_porcentaje: 42,
-      carbohidratos_porcentaje: 35,
-      grasas_porcentaje: 23
+      proteina_porcentaje: 39,
+      carbohidratos_porcentaje: 39,
+      grasas_porcentaje: 27
     }).returning();
 
     console.log('✅ Menu creado:', menu.nombre);
@@ -220,7 +239,7 @@ async function insertSampleMenu() {
       },
       {
         tipo: 'colación',
-        calorias: 110,
+        calorias: 100,
         proteina: 13,
         carbohidratos: 7,
         grasas: 2,
