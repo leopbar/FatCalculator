@@ -343,7 +343,7 @@ export default function BodyFatCalculator() {
         <div className="flex items-center justify-between mb-6">
           <div className="text-center flex-1">
             <h1 className="text-2xl font-bold text-foreground">
-              Calculadora de Grasa Corporal
+              SRC - Sistema de Reequilíbrio Corporal
             </h1>
             <p className="text-muted-foreground">
               Método oficial de la Marina de EE.UU.

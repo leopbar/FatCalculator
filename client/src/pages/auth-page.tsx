@@ -96,9 +96,9 @@ export default function AuthPage() {
                 <div className="flex items-center justify-center mb-4">
                   <Shield className="h-12 w-12 text-primary" />
                 </div>
-                <h1 className="text-3xl font-bold text-foreground">Acceso Autorizado</h1>
+                <h1 className="text-3xl font-bold text-foreground">SRC - Sistema de Reequilíbrio Corporal</h1>
                 <p className="text-muted-foreground mt-2">
-                  Ingrese sus credenciales para acceder a la calculadora
+                  Ingrese sus credenciales para acceder al sistema
                 </p>
               </div>
 
@@ -113,7 +113,7 @@ export default function AuthPage() {
                     <CardHeader>
                       <CardTitle>Iniciar Sesión</CardTitle>
                       <CardDescription>
-                        Ingrese sus credenciales para acceder a su cuenta
+                        Ingrese sus credenciales para acceder al SRC
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -176,7 +176,7 @@ export default function AuthPage() {
                     <CardHeader>
                       <CardTitle>Crear Cuenta</CardTitle>
                       <CardDescription>
-                        Cree una nueva cuenta para acceder a la calculadora
+                        Cree una nueva cuenta para acceder al SRC
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -281,10 +281,10 @@ export default function AuthPage() {
                 <Calculator className="h-16 w-16 text-primary" />
               </div>
               <h2 className="text-4xl font-bold text-foreground mb-4">
-                Calculadora de Grasa Corporal
+                SRC - Sistema de Reequilíbrio Corporal
               </h2>
               <p className="text-lg text-muted-foreground mb-6">
-                Sistema completo para cálculo de grasa corporal usando el método oficial de la
+                Sistema completo para reequilibrio corporal con cálculo de grasa corporal usando el método oficial de la
                 Marina de los EE.UU., con recomendaciones personalizadas de menús basadas en
                 estándares internacionales de nutrición.
               </p>
