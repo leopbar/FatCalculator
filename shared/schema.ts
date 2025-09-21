@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, real, json } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, real, json, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -102,21 +102,54 @@ export const calculations = pgTable("calculations", {
   tdee: real("tdee").notNull(),         // total daily energy expenditure
 });
 
-export const menuPlans = pgTable("menu_plans", {
+// Tables removed: cardapios, refeicoes, alimentos (old structure)
+// New tables for menu generation
+
+export const categorias_alimentos = pgTable("categorias_alimentos", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  category: text("category", { enum: ["suave", "moderado", "restritivo"] }).notNull(),
-  tdee: real("tdee").notNull(),
-  targetCalories: real("target_calories").notNull(),
-  macroTarget: json("macro_target").$type<MacroTarget>().notNull(),
-  meals: json("meals").$type<Meal[]>().notNull(),
-  dailyTotals: json("daily_totals").$type<{
-    protein: number;
-    carb: number;
-    fat: number;
-    kcal: number;
-  }>().notNull(),
+  nombre: text("nombre").notNull().unique(), // proteínas, carbohidratos, grasas, vegetales, frutas, lácteos, etc.
+  descripcion: text("descripcion"),
+  fecha_creacion: timestamp("fecha_creacion").defaultNow().notNull(),
 });
+
+export const menus = pgTable("menus", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  nombre: text("nombre").notNull(),
+  calorias_totales: real("calorias_totales").notNull().default(0),
+  proteina_total_gramos: real("proteina_total_gramos").notNull().default(0),
+  carbohidratos_total_gramos: real("carbohidratos_total_gramos").notNull().default(0),
+  grasas_total_gramos: real("grasas_total_gramos").notNull().default(0),
+  proteina_porcentaje: real("proteina_porcentaje").notNull().default(0),
+  carbohidratos_porcentaje: real("carbohidratos_porcentaje").notNull().default(0),
+  grasas_porcentaje: real("grasas_porcentaje").notNull().default(0),
+  fecha_creacion: timestamp("fecha_creacion").defaultNow().notNull(),
+});
+
+export const comidas = pgTable("comidas", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  menu_id: varchar("menu_id").notNull().references(() => menus.id, { onDelete: "cascade" }),
+  tipo_comida: text("tipo_comida").notNull(), // desayuno, almuerzo, merienda, cena, colación
+  calorias_comida: real("calorias_comida").notNull().default(0),
+  proteina_comida_gramos: real("proteina_comida_gramos").notNull().default(0),
+  carbohidratos_comida_gramos: real("carbohidratos_comida_gramos").notNull().default(0),
+  grasas_comida_gramos: real("grasas_comida_gramos").notNull().default(0),
+  fecha_creacion: timestamp("fecha_creacion").defaultNow().notNull(),
+});
+
+export const alimentos = pgTable("alimentos", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  comida_id: varchar("comida_id").notNull().references(() => comidas.id, { onDelete: "cascade" }),
+  categoria_id: varchar("categoria_id").notNull().references(() => categorias_alimentos.id),
+  nombre: text("nombre").notNull(),
+  cantidad_gramos: real("cantidad_gramos").notNull(),
+  medida_casera: text("medida_casera"), // "1 taza", "2 cucharadas", etc.
+  calorias: real("calorias").notNull(),
+  proteina_gramos: real("proteina_gramos").notNull(),
+  carbohidratos_gramos: real("carbohidratos_gramos").notNull(),
+  grasas_gramos: real("grasas_gramos").notNull(),
+  fecha_creacion: timestamp("fecha_creacion").defaultNow().notNull(),
+});
+
 
 // Insert schemas
 
@@ -143,9 +176,24 @@ export const insertCalculationSchema = z.object({
   tdee: z.coerce.number().positive()
 });
 
-export const insertMenuPlanSchema = createInsertSchema(menuPlans).omit({
+export const insertCategoriaAlimentoSchema = createInsertSchema(categorias_alimentos).omit({
   id: true,
-  userId: true,
+  fecha_creacion: true,
+});
+
+export const insertMenuSchema = createInsertSchema(menus).omit({
+  id: true,
+  fecha_creacion: true,
+});
+
+export const insertComidaSchema = createInsertSchema(comidas).omit({
+  id: true,
+  fecha_creacion: true,
+});
+
+export const insertAlimentoSchema = createInsertSchema(alimentos).omit({
+  id: true,
+  fecha_creacion: true,
 });
 
 // Types
@@ -158,3 +206,12 @@ export type Calculation = typeof calculations.$inferSelect;
 export type InsertCalculation = z.infer<typeof insertCalculationSchema>;
 export type MenuPlanData = typeof menuPlans.$inferSelect;
 export type InsertMenuPlan = z.infer<typeof insertMenuPlanSchema>;
+
+export type CategoriaAlimento = typeof categorias_alimentos.$inferSelect;
+export type InsertCategoriaAlimento = z.infer<typeof insertCategoriaAlimentoSchema>;
+export type Menu = typeof menus.$inferSelect;
+export type InsertMenu = z.infer<typeof insertMenuSchema>;
+export type Comida = typeof comidas.$inferSelect;
+export type InsertComida = z.infer<typeof insertComidaSchema>;
+export type Alimento = typeof alimentos.$inferSelect;
+export type InsertAlimento = z.infer<typeof insertAlimentoSchema>;
