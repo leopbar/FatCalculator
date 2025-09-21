@@ -5,12 +5,9 @@ import {
   type InsertBodyMetrics,
   type Calculation,
   type InsertCalculation,
-  type MenuPlanData,
-  type InsertMenuPlan,
   users,
   bodyMetrics,
-  calculations,
-  menuPlans
+  calculations
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -43,16 +40,12 @@ export interface IStorage {
   saveCalculation(userId: string, data: InsertCalculation): Promise<Calculation>;
   getLatestCalculation(userId: string): Promise<Calculation | undefined>;
 
-  // Menu plan methods
-  saveMenuPlan(userId: string, data: InsertMenuPlan): Promise<MenuPlanData>;
-  getLatestMenuPlan(userId: string): Promise<MenuPlanData | undefined>;
-  deleteMenuPlan(userId: string): Promise<void>;
+  // Menu plan methods removed - now using new menu structure
 
   // User summary for dashboard
   getUserSummary(userId: string): Promise<{
     hasMetrics: boolean;
     hasCalculation: boolean;
-    hasMenu: boolean;
   }>;
 
   // Clear all user data
@@ -177,48 +170,25 @@ export class DatabaseStorage implements IStorage {
     return calculation || undefined;
   }
 
-  async saveMenuPlan(userId: string, data: InsertMenuPlan): Promise<MenuPlanData> {
-    const row = { ...data, userId } as typeof menuPlans.$inferInsert;
-    const [menuPlan] = await db
-      .insert(menuPlans)
-      .values(row)
-      .returning();
-    return menuPlan as MenuPlanData;
-  }
-
-  async getLatestMenuPlan(userId: string): Promise<MenuPlanData | undefined> {
-    const [menuPlan] = await db
-      .select()
-      .from(menuPlans)
-      .where(eq(menuPlans.userId, userId))
-      .orderBy(desc(menuPlans.id)) // Get the most recent one
-      .limit(1);
-    return (menuPlan as MenuPlanData) || undefined;
-  }
+  // Menu plan methods removed - now using new menu structure with menus, comidas, alimentos tables
 
   async getUserSummary(userId: string): Promise<{
     hasMetrics: boolean;
     hasCalculation: boolean;
-    hasMenu: boolean;
   }> {
     const [userMetrics] = await db.select().from(bodyMetrics).where(eq(bodyMetrics.userId, userId));
     const [userCalculation] = await db.select().from(calculations).where(eq(calculations.userId, userId));
-    const [userMenu] = await db.select().from(menuPlans).where(eq(menuPlans.userId, userId));
 
     return {
       hasMetrics: !!userMetrics,
       hasCalculation: !!userCalculation,
-      hasMenu: !!userMenu,
     };
   }
 
-  async deleteMenuPlan(userId: string): Promise<void> {
-    await db.delete(menuPlans).where(eq(menuPlans.userId, userId));
-  }
+  // deleteMenuPlan method removed - now using new menu structure
 
   async clearAllUserData(userId: string): Promise<void> {
     // Delete all user data in the correct order (due to foreign key constraints)
-    await db.delete(menuPlans).where(eq(menuPlans.userId, userId));
     await db.delete(calculations).where(eq(calculations.userId, userId));
     await db.delete(bodyMetrics).where(eq(bodyMetrics.userId, userId));
   }
@@ -233,14 +203,13 @@ export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private bodyMetrics: Map<string, BodyMetrics>; // keyed by userId
   private calculations: Map<string, Calculation>; // keyed by userId
-  private menuPlans: Map<string, MenuPlanData>; // keyed by userId
+  // menuPlans removed - now using new menu structure
   sessionStore: any; // Using any for compatibility with express-session types
 
   constructor() {
     this.users = new Map();
     this.bodyMetrics = new Map();
     this.calculations = new Map();
-    this.menuPlans = new Map();
     // Based on javascript_auth_all_persistance blueprint
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
@@ -310,41 +279,21 @@ export class MemStorage implements IStorage {
     return this.calculations.get(userId);
   }
 
-  async saveMenuPlan(userId: string, data: InsertMenuPlan): Promise<MenuPlanData> {
-    const id = randomUUID();
-    const menuPlan: MenuPlanData = {
-      ...data,
-      id,
-      userId
-    } as MenuPlanData;
-    this.menuPlans.set(userId, menuPlan);
-    return menuPlan;
-  }
-
-  async getLatestMenuPlan(userId: string): Promise<MenuPlanData | undefined> {
-    return this.menuPlans.get(userId);
-  }
+  // Menu plan methods removed - now using new menu structure
 
   async getUserSummary(userId: string): Promise<{
     hasMetrics: boolean;
     hasCalculation: boolean;
-    hasMenu: boolean;
   }> {
     return {
       hasMetrics: this.bodyMetrics.has(userId),
       hasCalculation: this.calculations.has(userId),
-      hasMenu: this.menuPlans.has(userId),
     };
-  }
-
-  async deleteMenuPlan(userId: string): Promise<void> {
-    this.menuPlans.delete(userId);
   }
 
   async clearAllUserData(userId: string): Promise<void> {
     this.bodyMetrics.delete(userId);
     this.calculations.delete(userId);
-    this.menuPlans.delete(userId);
   }
 
   
