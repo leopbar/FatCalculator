@@ -7,16 +7,10 @@ import {
   type InsertCalculation,
   type MenuPlanData,
   type InsertMenuPlan,
-  type AlimentoHispano,
-  type InsertAlimentoHispano,
-  type TemplateMenuData,
-  type InsertTemplateMenu,
   users,
   bodyMetrics,
   calculations,
-  menuPlans,
-  alimentosHispanos,
-  templateMenus
+  menuPlans
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -54,12 +48,6 @@ export interface IStorage {
   getLatestMenuPlan(userId: string): Promise<MenuPlanData | undefined>;
   deleteMenuPlan(userId: string): Promise<void>;
 
-  // Alimentos hispanos methods
-  createAlimento(data: InsertAlimentoHispano): Promise<AlimentoHispano>;
-  getAllAlimentos(): Promise<AlimentoHispano[]>;
-  getAlimentosByCategoria(categoria: string): Promise<AlimentoHispano[]>;
-  bulkCreateAlimentos(alimentos: InsertAlimentoHispano[]): Promise<void>;
-
   // User summary for dashboard
   getUserSummary(userId: string): Promise<{
     hasMetrics: boolean;
@@ -69,13 +57,6 @@ export interface IStorage {
 
   // Clear all user data
   clearAllUserData(userId: string): Promise<void>;
-
-  // Template menu methods
-  createTemplateMenu(data: InsertTemplateMenu): Promise<TemplateMenuData>;
-  getAllTemplateMenus(): Promise<TemplateMenuData[]>;
-  getTemplateMenusByGenderAndCalories(gender: string, targetCalories: number): Promise<TemplateMenuData[]>;
-  findBestMatchingTemplate(gender: string, targetCalories: number, targetProtein: number, targetCarb: number, targetFat: number): Promise<TemplateMenuData | undefined>;
-  bulkCreateTemplateMenus(templates: InsertTemplateMenu[]): Promise<void>;
 
   sessionStore: any; // Using any for compatibility with express-session types
 }
@@ -242,95 +223,9 @@ export class DatabaseStorage implements IStorage {
     await db.delete(bodyMetrics).where(eq(bodyMetrics.userId, userId));
   }
 
-  // Alimentos hispanos methods
-  async createAlimento(data: InsertAlimentoHispano): Promise<AlimentoHispano> {
-    const [alimento] = await db
-      .insert(alimentosHispanos)
-      .values(data)
-      .returning();
-    return alimento;
-  }
+  
 
-  async getAllAlimentos(): Promise<AlimentoHispano[]> {
-    return await db.select().from(alimentosHispanos);
-  }
-
-  async getAlimentosByCategoria(categoria: string): Promise<AlimentoHispano[]> {
-    return await db
-      .select()
-      .from(alimentosHispanos)
-      .where(eq(alimentosHispanos.categoria, categoria));
-  }
-
-  async bulkCreateAlimentos(alimentos: InsertAlimentoHispano[]): Promise<void> {
-    if (alimentos.length > 0) {
-      await db.insert(alimentosHispanos).values(alimentos);
-    }
-  }
-
-  // Template menu methods
-  async createTemplateMenu(data: InsertTemplateMenu): Promise<TemplateMenuData> {
-    const [templateMenu] = await db
-      .insert(templateMenus)
-      .values(data)
-      .returning();
-    return templateMenu;
-  }
-
-  async getAllTemplateMenus(): Promise<TemplateMenuData[]> {
-    return await db.select().from(templateMenus);
-  }
-
-  async getTemplateMenusByGenderAndCalories(gender: string, targetCalories: number): Promise<TemplateMenuData[]> {
-    return await db
-      .select()
-      .from(templateMenus)
-      .where(eq(templateMenus.gender, gender));
-  }
-
-  async findBestMatchingTemplate(
-    gender: string,
-    targetCalories: number,
-    targetProtein: number,
-    targetCarb: number,
-    targetFat: number
-  ): Promise<TemplateMenuData | undefined> {
-    const templates = await db
-      .select()
-      .from(templateMenus)
-      .where(eq(templateMenus.gender, gender));
-
-    if (templates.length === 0) return undefined;
-
-    // Calculate similarity score for each template
-    let bestTemplate = templates[0];
-    let bestScore = Infinity;
-
-    for (const template of templates) {
-      // Calculate normalized differences
-      const caloriesDiff = Math.abs(template.total_calories - targetCalories) / targetCalories;
-      const proteinDiff = Math.abs(template.protein_grams - targetProtein) / Math.max(targetProtein, 1);
-      const carbDiff = Math.abs(template.carb_grams - targetCarb) / Math.max(targetCarb, 1);
-      const fatDiff = Math.abs(template.fat_grams - targetFat) / Math.max(targetFat, 1);
-
-      // Weighted similarity score (calories have higher weight)
-      const score = (caloriesDiff * 0.4) + (proteinDiff * 0.2) + (carbDiff * 0.2) + (fatDiff * 0.2);
-
-      if (score < bestScore) {
-        bestScore = score;
-        bestTemplate = template;
-      }
-    }
-
-    console.log(`✅ Best template found: ${bestTemplate?.name} with score: ${bestScore.toFixed(3)}`);
-    return bestTemplate;
-  }
-
-  async bulkCreateTemplateMenus(templates: InsertTemplateMenu[]): Promise<void> {
-    if (templates.length > 0) {
-      await db.insert(templateMenus).values(templates);
-    }
-  }
+  
 }
 
 // Keep MemStorage for fallback if needed
@@ -452,105 +347,7 @@ export class MemStorage implements IStorage {
     this.menuPlans.delete(userId);
   }
 
-  // Alimentos hispanos methods
-  async createAlimento(data: InsertAlimentoHispano): Promise<AlimentoHispano> {
-    const id = randomUUID();
-    const alimento: AlimentoHispano = { ...data, id };
-    // this.alimentos.set(id, alimento);
-    // return alimento;
-    throw new Error("Method not implemented.");
-  }
-
-  async getAllAlimentos(): Promise<AlimentoHispano[]> {
-    // return Array.from(this.alimentos.values());
-    // return await db.select().from(alimentosHispanos);
-    throw new Error("Method not implemented.");
-  }
-
-  async getAlimentosByCategoria(categoria: string): Promise<AlimentoHispano[]> {
-    // return Array.from(this.alimentos.values()).filter(
-    //   (alimento) => alimento.categoria === categoria
-    // );
-    throw new Error("Method not implemented.");
-  }
-
-  async bulkCreateAlimentos(alimentos: InsertAlimentoHispano[]): Promise<void> {
-    // alimentos.forEach((data) => {
-    //   const id = randomUUID();
-    //   const alimento: AlimentoHispano = { ...data, id };
-    //   this.alimentos.set(id, alimento);
-    // });
-    throw new Error("Method not implemented.");
-  }
-
-  // Template menu methods for MemStorage
-  private templateMenus: Map<string, TemplateMenuData> = new Map();
-
-  async createTemplateMenu(data: InsertTemplateMenu): Promise<TemplateMenuData> {
-    const id = randomUUID();
-    const templateMenu: TemplateMenuData = {
-      ...data,
-      id,
-      created_at: new Date().toISOString()
-    } as TemplateMenuData;
-    this.templateMenus.set(id, templateMenu);
-    return templateMenu;
-  }
-
-  async getAllTemplateMenus(): Promise<TemplateMenuData[]> {
-    return Array.from(this.templateMenus.values());
-  }
-
-  async getTemplateMenusByGenderAndCalories(gender: string, targetCalories: number): Promise<TemplateMenuData[]> {
-    return Array.from(this.templateMenus.values()).filter(
-      (template) => template.gender === gender
-    );
-  }
-
-  async findBestMatchingTemplate(
-    gender: string,
-    targetCalories: number,
-    targetProtein: number,
-    targetCarb: number,
-    targetFat: number
-  ): Promise<TemplateMenuData | undefined> {
-    const templates = Array.from(this.templateMenus.values()).filter(
-      (template) => template.gender === gender
-    );
-
-    if (templates.length === 0) return undefined;
-
-    let bestTemplate = templates[0];
-    let bestScore = Infinity;
-
-    for (const template of templates) {
-      const calorieDiff = Math.abs(template.total_calories - targetCalories) / targetCalories;
-      const proteinDiff = Math.abs(template.protein_grams - targetProtein) / targetProtein;
-      const carbDiff = Math.abs(template.carb_grams - targetCarb) / targetCarb;
-      const fatDiff = Math.abs(template.fat_grams - targetFat) / targetFat;
-
-      const score = (calorieDiff * 0.4) + (proteinDiff * 0.2) + (carbDiff * 0.2) + (fatDiff * 0.2);
-
-      if (score < bestScore) {
-        bestScore = score;
-        bestTemplate = template;
-      }
-    }
-
-    return bestTemplate;
-  }
-
-  async bulkCreateTemplateMenus(templates: InsertTemplateMenu[]): Promise<void> {
-    templates.forEach((data) => {
-      const id = randomUUID();
-      const templateMenu: TemplateMenuData = {
-        ...data,
-        id,
-        created_at: new Date().toISOString()
-      } as TemplateMenuData;
-      this.templateMenus.set(id, templateMenu);
-    });
-  }
+  
 }
 
 // Use DatabaseStorage instead of MemStorage for persistent data

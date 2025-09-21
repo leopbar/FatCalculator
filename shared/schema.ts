@@ -148,10 +148,6 @@ export const insertMenuPlanSchema = createInsertSchema(menuPlans).omit({
   userId: true,
 });
 
-export const insertAlimentoHispanoSchema = createInsertSchema(alimentosHispanos).omit({
-  id: true,
-});
-
 // Types
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -162,26 +158,3 @@ export type Calculation = typeof calculations.$inferSelect;
 export type InsertCalculation = z.infer<typeof insertCalculationSchema>;
 export type MenuPlanData = typeof menuPlans.$inferSelect;
 export type InsertMenuPlan = z.infer<typeof insertMenuPlanSchema>;
-export type AlimentoHispano = typeof alimentosHispanos.$inferSelect;
-export type InsertAlimentoHispano = z.infer<typeof insertAlimentoHispanoSchema>;
-export type TemplateMenuData = typeof templateMenus.$inferSelect;
-
-// Mapper function to convert AlimentoHispano to FoodItem
-
-export function mapAlimentoToFoodItem(alimento: AlimentoHispano): FoodItem {
-  return {
-    id: alimento.id,
-    name: alimento.nombre,
-    category: alimento.categoria,
-    protein_per_100g: alimento.proteinas_por_100g,
-    carb_per_100g: alimento.carbohidratos_por_100g,
-    fat_per_100g: alimento.grasas_por_100g,
-    kcal_per_100g: alimento.calorias_por_100g,
-    fiber_per_100g: 0,
-    energy_density: alimento.calorias_por_100g / 100,
-  };
-}
-
-export function mapAlimentosToFoodItems(alimentos: AlimentoHispano[]): FoodItem[] {
-  return alimentos.map(mapAlimentoToFoodItem);
-}
