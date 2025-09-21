@@ -25,6 +25,7 @@ interface DietCategory {
 
 export default function Results({ bodyFatPercentage, tmb, category, categoryColor, onRecalculate }: ResultsProps) {
   const [, navigate] = useLocation();
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   const getCategoryVariant = (color: string) => {
     switch (color) {
@@ -156,7 +157,13 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
 
           <div className="grid gap-6 md:grid-cols-3">
             {dietCategories.map((dietCategory, index) => (
-              <Card key={index} className="border-primary/20 bg-accent/30 hover:shadow-lg transition-shadow">
+              <Card 
+                key={index} 
+                className={`border-primary/20 bg-accent/30 hover:shadow-lg transition-all cursor-pointer ${
+                  selectedCategory === index ? 'ring-2 ring-primary bg-primary/10' : ''
+                }`}
+                onClick={() => setSelectedCategory(index)}
+              >
                 <CardHeader className="text-center pb-4">
                   <div className="flex items-center justify-center space-x-2 mb-2">
                     <dietCategory.icon className={`w-6 h-6 ${dietCategory.color}`} />
@@ -194,15 +201,19 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
                   </div>
 
                   <Button
-                    className="w-full"
-                    variant="outline"
-                    onClick={() => {
-                      // Store selected category data in localStorage
-                      localStorage.setItem('selectedDietCategory', JSON.stringify({
-                        dailyCalories: dietCategory.dailyCalories,
-                        categoryName: dietCategory.name
-                      }));
-                      navigate('/macro-distribution');
+                    className={`w-full ${selectedCategory === index ? 'bg-green-700 hover:bg-green-800 text-white' : 'bg-gray-400 text-gray-600 cursor-not-allowed'}`}
+                    variant={selectedCategory === index ? "default" : "outline"}
+                    disabled={selectedCategory !== index}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (selectedCategory === index) {
+                        // Store selected category data in localStorage
+                        localStorage.setItem('selectedDietCategory', JSON.stringify({
+                          dailyCalories: dietCategory.dailyCalories,
+                          categoryName: dietCategory.name
+                        }));
+                        navigate('/macro-distribution');
+                      }
                     }}
                   >
                     <Utensils className="w-4 h-4 mr-2" />
