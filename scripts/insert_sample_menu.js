@@ -1,3 +1,4 @@
+
 const { Pool } = require('@neondatabase/serverless');
 const { drizzle } = require('drizzle-orm/neon-serverless');
 const { pgTable, text, varchar, real, timestamp } = require('drizzle-orm/pg-core');
@@ -49,14 +50,13 @@ const alimentos = pgTable("alimentos", {
   fecha_creacion: timestamp("fecha_creacion").defaultNow().notNull(),
 });
 
-// Setup database connection
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-const db = drizzle({ client: pool, schema: { categorias_alimentos, menus, comidas, alimentos } });
-
 async function insertSampleMenu() {
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+  });
+
+  const db = drizzle({ client: pool, schema: { categorias_alimentos, menus, comidas, alimentos } });
+
   try {
     console.log('🔄 Iniciando inserção do cardápio...');
 
@@ -67,8 +67,7 @@ async function insertSampleMenu() {
       { nombre: 'grasas', descripcion: 'Alimentos ricos em gorduras' },
       { nombre: 'vegetales', descripcion: 'Verduras e legumes' },
       { nombre: 'frutas', descripcion: 'Frutas frescas' },
-      { nombre: 'lácteos', descripcion: 'Produtos lácteos' },
-      { nombre: 'legumbres', descripcion: 'Feijões e similares' }
+      { nombre: 'lácteos', descripcion: 'Produtos lácteos' }
     ];
 
     const categoriasMap = {};
@@ -79,11 +78,14 @@ async function insertSampleMenu() {
         categoriasMap[newCat.nombre] = newCat.id;
         console.log(`✅ Categoria criada: ${newCat.nombre}`);
       } catch (error) {
-        // Categoria já existe, buscar ID
-        const existing = await db.select().from(categorias_alimentos).where(sql`nombre = ${cat.nombre}`);
-        if (existing.length > 0) {
-          categoriasMap[cat.nombre] = existing[0].id;
-          console.log(`📋 Categoria existente: ${cat.nombre}`);
+        if (error.message.includes('duplicate key')) {
+          const existing = await db.select().from(categorias_alimentos).where(sql`nombre = ${cat.nombre}`);
+          if (existing.length > 0) {
+            categoriasMap[cat.nombre] = existing[0].id;
+            console.log(`📋 Categoria existente: ${cat.nombre}`);
+          }
+        } else {
+          throw error;
         }
       }
     }
@@ -172,11 +174,13 @@ async function insertSampleMenu() {
     }
 
     console.log('🎉 ¡Cardápio insertado exitosamente!');
-    process.exit(0);
 
   } catch (error) {
     console.error('❌ Error:', error);
     process.exit(1);
+  } finally {
+    await pool.end();
+    process.exit(0);
   }
 }
 
