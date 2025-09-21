@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
@@ -15,7 +14,7 @@ import MeasurementInput from "./MeasurementInput";
 const activityLevelTranslations: { [key: string]: string } = {
   'sedentario': 'sedentario',
   'ligero': 'leve',
-  'moderado': 'moderado', 
+  'moderado': 'moderado',
   'intenso': 'intenso'
 };
 
@@ -75,19 +74,19 @@ export default function BodyFatCalculator() {
     hip: "",
     activityLevel: "",
   });
-  
+
   const [errors, setErrors] = useState<FormErrors>({});
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-    
+
     const age = parseFloat(formData.age);
     const height = parseFloat(formData.height);
     const weight = parseFloat(formData.weight);
     const neck = parseFloat(formData.neck);
     const waist = parseFloat(formData.waist);
     const hip = formData.gender === "female" ? parseFloat(formData.hip) : 0;
-    
+
     if (!formData.age || age <= 0 || age > 120) {
       newErrors.age = "La edad es obligatoria y debe estar entre 1 y 120 años";
     }
@@ -223,7 +222,7 @@ export default function BodyFatCalculator() {
       moderado: 1.55,
       intenso: 1.725
     };
-    
+
     const activityFactor = activityFactors[formData.activityLevel as keyof typeof activityFactors];
     if (!activityFactor) {
       toast({
@@ -233,7 +232,7 @@ export default function BodyFatCalculator() {
       });
       return;
     }
-    
+
     const tmb = Math.round(bmr * activityFactor);
 
     // Validate calculation results
@@ -343,7 +342,7 @@ export default function BodyFatCalculator() {
         <div className="flex items-center justify-between mb-6">
           <div className="text-center flex-1">
             <h1 className="text-2xl font-bold text-foreground">
-              Calculadora de Grasa Corporal
+              SRC - Sistema de Reequilibrio Corporal
             </h1>
             <p className="text-muted-foreground">
               Método oficial de la Marina de EE.UU.

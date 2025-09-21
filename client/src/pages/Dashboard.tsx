@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -74,7 +73,7 @@ export default function Dashboard() {
                 ¡Hola, {user.username}!
               </h1>
               <p className="text-muted-foreground">
-                Bienvenido a tu calculadora de grasa corporal
+                Bienvenido al SRC - Sistema de Reequilibrio Corporal
               </p>
             </div>
           </div>
