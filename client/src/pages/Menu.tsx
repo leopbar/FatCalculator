@@ -184,16 +184,81 @@ export default function MenuPage() {
 
       console.log("✅ Template encontrado:", bestTemplate.name);
 
-      // Process template meals to add missing totals
-      const processedMeals = bestTemplate.meals.map((meal: any) => ({
-        ...meal,
-        totals: {
-          protein: Math.round(meal.approximate_calories * 0.16 / 4), // Approximate protein from calories
-          carb: Math.round(meal.approximate_calories * 0.55 / 4), // Approximate carb from calories  
-          fat: Math.round(meal.approximate_calories * 0.29 / 9), // Approximate fat from calories
-          kcal: meal.approximate_calories
-        }
-      }));
+      // Get alimentos database for macro calculations
+      const alimentosResponse = await apiRequest("GET", "/api/alimentos");
+      const alimentosDatabase = await alimentosResponse.json();
+
+      // Create lookup map for nutrition data
+      const nutritionMap = new Map();
+      alimentosDatabase.forEach((alimento: any) => {
+        nutritionMap.set(alimento.nombre.toLowerCase(), {
+          protein_per_100g: alimento.proteinas_por_100g,
+          carb_per_100g: alimento.carbohidratos_por_100g,
+          fat_per_100g: alimento.grasas_por_100g,
+          kcal_per_100g: alimento.calorias_por_100g
+        });
+      });
+
+      // Process template meals to calculate real macro values
+      const processedMeals = bestTemplate.meals.map((meal: any) => {
+        const processedItems = meal.items?.map((item: any) => {
+          // Look up nutrition data
+          const nutritionData = nutritionMap.get(item.name.toLowerCase());
+          
+          if (nutritionData && item.grams) {
+            const factor = item.grams / 100;
+            return {
+              ...item,
+              protein: Math.round(nutritionData.protein_per_100g * factor * 10) / 10,
+              carb: Math.round(nutritionData.carb_per_100g * factor * 10) / 10,
+              fat: Math.round(nutritionData.fat_per_100g * factor * 10) / 10,
+              kcal: Math.round(nutritionData.kcal_per_100g * factor)
+            };
+          } else {
+            // Fallback to zero values if nutrition data not found
+            return {
+              ...item,
+              protein: 0,
+              carb: 0,
+              fat: 0,
+              kcal: 0
+            };
+          }
+        }) || [];
+
+        // Calculate meal totals from processed items
+        const mealTotals = processedItems.reduce(
+          (acc: any, item: any) => ({
+            protein: acc.protein + (item.protein || 0),
+            carb: acc.carb + (item.carb || 0),
+            fat: acc.fat + (item.fat || 0),
+            kcal: acc.kcal + (item.kcal || 0),
+          }),
+          { protein: 0, carb: 0, fat: 0, kcal: 0 }
+        );
+
+        return {
+          ...meal,
+          items: processedItems,
+          totals: {
+            protein: Math.round(mealTotals.protein * 10) / 10,
+            carb: Math.round(mealTotals.carb * 10) / 10,
+            fat: Math.round(mealTotals.fat * 10) / 10,
+            kcal: Math.round(mealTotals.kcal)
+          }
+        };
+      });
+
+      // Calculate daily totals from processed meals
+      const dailyTotals = processedMeals.reduce(
+        (acc: any, meal: any) => ({
+          protein: acc.protein + (meal.totals?.protein || 0),
+          carb: acc.carb + (meal.totals?.carb || 0),
+          fat: acc.fat + (meal.totals?.fat || 0),
+          kcal: acc.kcal + (meal.totals?.kcal || 0),
+        }),
+        { protein: 0, carb: 0, fat: 0, kcal: 0 }
+      );
 
       // Create menu data using the processed template
       const menuData = {
@@ -203,10 +268,10 @@ export default function MenuPage() {
         macroTarget,
         meals: processedMeals,
         dailyTotals: {
-          protein: bestTemplate.protein_grams,
-          carb: bestTemplate.carb_grams,
-          fat: bestTemplate.fat_grams,
-          kcal: bestTemplate.total_calories,
+          protein: Math.round(dailyTotals.protein * 10) / 10,
+          carb: Math.round(dailyTotals.carb * 10) / 10,
+          fat: Math.round(dailyTotals.fat * 10) / 10,
+          kcal: Math.round(dailyTotals.kcal)
         }
       };
 
