@@ -5,7 +5,6 @@ import { authRoutes, authenticateJWT } from "./routes/auth";
 import {
   insertBodyMetricsSchema,
   insertCalculationSchema,
-  insertMenuPlanSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -81,45 +80,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Menu plan endpoints
-  app.get("/api/menu", authenticateJWT, async (req: any, res) => {
-    try {
-      const menuPlan = await storage.getLatestMenuPlan(req.user.id);
-      if (!menuPlan) {
-        return res.status(404).json({ error: "Cardápio não encontrado" });
-      }
-      res.json(menuPlan);
-    } catch (error) {
-      console.error("Error getting menu plan:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
-    }
-  });
-
-  app.post("/api/menu", authenticateJWT, async (req: any, res) => {
-    try {
-      const validation = insertMenuPlanSchema.safeParse(req.body);
-      if (!validation.success) {
-        return res.status(400).json({ error: "Dados inválidos", details: validation.error.issues });
-      }
-
-      const menuPlan = await storage.saveMenuPlan(req.user.id, validation.data);
-      res.json(menuPlan);
-    } catch (error) {
-      console.error("Error saving menu plan:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
-    }
-  });
-
-  app.delete("/api/menu", authenticateJWT, async (req: any, res) => {
-    try {
-      await storage.deleteMenuPlan(req.user.id);
-      res.json({ message: "Cardápio deletado com sucesso" });
-    } catch (error) {
-      console.error("Error deleting menu plan:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
-    }
-  });
-
   // Clear all user data (for recalculation)
   app.delete("/api/clear-data", authenticateJWT, async (req: any, res) => {
     try {
@@ -131,7 +91,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  
+
 
   const httpServer = createServer(app);
 

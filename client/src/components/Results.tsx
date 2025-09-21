@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, RotateCcw, Info, Flame, Target, ChefHat, Home } from "lucide-react";
+import { TrendingUp, RotateCcw, Info, Flame, Target, Home } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState } from "react";
 
@@ -16,11 +16,6 @@ interface ResultsProps {
 
 export default function Results({ bodyFatPercentage, tmb, category, categoryColor, onRecalculate }: ResultsProps) {
   const [, navigate] = useLocation();
-  const [selectedCategory, setSelectedCategory] = useState<{
-    category: 'suave' | 'moderado' | 'restritivo';
-    calories: number;
-  } | null>(null);
-  
   const handleGoToDashboard = () => {
     navigate('/dashboard');
   };
@@ -34,71 +29,7 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
     }
   };
 
-  // Get stored form data for menu generation
-  const getStoredFormData = () => {
-    const storedData = localStorage.getItem("calculatorFormData");
-    return storedData ? JSON.parse(storedData) : null;
-  };
-
-  const handleSelectCategory = (category: 'suave' | 'moderado' | 'restritivo', calories: number) => {
-    setSelectedCategory({ category, calories });
-  };
-
-  const handleGenerateMenu = () => {
-    if (!selectedCategory) return;
-    
-    const formData = getStoredFormData();
-    if (!formData) {
-      console.error("Form data not found");
-      return;
-    }
-
-    // Navigate to menu with parameters
-    const params = new URLSearchParams({
-      cat: selectedCategory.category,
-      cal: selectedCategory.calories.toString(),
-      tdee: tmb.toString(),
-      weight: formData.weight.toString(),
-      bf: bodyFatPercentage.toString()
-    });
-    
-    navigate(`/menu?${params.toString()}`);
-  };
-
-  // Calculate weight loss recommendations based on TDEE
-  const getWeightLossRecommendations = (tdee: number) => {
-    const recommendations = [
-      {
-        category: "Suave",
-        deficit: 300,
-        intensity: "low"
-      },
-      {
-        category: "Moderado", 
-        deficit: 500,
-        intensity: "medium"
-      },
-      {
-        category: "Restrictivo",
-        deficit: 750,
-        intensity: "high"
-      }
-    ];
-
-    return recommendations.map(rec => {
-      const dailyCalories = Math.max(1200, tdee - rec.deficit); // Minimum safe calories
-      const weeklyDeficit = rec.deficit * 7;
-      const weeklyWeightLoss = weeklyDeficit / 7700; // 1kg fat ≈ 7700 kcal
-      
-      return {
-        ...rec,
-        dailyCalories,
-        weeklyWeightLoss: Math.round(weeklyWeightLoss * 10) / 10 // Round to 1 decimal
-      };
-    });
-  };
-
-  const weightLossRecommendations = getWeightLossRecommendations(tmb);
+  
 
   return (
     <div className="min-h-screen bg-background py-8 px-4 flex items-center justify-center">
@@ -157,86 +88,7 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
           </CardContent>
         </Card>
 
-        {/* Weight Loss Recommendations */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-center space-x-2">
-            <Target className="w-6 h-6 text-primary" />
-            <h3 className="text-lg font-semibold text-foreground">Recomendaciones para Adelgazar</h3>
-          </div>
-          <p className="text-center text-sm text-muted-foreground">
-            Seleccione una categoría para generar su menú personalizado
-          </p>
-          
-          <div className="grid gap-4 md:grid-cols-3">
-            {weightLossRecommendations.map((rec, index) => {
-              const categoryKey = rec.category.toLowerCase() as 'suave' | 'moderado' | 'restritivo';
-              const isSelected = selectedCategory?.category === categoryKey;
-              
-              return (
-                <Card 
-                  key={rec.category} 
-                  className={`hover-elevate cursor-pointer transition-all ${
-                    isSelected 
-                      ? 'border-primary bg-primary/10 ring-2 ring-primary' 
-                      : 'border-primary/20 bg-accent/30'
-                  }`}
-                  data-testid={`card-weight-loss-${rec.category.toLowerCase()}`}
-                  onClick={() => handleSelectCategory(categoryKey, rec.dailyCalories)}
-                >
-                  <CardContent className="p-4 space-y-3">
-                    <div className="text-center">
-                      <Badge 
-                        variant={isSelected ? 'default' : (rec.intensity === 'low' ? 'default' : rec.intensity === 'medium' ? 'secondary' : 'outline')}
-                        className={`text-sm px-3 py-1 ${isSelected ? 'bg-primary text-primary-foreground' : ''}`}
-                      >
-                        {rec.category}
-                      </Badge>
-                    </div>
-                    
-                    <div className="space-y-2 text-center">
-                      <div>
-                        <div className={`text-2xl font-bold ${isSelected ? 'text-primary' : 'text-primary'}`} data-testid={`text-calories-${rec.category.toLowerCase()}`}>
-                          {rec.dailyCalories.toLocaleString('es-ES')}
-                        </div>
-                        <p className="text-xs text-muted-foreground">calorías por día</p>
-                      </div>
-                      
-                      <div>
-                        <div className={`text-lg font-semibold ${isSelected ? 'text-foreground' : 'text-foreground'}`} data-testid={`text-weight-loss-${rec.category.toLowerCase()}`}>
-                          ~{rec.weeklyWeightLoss} kg
-                        </div>
-                        <p className="text-xs text-muted-foreground">pérdida por semana</p>
-                      </div>
-                    </div>
-                    
-                    {isSelected && (
-                      <div className="text-center pt-2">
-                        <div className="text-sm text-primary font-semibold">
-                          ✓ Seleccionado
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Botón Generar Menú - solo aparece cuando una categoría está seleccionada */}
-          {selectedCategory && (
-            <div className="flex justify-center pt-4">
-              <Button 
-                onClick={handleGenerateMenu}
-                className="bg-primary hover:bg-primary/90 text-lg font-semibold px-8 py-3"
-                size="lg"
-                data-testid="button-generate-menu"
-              >
-                <ChefHat className="w-5 h-5 mr-2" />
-                Generar Menú - {selectedCategory.category.charAt(0).toUpperCase() + selectedCategory.category.slice(1)}
-              </Button>
-            </div>
-          )}
-        </div>
+        
 
         {/* Info Card */}
         <Card className="bg-background/50">

@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { Calculator, TrendingUp, UtensilsCrossed, User, Play, Utensils, Target, BookOpen, Pill, Brain } from "lucide-react";
+import { Calculator, TrendingUp, Utensils, User, Play, Target, BookOpen, Pill, Brain } from "lucide-react";
 
 interface UserSummary {
   hasMetrics: boolean;
@@ -40,14 +40,6 @@ export default function Dashboard() {
   const handleResultsClick = () => {
     if (summary?.hasCalculation) {
       navigate("/results");
-    } else {
-      navigate("/calculator");
-    }
-  };
-
-  const handleMenuClick = () => {
-    if (summary?.hasMenu) {
-      navigate("/menu");
     } else {
       navigate("/calculator");
     }
@@ -251,31 +243,6 @@ export default function Dashboard() {
                   data-testid="button-results"
                 >
                   {summary?.hasCalculation ? "Ver Resultados" : "Calcular Primero"}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Menú Personalizado */}
-            <Card className="hover-elevate cursor-pointer" onClick={handleMenuClick}>
-              <CardHeader className="text-center">
-                <UtensilsCrossed className="w-12 h-12 text-primary mx-auto mb-2" />
-                <CardTitle data-testid="card-title-menu">
-                  Menú Personalizado
-                </CardTitle>
-                <CardDescription>
-                  {summary?.hasMenu
-                    ? "Ver su menú personalizado"
-                    : "Menú basado en sus objetivos"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  className="w-full"
-                  variant={summary?.hasMenu ? "default" : "outline"}
-                  disabled={!summary?.hasMenu && !isLoading}
-                  data-testid="button-menu"
-                >
-                  {summary?.hasMenu ? "Ver Menú" : "Calcular Primero"}
                 </Button>
               </CardContent>
             </Card>
