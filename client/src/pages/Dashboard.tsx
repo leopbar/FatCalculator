@@ -74,7 +74,7 @@ export default function Dashboard() {
                 ¡Hola, {user.username}!
               </h1>
               <p className="text-muted-foreground">
-                Bienvenido al SRC - Sistema de Reequilíbrio Corporal
+                Bienvenido a tu calculadora de grasa corporal
               </p>
             </div>
           </div>
