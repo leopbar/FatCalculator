@@ -118,16 +118,6 @@ export const menuPlans = pgTable("menu_plans", {
   }>().notNull(),
 });
 
-export const alimentosHispanos = pgTable("alimentos_hispanos", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  nombre: text("nombre").notNull(),
-  categoria: text("categoria").notNull(),
-  calorias_por_100g: real("calorias_por_100g").notNull(),
-  carbohidratos_por_100g: real("carbohidratos_por_100g").notNull(),
-  proteinas_por_100g: real("proteinas_por_100g").notNull(),
-  grasas_por_100g: real("grasas_por_100g").notNull(),
-});
-
 // Insert schemas
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -161,57 +151,6 @@ export const insertMenuPlanSchema = createInsertSchema(menuPlans).omit({
 export const insertAlimentoHispanoSchema = createInsertSchema(alimentosHispanos).omit({
   id: true,
 });
-
-// Template menus table – stores pre-defined meal plan templates
-
-export const templateMenus = pgTable("template_menus", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  gender: text("gender", { enum: ["masculino", "feminino"] }).notNull(),
-  calorie_level: integer("calorie_level").notNull(),
-  total_calories: real("total_calories").notNull(),
-  protein_grams: real("protein_grams").notNull(),
-  carb_grams: real("carb_grams").notNull(),
-  fat_grams: real("fat_grams").notNull(),
-  meals: json("meals").$type<MealTemplate[]>().notNull(),
-  smart_substitutions: text("smart_substitutions").notNull(),
-  created_at: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-});
-
-export const insertTemplateMenuSchema = createInsertSchema(templateMenus).omit({
-  id: true,
-  created_at: true,
-});
-
-// Template menu schemas for pre-defined meal plans
-
-export const mealItemTemplateSchema = z.object({
-  name: z.string(),
-  grams: z.number(),
-  categoria: z.string(),
-});
-
-export const mealTemplateSchema = z.object({
-  name: z.string(),
-  items: z.array(mealItemTemplateSchema),
-  approximate_calories: z.number(),
-});
-
-export const templateMenuSchema = z.object({
-  name: z.string(),
-  gender: z.enum(['masculino', 'feminino']),
-  calorie_level: z.number(),
-  total_calories: z.number(),
-  protein_grams: z.number(),
-  carb_grams: z.number(),
-  fat_grams: z.number(),
-  meals: z.array(mealTemplateSchema),
-  smart_substitutions: z.string(),
-});
-
-export type MealItemTemplate = z.infer<typeof mealItemTemplateSchema>;
-export type MealTemplate = z.infer<typeof mealTemplateSchema>;
-export type TemplateMenu = z.infer<typeof templateMenuSchema>;
 
 // Types
 

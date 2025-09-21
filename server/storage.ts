@@ -339,7 +339,6 @@ export class MemStorage implements IStorage {
   private bodyMetrics: Map<string, BodyMetrics>; // keyed by userId
   private calculations: Map<string, Calculation>; // keyed by userId
   private menuPlans: Map<string, MenuPlanData>; // keyed by userId
-  private alimentos: Map<string, AlimentoHispano>; // keyed by id
   sessionStore: any; // Using any for compatibility with express-session types
 
   constructor() {
@@ -347,7 +346,6 @@ export class MemStorage implements IStorage {
     this.bodyMetrics = new Map();
     this.calculations = new Map();
     this.menuPlans = new Map();
-    this.alimentos = new Map();
     // Based on javascript_auth_all_persistance blueprint
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
@@ -381,7 +379,7 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const user: User = {
       id,
-      username: userData.name, // Use name as username  
+      username: userData.name, // Use name as username
       email: userData.email,
       password: userData.password,
     };
@@ -458,26 +456,31 @@ export class MemStorage implements IStorage {
   async createAlimento(data: InsertAlimentoHispano): Promise<AlimentoHispano> {
     const id = randomUUID();
     const alimento: AlimentoHispano = { ...data, id };
-    this.alimentos.set(id, alimento);
-    return alimento;
+    // this.alimentos.set(id, alimento);
+    // return alimento;
+    throw new Error("Method not implemented.");
   }
 
   async getAllAlimentos(): Promise<AlimentoHispano[]> {
-    return Array.from(this.alimentos.values());
+    // return Array.from(this.alimentos.values());
+    // return await db.select().from(alimentosHispanos);
+    throw new Error("Method not implemented.");
   }
 
   async getAlimentosByCategoria(categoria: string): Promise<AlimentoHispano[]> {
-    return Array.from(this.alimentos.values()).filter(
-      (alimento) => alimento.categoria === categoria
-    );
+    // return Array.from(this.alimentos.values()).filter(
+    //   (alimento) => alimento.categoria === categoria
+    // );
+    throw new Error("Method not implemented.");
   }
 
   async bulkCreateAlimentos(alimentos: InsertAlimentoHispano[]): Promise<void> {
-    alimentos.forEach((data) => {
-      const id = randomUUID();
-      const alimento: AlimentoHispano = { ...data, id };
-      this.alimentos.set(id, alimento);
-    });
+    // alimentos.forEach((data) => {
+    //   const id = randomUUID();
+    //   const alimento: AlimentoHispano = { ...data, id };
+    //   this.alimentos.set(id, alimento);
+    // });
+    throw new Error("Method not implemented.");
   }
 
   // Template menu methods for MemStorage

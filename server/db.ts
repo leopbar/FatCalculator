@@ -36,18 +36,6 @@ export const db = drizzle({ client: pool, schema });
 // Initialize database tables and seed data
 async function initializeTables() {
   try {
-    // Create the alimentos_hispanos table if it doesn't exist
-    await db.execute(sql`
-      CREATE TABLE IF NOT EXISTS alimentos_hispanos (
-        id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
-        nombre text NOT NULL,
-        categoria text NOT NULL,
-        calorias_por_100g real NOT NULL,
-        carbohidratos_por_100g real NOT NULL,
-        proteinas_por_100g real NOT NULL,
-        grasas_por_100g real NOT NULL
-      );
-    `);
 
     // Create the template_menus table if it doesn't exist
     await db.execute(sql`
