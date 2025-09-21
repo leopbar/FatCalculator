@@ -1,8 +1,7 @@
-
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, RotateCcw, Info, Flame, Target, Home } from "lucide-react";
+import { TrendingUp, Calculator, Utensils, Target, Zap, Activity, Leaf } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState } from "react";
 
@@ -14,12 +13,19 @@ interface ResultsProps {
   onRecalculate: () => void;
 }
 
+interface DietCategory {
+  name: string;
+  description: string;
+  calorieDeficit: number;
+  dailyCalories: number;
+  weeklyWeightLoss: number;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+}
+
 export default function Results({ bodyFatPercentage, tmb, category, categoryColor, onRecalculate }: ResultsProps) {
   const [, navigate] = useLocation();
-  const handleGoToDashboard = () => {
-    navigate('/dashboard');
-  };
-  
+
   const getCategoryVariant = (color: string) => {
     switch (color) {
       case 'success': return 'default';
@@ -29,66 +35,177 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
     }
   };
 
-  
+  // Calculate diet categories based on TDEE
+  const calculateDietCategories = (tdee: number): DietCategory[] => {
+    const restrictedDeficit = 700;
+    const moderateDeficit = 500;
+    const gentleDeficit = 300;
+
+    // 1 kg of fat = approximately 7700 kcal
+    const caloriesPerKg = 7700;
+    const daysPerWeek = 7;
+
+    return [
+      {
+        name: "Categoría Restringida",
+        description: "Pérdida de peso más rápida con mayor déficit calórico",
+        calorieDeficit: restrictedDeficit,
+        dailyCalories: Math.max(1200, tdee - restrictedDeficit), // Minimum 1200 calories
+        weeklyWeightLoss: (restrictedDeficit * daysPerWeek) / caloriesPerKg,
+        icon: Zap,
+        color: "text-red-600"
+      },
+      {
+        name: "Categoría Moderada",
+        description: "Equilibrio entre pérdida de peso y sostenibilidad",
+        calorieDeficit: moderateDeficit,
+        dailyCalories: Math.max(1200, tdee - moderateDeficit),
+        weeklyWeightLoss: (moderateDeficit * daysPerWeek) / caloriesPerKg,
+        icon: Activity,
+        color: "text-orange-600"
+      },
+      {
+        name: "Categoría Suave",
+        description: "Pérdida de peso gradual y sostenible",
+        calorieDeficit: gentleDeficit,
+        dailyCalories: Math.max(1200, tdee - gentleDeficit),
+        weeklyWeightLoss: (gentleDeficit * daysPerWeek) / caloriesPerKg,
+        icon: Leaf,
+        color: "text-green-600"
+      }
+    ];
+  };
+
+  const dietCategories = calculateDietCategories(tmb);
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4 flex items-center justify-center">
-      <div className="max-w-md mx-auto space-y-6 w-full">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-foreground">
-            Resultado del Cálculo
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-primary mb-2">
+            Tus Resultados de Composición Corporal
           </h1>
           <p className="text-muted-foreground">
-            Método oficial de la Marina de EE.UU.
+            Análisis completo basado en el método de la Marina de EE.UU.
           </p>
         </div>
 
-        {/* Body Fat Result Card */}
-        <Card className="border-primary/20 bg-accent/30" data-testid="card-result">
-          <CardContent className="p-8 text-center space-y-6">
-            <div className="flex items-center justify-center space-x-2">
-              <TrendingUp className="w-8 h-8 text-primary" />
-              <h2 className="text-xl font-semibold text-foreground">Porcentaje de Grasa</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="text-6xl font-bold text-primary" data-testid="text-percentage">
-                {bodyFatPercentage.toFixed(1)}%
+        <div className="grid gap-6 md:grid-cols-2 mb-8">
+          {/* Body Fat Results */}
+          <Card className="border-primary/20 bg-accent/30">
+            <CardContent className="p-6 text-center space-y-4">
+              <div className="flex items-center justify-center space-x-2">
+                <TrendingUp className="w-6 h-6 text-primary" />
+                <h3 className="text-lg font-semibold text-foreground">Porcentaje de Grasa Corporal</h3>
               </div>
-              <Badge 
-                variant={getCategoryVariant(categoryColor)} 
-                className="text-lg px-4 py-2"
-                data-testid="badge-category"
-              >
-                {category}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* TDEE Result Card */}
-        <Card className="border-primary/20 bg-accent/30" data-testid="card-tdee">
-          <CardContent className="p-6 text-center space-y-4">
-            <div className="flex items-center justify-center space-x-2">
-              <Flame className="w-6 h-6 text-primary" />
-              <h3 className="text-lg font-semibold text-foreground">Gasto Energético Diario</h3>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-primary" data-testid="text-tdee">
-                {tmb.toLocaleString('es-ES')}
+              <div className="space-y-2">
+                <div className="text-4xl font-bold text-primary">
+                  {bodyFatPercentage.toFixed(1)}%
+                </div>
+                <Badge variant={getCategoryVariant(categoryColor)}>
+                  {category}
+                </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">calorías por día</p>
-            </div>
-            
-            <p className="text-xs text-muted-foreground">
-              Energía que su cuerpo gasta diariamente con su nivel de actividad física
+
+              <div className="bg-background/50 rounded-lg p-4">
+                <p className="text-sm text-muted-foreground">
+                  Este resultado fue calculado usando el método oficial de la Marina de EE.UU.,
+                  ampliamente reconocido por su precisión y confiabilidad.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Metabolic Rate Results */}
+          <Card className="border-primary/20 bg-accent/30">
+            <CardContent className="p-6 text-center space-y-4">
+              <div className="flex items-center justify-center space-x-2">
+                <Calculator className="w-6 h-6 text-primary" />
+                <h3 className="text-lg font-semibold text-foreground">Gasto Energético Diario</h3>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-4xl font-bold text-primary">
+                  {Math.round(tmb)} <span className="text-lg">kcal</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Calorías que tu cuerpo necesita diariamente
+                </p>
+              </div>
+
+              <div className="bg-background/50 rounded-lg p-4">
+                <p className="text-sm text-muted-foreground">
+                  Calculado considerando tu composición corporal, edad, género y nivel de actividad física.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Diet Categories Section */}
+        <div className="mb-8">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-primary mb-2">
+              Categorías de Dieta Recomendadas
+            </h2>
+            <p className="text-muted-foreground">
+              Elige la categoría que mejor se adapte a tus objetivos y estilo de vida
             </p>
-          </CardContent>
-        </Card>
+          </div>
 
-        
+          <div className="grid gap-6 md:grid-cols-3">
+            {dietCategories.map((dietCategory, index) => (
+              <Card key={index} className="border-primary/20 bg-accent/30 hover:shadow-lg transition-shadow">
+                <CardHeader className="text-center pb-4">
+                  <div className="flex items-center justify-center space-x-2 mb-2">
+                    <dietCategory.icon className={`w-6 h-6 ${dietCategory.color}`} />
+                    <CardTitle className={`text-lg ${dietCategory.color}`}>
+                      {dietCategory.name}
+                    </CardTitle>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {dietCategory.description}
+                  </p>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <div className="bg-background/50 rounded-lg p-4 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Calorías diarias:</span>
+                      <span className="font-semibold text-primary">
+                        {dietCategory.dailyCalories} kcal
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Déficit calórico:</span>
+                      <span className="font-semibold text-orange-600">
+                        -{dietCategory.calorieDeficit} kcal
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center border-t pt-2">
+                      <span className="text-sm text-muted-foreground">Pérdida semanal:</span>
+                      <span className="font-semibold text-green-600">
+                        ~{dietCategory.weeklyWeightLoss.toFixed(1)} kg
+                      </span>
+                    </div>
+                  </div>
+
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => navigate('/dashboard')}
+                  >
+                    <Utensils className="w-4 h-4 mr-2" />
+                    Generar Menú
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
 
         {/* Info Card */}
         <Card className="bg-background/50">
@@ -113,7 +230,7 @@ export default function Results({ bodyFatPercentage, tmb, category, categoryColo
         {/* Action Buttons */}
         <div className="flex gap-3">
           <Button
-            onClick={handleGoToDashboard}
+            onClick={() => navigate('/dashboard')}
             variant="outline"
             className="flex-1 py-3 text-lg font-semibold"
             size="lg"
