@@ -1,0 +1,59 @@
+Quero que você adicione o seguinte cardápio no banco de dados, preenchendo corretamente as tabelas `menus`, `comidas`, `alimentos` e relacionando com `categorias_alimentos`.
+
+Regras:
+1. A tabela `menus` deve receber os dados gerais do cardápio (nome, calorias totais, macros totais em gramas e percentuais, data de criação).
+2. A tabela `comidas` deve receber cada refeição do cardápio (tipo de comida: desayuno, almuerzo, merienda, cena, colación, etc.), com seus subtotais de macros e calorias.
+3. A tabela `alimentos` deve receber cada alimento dentro de uma refeição, com:
+   - nombre
+   - cantidad en gramos
+   - medida casera
+   - calorías
+   - proteína, carbohidratos y grasas en gramos
+   - categoria_id (buscando na tabela `categorias_alimentos` a categoria correta: proteínas, carbohidratos, grasas, frutas, verduras, lácteos, legumbres, etc.)
+4. As relações devem ser respeitadas:
+   - `menus.id` → `comidas.menu_id`
+   - `comidas.id` → `alimentos.comida_id`
+   - `categorias_alimentos.id` → `alimentos.categoria_id`
+5. Os subtotais de macros e calorías em `comidas` e os totais em `menus` devem ser consistentes com a soma dos alimentos.
+
+Cardápio a adicionar:
+
+Menú 1200 kcal – Pérdida de peso, alta proteína
+
+🌅 Desayuno  
+Claras de huevo – 150 g (≈ 5 claras) → 16 g proteína, 1 g carbos, 0 g grasas  
+Tortilla de maíz – 60 g (2 piezas) → 4 g proteína, 24 g carbos, 1 g grasas  
+Aguacate – 40 g (1/5 pieza mediana) → 1 g proteína, 2 g carbos, 6 g grasas  
+Frijoles de la olla – 60 g (1/3 taza) → 5 g proteína, 10 g carbos, 0 g grasas  
+Subtotal desayuno: 26 g proteína, 37 g carbos, 7 g grasas (≈ 290 kcal)
+
+🌞 Almuerzo  
+Pechuga de pollo a la plancha – 120 g (1 pieza chica) → 37 g proteína, 0 g carbos, 2 g grasas  
+Arroz integral cocido – 80 g (1/2 taza) → 2 g proteína, 17 g carbos, 1 g grasas  
+Ensalada mixta (lechuga, jitomate, pepino) – 120 g (1 taza) → 1 g proteína, 5 g carbos, 0 g grasas  
+Aceite de oliva – 7 g (1/2 cucharada) → 0 g proteína, 0 g carbos, 7 g grasas  
+Subtotal almuerzo: 40 g proteína, 22 g carbos, 10 g grasas (≈ 340 kcal)
+
+☕ Merienda (colación de la tarde)  
+Yogurt griego natural sin azúcar – 120 g (1/2 taza) → 12 g proteína, 6 g carbos, 3 g grasas  
+Plátano – 80 g (1/2 pieza mediana) → 1 g proteína, 18 g carbos, 0 g grasas  
+Almendras – 10 g (7 piezas) → 2 g proteína, 2 g carbos, 6 g grasas  
+Subtotal merienda: 15 g proteína, 26 g carbos, 9 g grasas (≈ 230 kcal)
+
+🌙 Cena  
+Filete de pescado blanco (tilapia/robalo) – 120 g (1 pieza chica) → 25 g proteína, 0 g carbos, 2 g grasas  
+Arepa de maíz – 60 g (1 pieza pequeña) → 4 g proteína, 26 g carbos, 2 g grasas  
+Verduras al vapor (brócoli + zanahoria) – 120 g (1 taza) → 3 g proteína, 8 g carbos, 0 g grasas  
+Aceite de oliva – 7 g (1/2 cucharada) → 0 g proteína, 0 g carbos, 7 g grasas  
+Subtotal cena: 32 g proteína, 34 g carbos, 11 g grasas (≈ 330 kcal)
+
+🌜 Colación nocturna  
+Queso cottage bajo en grasa – 100 g (1/2 taza) → 12 g proteína, 4 g carbos, 2 g grasas  
+Pepino en rodajas – 100 g (1/2 pieza grande) → 1 g proteína, 3 g carbos, 0 g grasas  
+Subtotal colación: 13 g proteína, 7 g carbos, 2 g grasas (≈ 110 kcal)
+
+🔢 Totales del día  
+Proteína: 126 g (42%)  
+Carbohidratos: 126 g (35%)  
+Grasas: 39 g (23%)  
+Calorías totales: ≈ 1200 kcal
