@@ -28,7 +28,7 @@ export default function MacroDistributionPage() {
   }, [navigate]);
 
   const handleGenerateMenu = () => {
-    // Navigate to dashboard to generate the actual menu
+    // Navigate to dashboard (Panel)
     navigate('/dashboard');
   };
 

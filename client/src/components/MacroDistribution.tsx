@@ -202,9 +202,8 @@ export default function MacroDistribution({
             className="flex-1 py-3 text-lg font-semibold"
             size="lg"
           >
-            <Utensils className="w-5 h-5 mr-2" />
-            Generar Menú Personalizado
-            <ArrowRight className="w-5 h-5 ml-2" />
+            <Target className="w-5 h-5 mr-2" />
+            Panel
           </Button>
         </div>
       </div>
