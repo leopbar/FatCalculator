@@ -1,0 +1,35 @@
+Quero que você prepare a estrutura de banco de dados para a nova funcionalidade de geração de cardápios.  
+Atenção às seguintes instruções:
+
+1. **Padronização de nomes**  
+   - Todos os nomes de tabelas e colunas devem estar em **espanhol**.
+
+2. **Tabelas principais**  
+   - **menus**: armazena os dados gerais do menú (id, nombre, calorías totales, macros totales, porcentajes de distribución, fecha de creación).  
+   - **comidas**: armazena cada refeição do menú (id, menu_id, tipo de comida: desayuno, almuerzo, merienda, cena, colación, macros y calorías de la comida, fecha de creación).  
+   - **alimentos**: armazena cada alimento dentro de uma refeição (id, comida_id, nombre, cantidad en gramos, medida casera, macros individuales, calorías, fecha de creación).  
+
+3. **Consistência de macros**  
+   - Os valores de macros e calorias em **menus** e **comidas** devem ser **derivados automaticamente** a partir dos alimentos, para evitar inconsistências.  
+   - Ou seja, os subtotais e totais não devem ser digitados manualmente, mas calculados a partir da soma dos alimentos.
+
+4. **Campo de calorias por alimento**  
+   - Além de proteínas, carboidratos e grasas, cada alimento deve armazenar também seu valor calórico direto (kcal).
+
+5. **Escalabilidade – Substituições de alimentos**  
+   - Crie uma tabela adicional chamada **categorias_alimentos**, que classifica os alimentos em grupos (ejemplo: proteínas, carbohidratos, grasas, vegetales, frutas, lácteos, etc.).  
+   - Cada alimento deve ter uma chave estrangeira para sua categoria.  
+   - Isso permitirá substituições futuras (ejemplo: cambiar pollo por pescado dentro de la misma categoría de proteínas).
+
+6. **Relacionamentos**  
+   - Un menú tiene muchas comidas.  
+   - Una comida tiene muchos alimentos.  
+   - Un alimento pertenece a una categoría.  
+   - Use claves foráneas con `CASCADE DELETE` para mantener la integridad.
+
+7. **Arquivos a modificar**  
+   - Atualize o arquivo `shared/schema.ts` com as definições das tabelas, esquemas de inserção e tipos TypeScript.  
+   - Crie uma migration SQL (ejemplo: `drizzle/0001_add_menu_generation_tables.sql`) para gerar as novas tabelas.
+
+Objetivo:  
+Que o sistema possa armazenar menús completos, organizados jerárquicamente (menú → comidas → alimentos), com consistência automática de macros e calorías, e com suporte a substituições de alimentos por meio de categorias.
