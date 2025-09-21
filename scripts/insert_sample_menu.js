@@ -1,36 +1,108 @@
+const { Pool } = require('@neondatabase/serverless');
+const { drizzle } = require('drizzle-orm/neon-serverless');
+const { pgTable, text, varchar, real, timestamp } = require('drizzle-orm/pg-core');
+const { sql } = require('drizzle-orm');
 
-import { db } from '../server/db.js';
-import { menus, comidas, alimentos, categorias_alimentos } from '../shared/schema.js';
-import { eq } from 'drizzle-orm';
+// Define tables inline to avoid import issues
+const categorias_alimentos = pgTable("categorias_alimentos", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  nombre: text("nombre").notNull().unique(),
+  descripcion: text("descripcion"),
+  fecha_creacion: timestamp("fecha_creacion").defaultNow().notNull(),
+});
+
+const menus = pgTable("menus", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  nombre: text("nombre").notNull(),
+  calorias_totales: real("calorias_totales").notNull().default(0),
+  proteina_total_gramos: real("proteina_total_gramos").notNull().default(0),
+  carbohidratos_total_gramos: real("carbohidratos_total_gramos").notNull().default(0),
+  grasas_total_gramos: real("grasas_total_gramos").notNull().default(0),
+  proteina_porcentaje: real("proteina_porcentaje").notNull().default(0),
+  carbohidratos_porcentaje: real("carbohidratos_porcentaje").notNull().default(0),
+  grasas_porcentaje: real("grasas_porcentaje").notNull().default(0),
+  fecha_creacion: timestamp("fecha_creacion").defaultNow().notNull(),
+});
+
+const comidas = pgTable("comidas", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  menu_id: varchar("menu_id").notNull().references(() => menus.id, { onDelete: "cascade" }),
+  tipo_comida: text("tipo_comida").notNull(),
+  calorias_comida: real("calorias_comida").notNull().default(0),
+  proteina_comida_gramos: real("proteina_comida_gramos").notNull().default(0),
+  carbohidratos_comida_gramos: real("carbohidratos_comida_gramos").notNull().default(0),
+  grasas_comida_gramos: real("grasas_comida_gramos").notNull().default(0),
+  fecha_creacion: timestamp("fecha_creacion").defaultNow().notNull(),
+});
+
+const alimentos = pgTable("alimentos", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  comida_id: varchar("comida_id").notNull().references(() => comidas.id, { onDelete: "cascade" }),
+  categoria_id: varchar("categoria_id").notNull().references(() => categorias_alimentos.id),
+  nombre: text("nombre").notNull(),
+  cantidad_gramos: real("cantidad_gramos").notNull(),
+  medida_casera: text("medida_casera"),
+  calorias: real("calorias").notNull(),
+  proteina_gramos: real("proteina_gramos").notNull(),
+  carbohidratos_gramos: real("carbohidratos_gramos").notNull(),
+  grasas_gramos: real("grasas_gramos").notNull(),
+  fecha_creacion: timestamp("fecha_creacion").defaultNow().notNull(),
+});
+
+// Setup database connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+const db = drizzle({ client: pool, schema: { categorias_alimentos, menus, comidas, alimentos } });
 
 async function insertSampleMenu() {
   try {
-    console.log('🔄 Iniciando inserção do cardápio de exemplo...');
+    console.log('🔄 Iniciando inserção do cardápio...');
 
-    // 1. Primeiro, buscar as categorias existentes
-    const categorias = await db.select().from(categorias_alimentos);
+    // 1. Criar categorias básicas
+    const categoriasBasicas = [
+      { nombre: 'proteínas', descripcion: 'Alimentos ricos em proteína' },
+      { nombre: 'carbohidratos', descripcion: 'Alimentos ricos em carboidratos' },
+      { nombre: 'grasas', descripcion: 'Alimentos ricos em gorduras' },
+      { nombre: 'vegetales', descripcion: 'Verduras e legumes' },
+      { nombre: 'frutas', descripcion: 'Frutas frescas' },
+      { nombre: 'lácteos', descripcion: 'Produtos lácteos' },
+      { nombre: 'legumbres', descripcion: 'Feijões e similares' }
+    ];
+
     const categoriasMap = {};
-    categorias.forEach(cat => {
-      categoriasMap[cat.nombre] = cat.id;
-    });
 
-    console.log('📋 Categorias encontradas:', Object.keys(categoriasMap));
+    for (const cat of categoriasBasicas) {
+      try {
+        const [newCat] = await db.insert(categorias_alimentos).values(cat).returning();
+        categoriasMap[newCat.nombre] = newCat.id;
+        console.log(`✅ Categoria criada: ${newCat.nombre}`);
+      } catch (error) {
+        // Categoria já existe, buscar ID
+        const existing = await db.select().from(categorias_alimentos).where(sql`nombre = ${cat.nombre}`);
+        if (existing.length > 0) {
+          categoriasMap[cat.nombre] = existing[0].id;
+          console.log(`📋 Categoria existente: ${cat.nombre}`);
+        }
+      }
+    }
 
     // 2. Inserir o menu principal
     const [menu] = await db.insert(menus).values({
       nombre: 'Menú 1200 kcal – Pérdida de peso, alta proteína',
-      calorias_totales: 1200,
+      calorias_totales: 1290,
       proteina_total_gramos: 126,
       carbohidratos_total_gramos: 126,
       grasas_total_gramos: 39,
-      proteina_porcentaje: 42,
-      carbohidratos_porcentaje: 35,
-      grasas_porcentaje: 23
+      proteina_porcentaje: 39,
+      carbohidratos_porcentaje: 39,
+      grasas_porcentaje: 27
     }).returning();
 
-    console.log('✅ Menu creado:', menu.nombre);
+    console.log(`✅ Menu criado: ${menu.nombre}`);
 
-    // 3. Definir las comidas con sus alimentos
+    // 3. Inserir comidas
     const comidasData = [
       {
         tipo: 'desayuno',
@@ -58,202 +130,14 @@ async function insertSampleMenu() {
             carbohidratos_gramos: 24,
             grasas_gramos: 1,
             categoria: 'carbohidratos'
-          },
-          {
-            nombre: 'Aguacate',
-            cantidad_gramos: 40,
-            medida_casera: '1/5 pieza mediana',
-            calorias: 64,
-            proteina_gramos: 1,
-            carbohidratos_gramos: 2,
-            grasas_gramos: 6,
-            categoria: 'grasas'
-          },
-          {
-            nombre: 'Frijoles de la olla',
-            cantidad_gramos: 60,
-            medida_casera: '1/3 taza',
-            calorias: 60,
-            proteina_gramos: 5,
-            carbohidratos_gramos: 10,
-            grasas_gramos: 0,
-            categoria: 'legumbres'
-          }
-        ]
-      },
-      {
-        tipo: 'almuerzo',
-        calorias: 340,
-        proteina: 40,
-        carbohidratos: 22,
-        grasas: 10,
-        alimentos: [
-          {
-            nombre: 'Pechuga de pollo a la plancha',
-            cantidad_gramos: 120,
-            medida_casera: '1 pieza chica',
-            calorias: 165,
-            proteina_gramos: 37,
-            carbohidratos_gramos: 0,
-            grasas_gramos: 2,
-            categoria: 'proteínas'
-          },
-          {
-            nombre: 'Arroz integral cocido',
-            cantidad_gramos: 80,
-            medida_casera: '1/2 taza',
-            calorias: 80,
-            proteina_gramos: 2,
-            carbohidratos_gramos: 17,
-            grasas_gramos: 1,
-            categoria: 'carbohidratos'
-          },
-          {
-            nombre: 'Ensalada mixta (lechuga, jitomate, pepino)',
-            cantidad_gramos: 120,
-            medida_casera: '1 taza',
-            calorias: 20,
-            proteina_gramos: 1,
-            carbohidratos_gramos: 5,
-            grasas_gramos: 0,
-            categoria: 'vegetales'
-          },
-          {
-            nombre: 'Aceite de oliva',
-            cantidad_gramos: 7,
-            medida_casera: '1/2 cucharada',
-            calorias: 63,
-            proteina_gramos: 0,
-            carbohidratos_gramos: 0,
-            grasas_gramos: 7,
-            categoria: 'grasas'
-          }
-        ]
-      },
-      {
-        tipo: 'merienda',
-        calorias: 230,
-        proteina: 15,
-        carbohidratos: 26,
-        grasas: 9,
-        alimentos: [
-          {
-            nombre: 'Yogurt griego natural sin azúcar',
-            cantidad_gramos: 120,
-            medida_casera: '1/2 taza',
-            calorias: 85,
-            proteina_gramos: 12,
-            carbohidratos_gramos: 6,
-            grasas_gramos: 3,
-            categoria: 'lácteos'
-          },
-          {
-            nombre: 'Plátano',
-            cantidad_gramos: 80,
-            medida_casera: '1/2 pieza mediana',
-            calorias: 70,
-            proteina_gramos: 1,
-            carbohidratos_gramos: 18,
-            grasas_gramos: 0,
-            categoria: 'frutas'
-          },
-          {
-            nombre: 'Almendras',
-            cantidad_gramos: 10,
-            medida_casera: '7 piezas',
-            calorias: 58,
-            proteina_gramos: 2,
-            carbohidratos_gramos: 2,
-            grasas_gramos: 6,
-            categoria: 'grasas'
-          }
-        ]
-      },
-      {
-        tipo: 'cena',
-        calorias: 330,
-        proteina: 32,
-        carbohidratos: 34,
-        grasas: 11,
-        alimentos: [
-          {
-            nombre: 'Filete de pescado blanco (tilapia/robalo)',
-            cantidad_gramos: 120,
-            medida_casera: '1 pieza chica',
-            calorias: 110,
-            proteina_gramos: 25,
-            carbohidratos_gramos: 0,
-            grasas_gramos: 2,
-            categoria: 'proteínas'
-          },
-          {
-            nombre: 'Arepa de maíz',
-            cantidad_gramos: 60,
-            medida_casera: '1 pieza pequeña',
-            calorias: 130,
-            proteina_gramos: 4,
-            carbohidratos_gramos: 26,
-            grasas_gramos: 2,
-            categoria: 'carbohidratos'
-          },
-          {
-            nombre: 'Verduras al vapor (brócoli + zanahoria)',
-            cantidad_gramos: 120,
-            medida_casera: '1 taza',
-            calorias: 35,
-            proteina_gramos: 3,
-            carbohidratos_gramos: 8,
-            grasas_gramos: 0,
-            categoria: 'vegetales'
-          },
-          {
-            nombre: 'Aceite de oliva',
-            cantidad_gramos: 7,
-            medida_casera: '1/2 cucharada',
-            calorias: 63,
-            proteina_gramos: 0,
-            carbohidratos_gramos: 0,
-            grasas_gramos: 7,
-            categoria: 'grasas'
-          }
-        ]
-      },
-      {
-        tipo: 'colación',
-        calorias: 110,
-        proteina: 13,
-        carbohidratos: 7,
-        grasas: 2,
-        alimentos: [
-          {
-            nombre: 'Queso cottage bajo en grasa',
-            cantidad_gramos: 100,
-            medida_casera: '1/2 taza',
-            calorias: 80,
-            proteina_gramos: 12,
-            carbohidratos_gramos: 4,
-            grasas_gramos: 2,
-            categoria: 'lácteos'
-          },
-          {
-            nombre: 'Pepino en rodajas',
-            cantidad_gramos: 100,
-            medida_casera: '1/2 pieza grande',
-            calorias: 16,
-            proteina_gramos: 1,
-            carbohidratos_gramos: 3,
-            grasas_gramos: 0,
-            categoria: 'vegetales'
           }
         ]
       }
     ];
 
-    // 4. Insertar cada comida y sus alimentos
     for (const comidaData of comidasData) {
       console.log(`🍽️ Insertando comida: ${comidaData.tipo}`);
-      
-      // Insertar la comida
+
       const [comida] = await db.insert(comidas).values({
         menu_id: menu.id,
         tipo_comida: comidaData.tipo,
@@ -263,10 +147,9 @@ async function insertSampleMenu() {
         grasas_comida_gramos: comidaData.grasas
       }).returning();
 
-      // Insertar los alimentos de esta comida
       for (const alimentoData of comidaData.alimentos) {
         const categoriaId = categoriasMap[alimentoData.categoria];
-        
+
         if (!categoriaId) {
           console.error(`❌ Categoría no encontrada: ${alimentoData.categoria}`);
           continue;
@@ -289,12 +172,12 @@ async function insertSampleMenu() {
     }
 
     console.log('🎉 ¡Cardápio insertado exitosamente!');
-    console.log(`📊 Totales: ${menu.calorias_totales} kcal, ${menu.proteina_total_gramos}g proteína, ${menu.carbohidratos_total_gramos}g carbos, ${menu.grasas_total_gramos}g grasas`);
+    process.exit(0);
 
   } catch (error) {
-    console.error('❌ Error al insertar el cardápio:', error);
+    console.error('❌ Error:', error);
+    process.exit(1);
   }
 }
 
-// Ejecutar la función
 insertSampleMenu();
