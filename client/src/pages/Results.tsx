@@ -60,8 +60,8 @@ export default function ResultsPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
       
       toast({
-        title: "Dados limpos com sucesso",
-        description: "Agora você pode fazer um novo cálculo.",
+        title: "Datos borrados con éxito!",
+        description: "",
       });
       
       navigate('/calculator');
