@@ -83,8 +83,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
       toast({
-        title: "Logout realizado",
-        description: "Até logo!",
+        title: "Sesión cerrada",
+        description: "¡Hasta luego!",
       });
     },
     onError: (error: Error) => {
