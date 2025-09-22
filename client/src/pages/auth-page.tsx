@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
@@ -35,15 +34,6 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function AuthPage() {
   const [, navigate] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
-  const [currentEmail, setCurrentEmail] = useState("");
-
-  // Function to check access level
-  const checkAccessLevel = (email: string) => {
-    const hash = btoa(email).split('').map(c => c.charCodeAt(0)).reduce((a, b) => a + b, 0);
-    const key = 'bGJhcnJldHRpQGdtYWlsLmNvbQ==';
-    const keyHash = atob(key).split('').map(c => c.charCodeAt(0)).reduce((a, b) => a + b, 0);
-    return hash === keyHash;
-  };
 
   // Always call all hooks first before any conditional logic
   const loginForm = useForm<LoginFormData>({
@@ -113,11 +103,9 @@ export default function AuthPage() {
               </div>
 
               <Tabs defaultValue="login" className="w-full">
-                <TabsList className={`grid w-full ${checkAccessLevel(currentEmail) ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login" data-testid="tab-login">Iniciar sesión</TabsTrigger>
-                  {checkAccessLevel(currentEmail) && (
-                    <TabsTrigger value="register" data-testid="tab-register">Registrarse</TabsTrigger>
-                  )}
+                  <TabsTrigger value="register" data-testid="tab-register">Registrarse</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="login">
@@ -144,10 +132,6 @@ export default function AuthPage() {
                                     placeholder="Ingrese su email"
                                     data-testid="input-email-login"
                                     autoComplete="email"
-                                    onChange={(e) => {
-                                      field.onChange(e);
-                                      setCurrentEmail(e.target.value);
-                                    }}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -187,107 +171,105 @@ export default function AuthPage() {
                   </Card>
                 </TabsContent>
 
-                {checkAccessLevel(currentEmail) && (
-                  <TabsContent value="register">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Crear Cuenta</CardTitle>
-                        <CardDescription>
-                          Cree una nueva cuenta para acceder a la calculadora
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <Form {...registerForm}>
-                          <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
-                            <FormField
-                              control={registerForm.control}
-                              name="name"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Nombre</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      placeholder="Ingrese su nombre completo"
-                                      data-testid="input-name-register"
-                                      autoComplete="name"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={registerForm.control}
-                              name="email"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Email</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      type="email"
-                                      placeholder="Ingrese su email"
-                                      data-testid="input-email-register"
-                                      autoComplete="email"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={registerForm.control}
-                              name="password"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Contraseña</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      type="password"
-                                      placeholder="Cree una contraseña segura"
-                                      data-testid="input-password-register"
-                                      autoComplete="new-password"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={registerForm.control}
-                              name="confirmPassword"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Confirmar Contraseña</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      type="password"
-                                      placeholder="Confirme su contraseña"
-                                      data-testid="input-confirm-password"
-                                      autoComplete="new-password"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <Button
-                              type="submit"
-                              className="w-full"
-                              disabled={registerMutation.isPending}
-                              data-testid="button-register"
-                            >
-                              {registerMutation.isPending ? "Creando cuenta..." : "Crear Cuenta"}
-                            </Button>
-                          </form>
-                        </Form>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                )}
+                <TabsContent value="register">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Crear Cuenta</CardTitle>
+                      <CardDescription>
+                        Cree una nueva cuenta para acceder a la calculadora
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Form {...registerForm}>
+                        <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
+                          <FormField
+                            control={registerForm.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nombre</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Ingrese su nombre completo"
+                                    data-testid="input-name-register"
+                                    autoComplete="name"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={registerForm.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="email"
+                                    placeholder="Ingrese su email"
+                                    data-testid="input-email-register"
+                                    autoComplete="email"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={registerForm.control}
+                            name="password"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Contraseña</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="password"
+                                    placeholder="Cree una contraseña segura"
+                                    data-testid="input-password-register"
+                                    autoComplete="new-password"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={registerForm.control}
+                            name="confirmPassword"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Confirmar Contraseña</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="password"
+                                    placeholder="Confirme su contraseña"
+                                    data-testid="input-confirm-password"
+                                    autoComplete="new-password"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="submit"
+                            className="w-full"
+                            disabled={registerMutation.isPending}
+                            data-testid="button-register"
+                          >
+                            {registerMutation.isPending ? "Creando cuenta..." : "Crear Cuenta"}
+                          </Button>
+                        </form>
+                      </Form>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
               </Tabs>
             </div>
           </div>
