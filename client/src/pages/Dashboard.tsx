@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { Calculator, TrendingUp, Utensils, User, Play, Target, BookOpen, Pill, Brain } from "lucide-react";
-import { toast } from "@/components/ui/use-toast"; // Assuming toast is imported from here
+import { toast, useToast } from "@/hooks/use-toast";
 
 interface UserSummary {
   hasMetrics: boolean;
