@@ -9,7 +9,6 @@ import { useQuery } from "@tanstack/react-query";
 interface MacroDistributionProps {
   dailyCalories: number;
   categoryName: string;
-  onGenerateMenu: () => void;
   onBack: () => void;
 }
 
@@ -26,11 +25,9 @@ interface MacroInfo {
 export default function MacroDistribution({
   dailyCalories,
   categoryName,
-  onGenerateMenu,
   onBack
 }: MacroDistributionProps) {
-  const [showMenu, setShowMenu] = useState(false);
-  const [menuMacros, setMenuMacros] = useState<any>(null);
+  
 
   // Calcular distribución de macronutrientes
   const calculateMacros = (): MacroInfo[] => {
@@ -80,8 +77,8 @@ export default function MacroDistribution({
 
   const macros = calculateMacros();
 
-  // Configurar query para buscar menu mais próximo
-  const { data: menuData, isLoading: isLoadingMenu, refetch: generateMenu, error: menuError } = useQuery({
+  // Configurar query para buscar menu mais próximo automaticamente
+  const { data: menuData, isLoading: isLoadingMenu, error: menuError } = useQuery({
     queryKey: ['closest-menu', dailyCalories, macros[0].grams, macros[1].grams, macros[2].grams],
     queryFn: async () => {
       const response = await fetch('/api/menu/closest', {
@@ -104,14 +101,10 @@ export default function MacroDistribution({
 
       return response.json();
     },
-    enabled: false, // Só executa quando chamado manualmente
+    enabled: dailyCalories > 0, // Executa automaticamente quando há calorias válidas
   });
 
-  const handleGenerateMenu = () => {
-    setMenuMacros(macros);
-    setShowMenu(true);
-    generateMenu();
-  };
+  
 
   const getMealIcon = (tipo: string) => {
     switch (tipo.toLowerCase()) {
