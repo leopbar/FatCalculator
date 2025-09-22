@@ -246,6 +246,35 @@ export default function Dashboard() {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Mi Menú */}
+            <Card className="hover-elevate cursor-pointer" onClick={() => {
+              if (summary?.hasMenu) {
+                navigate("/macro-distribution");
+              }
+            }}>
+              <CardHeader className="text-center">
+                <Utensils className="w-12 h-12 text-primary mx-auto mb-2" />
+                <CardTitle data-testid="card-title-menu">
+                  Mi Menú
+                </CardTitle>
+                <CardDescription>
+                  {summary?.hasMenu
+                    ? "Acceder a su menú personalizado"
+                    : "Genere primero su menú personalizado"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  className="w-full"
+                  variant={summary?.hasMenu ? "default" : "outline"}
+                  disabled={!summary?.hasMenu && !isLoading}
+                  data-testid="button-menu"
+                >
+                  {summary?.hasMenu ? "Ver Mi Menú" : "Generar Primero"}
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </section>
 

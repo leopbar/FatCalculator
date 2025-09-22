@@ -183,13 +183,19 @@ export class DatabaseStorage implements IStorage {
   async getUserSummary(userId: string): Promise<{
     hasMetrics: boolean;
     hasCalculation: boolean;
+    hasMenu: boolean;
   }> {
     const [userMetrics] = await db.select().from(bodyMetrics).where(eq(bodyMetrics.userId, userId));
     const [userCalculation] = await db.select().from(calculations).where(eq(calculations.userId, userId));
+    
+    // Para verificar se tem menu, vamos verificar se já foi gerado algum menu
+    // (simplificado - assume que se tem calculation, pode gerar menu)
+    const hasMenu = !!userCalculation;
 
     return {
       hasMetrics: !!userMetrics,
       hasCalculation: !!userCalculation,
+      hasMenu: hasMenu,
     };
   }
 
@@ -428,10 +434,12 @@ export class MemStorage implements IStorage {
   async getUserSummary(userId: string): Promise<{
     hasMetrics: boolean;
     hasCalculation: boolean;
+    hasMenu: boolean;
   }> {
     return {
       hasMetrics: this.bodyMetrics.has(userId),
       hasCalculation: this.calculations.has(userId),
+      hasMenu: this.calculations.has(userId), // Se tem calculation, pode gerar menu
     };
   }
 
