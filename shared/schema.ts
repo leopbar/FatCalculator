@@ -165,7 +165,7 @@ export const insertBodyMetricsSchema = z.object({
   height: z.coerce.number().positive().min(1).max(300),
   neck: z.coerce.number().positive().min(1).max(100),
   waist: z.coerce.number().positive().min(1).max(200),
-  hip: z.coerce.number().positive().min(1).max(200).optional(),
+  hip: z.coerce.number().positive().min(1).max(200).nullable(), // Allow null for males
   activityLevel: z.enum(["sedentario", "leve", "ligero", "moderado", "intenso", "muito_intenso"])
 });
 
