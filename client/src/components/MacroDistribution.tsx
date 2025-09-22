@@ -306,7 +306,7 @@ export default function MacroDistribution({
                       <span className="capitalize text-gray-700">{meal.tipo_comida}</span>
                     </CardTitle>
                     <div className="text-sm text-muted-foreground">
-                      {Math.round(meal.calorias_comida || 0)} kcala)} kcal
+                      {Math.round(meal.calorias_comida || 0)} kcal
                     </div>
                   </CardHeader>
 
