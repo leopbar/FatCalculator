@@ -14,7 +14,7 @@ import {
   categorias_alimentos,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -57,6 +57,7 @@ export interface IStorage {
 
   // Menu plan methods for personalizing menu
   getMenuByMacros(macros: { calories: number; protein: number; carbs: number; fat: number }): Promise<any | undefined>;
+  getClosestMenu(calories: number, protein_g: number, carb_g: number, fat_g: number): Promise<any | undefined>;
 
   sessionStore: any; // Using any for compatibility with express-session types
 }
@@ -212,6 +213,124 @@ export class DatabaseStorage implements IStorage {
     return menu;
   }
 
+  async getClosestMenu(calories: number, protein_g: number, carb_g: number, fat_g: number): Promise<any | undefined> {
+    try {
+      // Get all menus with their meals and foods
+      const menusWithMeals = await db
+        .select({
+          id: menus.id,
+          nombre: menus.nombre,
+          calorias_totales: menus.calorias_totales,
+          proteina_total_gramos: menus.proteina_total_gramos,
+          carbohidratos_total_gramos: menus.carbohidratos_total_gramos,
+          grasas_total_gramos: menus.grasas_total_gramos,
+          comida_id: comidas.id,
+          tipo_comida: comidas.tipo_comida,
+          calorias_comida: comidas.calorias_comida,
+          proteina_comida_gramos: comidas.proteina_comida_gramos,
+          carbohidratos_comida_gramos: comidas.carbohidratos_comida_gramos,
+          grasas_comida_gramos: comidas.grasas_comida_gramos,
+          alimento_id: alimentos.id,
+          alimento_nombre: alimentos.nombre,
+          cantidad_gramos: alimentos.cantidad_gramos,
+          medida_casera: alimentos.medida_casera,
+          alimento_calorias: alimentos.calorias,
+          alimento_proteina: alimentos.proteina_gramos,
+          alimento_carbohidratos: alimentos.carbohidratos_gramos,
+          alimento_grasas: alimentos.grasas_gramos,
+          categoria_id: categorias_alimentos.id,
+          categoria_nombre: categorias_alimentos.nombre,
+        })
+        .from(menus)
+        .leftJoin(comidas, eq(comidas.menu_id, menus.id))
+        .leftJoin(alimentos, eq(alimentos.comida_id, comidas.id))
+        .leftJoin(categorias_alimentos, eq(categorias_alimentos.id, alimentos.categoria_id));
+
+      if (menusWithMeals.length === 0) {
+        return null;
+      }
+
+      // Group by menu and calculate closest match
+      const menuMap = new Map();
+      
+      menusWithMeals.forEach(row => {
+        if (!menuMap.has(row.id)) {
+          menuMap.set(row.id, {
+            id: row.id,
+            nombre: row.nombre,
+            calorias_totales: row.calorias_totales,
+            proteina_total_gramos: row.proteina_total_gramos,
+            carbohidratos_total_gramos: row.carbohidratos_total_gramos,
+            grasas_total_gramos: row.grasas_total_gramos,
+            meals: new Map()
+          });
+        }
+
+        const menu = menuMap.get(row.id);
+        
+        if (row.comida_id && !menu.meals.has(row.comida_id)) {
+          menu.meals.set(row.comida_id, {
+            id: row.comida_id,
+            tipo_comida: row.tipo_comida,
+            calorias_comida: row.calorias_comida,
+            proteina_comida_gramos: row.proteina_comida_gramos,
+            carbohidratos_comida_gramos: row.carbohidratos_comida_gramos,
+            grasas_comida_gramos: row.grasas_comida_gramos,
+            alimentos: []
+          });
+        }
+
+        if (row.alimento_id) {
+          const meal = menu.meals.get(row.comida_id);
+          meal.alimentos.push({
+            id: row.alimento_id,
+            nombre: row.alimento_nombre,
+            cantidad_gramos: row.cantidad_gramos,
+            medida_casera: row.medida_casera,
+            calorias: row.alimento_calorias,
+            proteina_gramos: row.alimento_proteina,
+            carbohidratos_gramos: row.alimento_carbohidratos,
+            grasas_gramos: row.alimento_grasas,
+            categoria: {
+              id: row.categoria_id,
+              nombre: row.categoria_nombre
+            }
+          });
+        }
+      });
+
+      // Find closest match by calculating distance
+      let closestMenu = null;
+      let minDistance = Infinity;
+
+      for (const [menuId, menu] of menuMap) {
+        const caloriesDiff = Math.abs(menu.calorias_totales - calories);
+        const proteinDiff = Math.abs(menu.proteina_total_gramos - protein_g);
+        const carbDiff = Math.abs(menu.carbohidratos_total_gramos - carb_g);
+        const fatDiff = Math.abs(menu.grasas_total_gramos - fat_g);
+        
+        // Weighted distance calculation
+        const distance = (caloriesDiff * 0.4) + (proteinDiff * 0.25) + (carbDiff * 0.25) + (fatDiff * 0.1);
+        
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestMenu = menu;
+        }
+      }
+
+      if (closestMenu) {
+        // Convert meals Map to array
+        closestMenu.meals = Array.from(closestMenu.meals.values());
+        return closestMenu;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error finding closest menu:', error);
+      return null;
+    }
+  }
+
 
 
 }
@@ -317,6 +436,11 @@ export class MemStorage implements IStorage {
   // Placeholder for getMenuByMacros in MemStorage
   async getMenuByMacros(macros: { calories: number; protein: number; carbs: number; fat: number }): Promise<any | undefined> {
     console.warn("getMenuByMacros not implemented in MemStorage");
+    return undefined;
+  }
+
+  async getClosestMenu(calories: number, protein_g: number, carb_g: number, fat_g: number): Promise<any | undefined> {
+    console.warn("getClosestMenu not implemented in MemStorage");
     return undefined;
   }
 
