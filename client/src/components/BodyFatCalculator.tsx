@@ -258,7 +258,7 @@ export default function BodyFatCalculator() {
         weight,
         neck,
         waist,
-        hip,
+        hip: formData.gender === "female" ? hip : null, // Only send hip for females
         activityLevel: translatedActivityLevel
       };
 
