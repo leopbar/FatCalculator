@@ -24,7 +24,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  
+
   const {
     data: user,
     error,
@@ -42,21 +42,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
       toast({
-        title: "Login realizado com sucesso",
-        description: "Bem-vindo ao aplicativo!",
+        title: "Inicio de sesión exitoso!",
+        description: "¡Bienvenido a la SRC!",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Erro no login",
-        description: "Usuário ou senha incorretos",
+        title: "Error al iniciar sesión.",
+        description: "Usuario o contraseña incorrectos.",
         variant: "destructive",
       });
     },
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (credentials: { name: string; email: string; password: string }) => {
+    mutationFn: async (credentials: {
+      name: string;
+      email: string;
+      password: string;
+    }) => {
       const res = await apiRequest("POST", "/api/register", credentials);
       return await res.json();
     },
