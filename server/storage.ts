@@ -7,7 +7,11 @@ import {
   type InsertCalculation,
   users,
   bodyMetrics,
-  calculations
+  calculations,
+  menus,
+  comidas,
+  alimentos,
+  categorias_alimentos,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -50,6 +54,9 @@ export interface IStorage {
 
   // Clear all user data
   clearAllUserData(userId: string): Promise<void>;
+
+  // Menu plan methods for personalizing menu
+  getMenuByMacros(macros: { calories: number; protein: number; carbs: number; fat: number }): Promise<any | undefined>;
 
   sessionStore: any; // Using any for compatibility with express-session types
 }
@@ -193,9 +200,20 @@ export class DatabaseStorage implements IStorage {
     await db.delete(bodyMetrics).where(eq(bodyMetrics.userId, userId));
   }
 
-  
+  async getMenuByMacros(macros: { calories: number; protein: number; carbs: number; fat: number }): Promise<any | undefined> {
+    // This is a placeholder. A real implementation would involve complex queries
+    // to find the closest matching menu based on the provided macros.
+    // For now, we'll just select a random menu as an example.
+    const [menu] = await db
+      .select()
+      .from(menus)
+      .orderBy(db.fn.random()) // Select a random menu
+      .limit(1);
+    return menu;
+  }
 
-  
+
+
 }
 
 // Keep MemStorage for fallback if needed
@@ -296,7 +314,12 @@ export class MemStorage implements IStorage {
     this.calculations.delete(userId);
   }
 
-  
+  // Placeholder for getMenuByMacros in MemStorage
+  async getMenuByMacros(macros: { calories: number; protein: number; carbs: number; fat: number }): Promise<any | undefined> {
+    console.warn("getMenuByMacros not implemented in MemStorage");
+    return undefined;
+  }
+
 }
 
 // Use DatabaseStorage instead of MemStorage for persistent data

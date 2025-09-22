@@ -91,6 +91,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get closest menu by macro targets
+  app.post("/api/menu/closest", authenticateJWT, async (req: any, res) => {
+    try {
+      const { calories, protein_g, carb_g, fat_g } = req.body;
+      
+      if (!calories || !protein_g || !carb_g || !fat_g) {
+        return res.status(400).json({ error: "Todos os macronutrientes são obrigatórios" });
+      }
+
+      const menu = await storage.getClosestMenu(calories, protein_g, carb_g, fat_g);
+      if (!menu) {
+        return res.status(404).json({ error: "Nenhum menu encontrado" });
+      }
+
+      res.json(menu);
+    } catch (error) {
+      console.error("Error finding closest menu:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
 
 
   const httpServer = createServer(app);
