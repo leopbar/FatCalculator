@@ -18,11 +18,11 @@ const router = Router();
 export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
   passport.authenticate('jwt', { session: false }, (err: any, user: any) => {
     if (err) {
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Error interno del servidor' });
     }
     
     if (!user) {
-      return res.status(401).json({ error: 'Token de acesso inválido ou expirado' });
+      return res.status(401).json({ error: 'Token de acceso inválido o expirado' });
     }
     
     req.user = user;
@@ -56,7 +56,7 @@ router.post('/register', async (req: Request, res: Response) => {
     const existingUser = await storage.getUserByEmail(email);
     if (existingUser) {
       console.log('❌ Tentativa de registro com email já existente:', email);
-      return res.status(409).json({ error: 'Email já está em uso' });
+      return res.status(409).json({ error: 'El email ya está en uso' });
     }
 
     // Hash da senha
@@ -89,12 +89,12 @@ router.post('/register', async (req: Request, res: Response) => {
     };
 
     res.status(201).json({
-      message: 'Usuário criado com sucesso',
+      message: 'Usuario creado exitosamente',
       user: userPublic
     });
   } catch (error) {
     console.error('❌ Erro no registro:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -124,12 +124,12 @@ router.post('/login', (req: Request, res: Response, next: NextFunction) => {
   passport.authenticate('local', { session: false }, (err: any, user: any, info: any) => {
     if (err) {
       console.error('❌ Erro na autenticação:', err);
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Error interno del servidor' });
     }
 
     if (!user) {
       console.log('❌ Login falhado para:', validation.data.email, 'Motivo:', info?.message);
-      return res.status(401).json({ error: info?.message || 'Credenciais inválidas' });
+      return res.status(401).json({ error: info?.message || 'Credenciales inválidas' });
     }
 
     console.log('✅ Login bem-sucedido para:', user.email);
@@ -151,7 +151,7 @@ router.post('/login', (req: Request, res: Response, next: NextFunction) => {
     };
 
     res.json({
-      message: 'Login realizado com sucesso',
+      message: 'Inicio de sesión realizado exitosamente',
       user: userPublic
     });
   })(req, res, next);
@@ -163,7 +163,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refresh_token;
 
     if (!refreshToken) {
-      return res.status(401).json({ error: 'Refresh token não encontrado' });
+      return res.status(401).json({ error: 'Token de actualización no encontrado' });
     }
 
     const payload = verifyRefreshToken(refreshToken);
@@ -171,7 +171,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
     // Verificar se o usuário ainda existe
     const user = await storage.getUser(payload.userId);
     if (!user) {
-      return res.status(401).json({ error: 'Usuário não encontrado' });
+      return res.status(401).json({ error: 'Usuario no encontrado' });
     }
 
     // Gerar novo access token
@@ -188,12 +188,12 @@ router.post('/refresh', async (req: Request, res: Response) => {
     };
 
     res.json({
-      message: 'Token renovado com sucesso',
+      message: 'Token renovado exitosamente',
       user: userPublic
     });
   } catch (error) {
     console.error('❌ Erro no refresh token:', error);
-    res.status(401).json({ error: 'Refresh token inválido ou expirado' });
+    res.status(401).json({ error: 'Token de actualización inválido o expirado' });
   }
 });
 
@@ -205,13 +205,13 @@ router.post('/logout', (req: Request, res: Response) => {
   res.clearCookie('access_token', { path: '/' });
   res.clearCookie('refresh_token', { path: '/' });
   
-  res.json({ message: 'Logout realizado com sucesso' });
+  res.json({ message: 'Cierre de sesión realizado exitosamente' });
 });
 
 // Rota para verificar usuário autenticado
 router.get('/user', authenticateJWT, (req: Request, res: Response) => {
   if (!req.user) {
-    return res.status(401).json({ error: 'Usuário não autenticado' });
+    return res.status(401).json({ error: 'Usuario no autenticado' });
   }
 
   res.json(req.user);

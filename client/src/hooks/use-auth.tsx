@@ -42,14 +42,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
       toast({
-        title: "Login realizado com sucesso",
-        description: "Bem-vindo ao aplicativo!",
+        title: "Inicio de sesión exitoso",
+        description: "¡Bienvenido a la aplicación!",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Erro no login",
-        description: "Usuário ou senha incorretos",
+        title: "Error en el inicio de sesión",
+        description: "Usuario o contraseña incorrectos",
         variant: "destructive",
       });
     },
@@ -63,14 +63,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
       toast({
-        title: "Conta criada com sucesso",
-        description: "Bem-vindo ao aplicativo!",
+        title: "Cuenta creada exitosamente",
+        description: "¡Bienvenido a la aplicación!",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Erro no registro",
-        description: "Não foi possível criar a conta. Tente novamente.",
+        title: "Error en el registro",
+        description: "No fue posible crear la cuenta. Intente nuevamente.",
         variant: "destructive",
       });
     },
@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onError: (error: Error) => {
       toast({
-        title: "Erro no logout",
+        title: "Error al cerrar sesión",
         description: error.message,
         variant: "destructive",
       });
