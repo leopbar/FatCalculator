@@ -27,7 +27,7 @@ export default function MacroDistribution({
   categoryName,
   onBack
 }: MacroDistributionProps) {
-  
+  const [, navigate] = useLocation();
 
   // Calcular distribución de macronutrientes
   const calculateMacros = (): MacroInfo[] => {
@@ -357,7 +357,15 @@ export default function MacroDistribution({
         )}
 
         {/* Action Buttons */}
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-4 mt-8 mb-6">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2 px-6 py-3"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Panel
+          </Button>
           <Button
             variant="outline"
             onClick={onBack}
