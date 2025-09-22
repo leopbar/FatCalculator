@@ -77,24 +77,6 @@ export default function MacroDistribution({
 
   const macros = calculateMacros();
 
-  // Função para obter ícone da refeição
-  const getMealIcon = (tipoComida: string) => {
-    switch (tipoComida?.toLowerCase()) {
-      case 'desayuno':
-        return '🌅';
-      case 'almuerzo':
-        return '🍽️';
-      case 'merienda':
-        return '🥤';
-      case 'cena':
-        return '🌙';
-      case 'colación nocturna':
-        return '🌃';
-      default:
-        return '🍴';
-    }
-  };
-
   // Configurar query para buscar menu mais próximo automaticamente
   const { data: menuData, isLoading: isLoadingMenu, error: menuError } = useQuery({
     queryKey: ['closest-menu', dailyCalories, macros[0].grams, macros[1].grams, macros[2].grams],
@@ -121,8 +103,6 @@ export default function MacroDistribution({
     },
     enabled: dailyCalories > 0, // Executa automaticamente quando há calorias válidas
   });
-
-  
 
   const getMealIcon = (tipo: string) => {
     switch (tipo.toLowerCase()) {
