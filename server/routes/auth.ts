@@ -35,14 +35,13 @@ router.post('/register', async (req: Request, res: Response) => {
   try {
     console.log('📨 POST /api/register:', {
       contentType: req.headers['content-type'],
-      body: req.body,
       hasBody: !!req.body
     });
 
     const validation = UserRegistrationSchema.safeParse(req.body);
     
     if (!validation.success) {
-      console.log('❌ Dados de registro inválidos:', validation.error.issues);
+      console.log('❌ Dados de registro inválidos');
       return res.status(400).json({ 
         error: validation.error.issues[0].message,
         details: validation.error.issues 
@@ -102,14 +101,13 @@ router.post('/register', async (req: Request, res: Response) => {
 router.post('/login', (req: Request, res: Response, next: NextFunction) => {
   console.log('📨 POST /api/login:', {
     contentType: req.headers['content-type'],
-    body: req.body,
     hasBody: !!req.body
   });
 
   const validation = UserLoginSchema.safeParse(req.body);
   
   if (!validation.success) {
-    console.log('❌ Dados de login inválidos:', validation.error.issues);
+    console.log('❌ Dados de login inválidos');
     return res.status(400).json({ 
       error: validation.error.issues[0].message 
     });
