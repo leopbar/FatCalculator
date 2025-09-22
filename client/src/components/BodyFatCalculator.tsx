@@ -274,10 +274,13 @@ export default function BodyFatCalculator() {
 
       await saveCalculationMutation.mutateAsync(calculationData);
 
-      // Invalidate dashboard cache to update summary - wait for cache update
+      // Invalidate and refetch queries to ensure data is available
       await queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/calculation'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/body-metrics'] });
+
+      // Wait for calculation data to be available before navigating
+      await queryClient.refetchQueries({ queryKey: ['/api/calculation'] });
 
       toast({
         title: "¡Cálculo realizado!",
