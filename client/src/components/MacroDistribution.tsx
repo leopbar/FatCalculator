@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,15 +23,15 @@ interface MacroInfo {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-export default function MacroDistribution({ 
-  dailyCalories, 
-  categoryName, 
-  onGenerateMenu, 
-  onBack 
+export default function MacroDistribution({
+  dailyCalories,
+  categoryName,
+  onGenerateMenu,
+  onBack
 }: MacroDistributionProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [menuMacros, setMenuMacros] = useState<any>(null);
-  
+
   // Calcular distribución de macronutrientes
   const calculateMacros = (): MacroInfo[] => {
     const proteinPercentage = 40;
@@ -82,7 +81,7 @@ export default function MacroDistribution({
   const macros = calculateMacros();
 
   // Configurar query para buscar menu mais próximo
-  const { data: menuData, isLoading: isLoadingMenu, refetch: generateMenu } = useQuery({
+  const { data: menuData, isLoading: isLoadingMenu, refetch: generateMenu, error: menuError } = useQuery({
     queryKey: ['closest-menu', dailyCalories, macros[0].grams, macros[1].grams, macros[2].grams],
     queryFn: async () => {
       const response = await fetch('/api/menu/closest', {
@@ -153,7 +152,7 @@ export default function MacroDistribution({
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 max-w-4xl">
-        
+
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-primary mb-2">
@@ -162,7 +161,7 @@ export default function MacroDistribution({
           <p className="text-muted-foreground mb-4">
             Basada en tu categoría seleccionada: <strong>{categoryName}</strong>
           </p>
-          
+
           {/* Total Calories Badge */}
           <Badge variant="outline" className="text-lg py-2 px-4 font-semibold">
             {dailyCalories} kcal diarias
@@ -180,10 +179,10 @@ export default function MacroDistribution({
                     {macro.name}
                   </CardTitle>
                 </div>
-                
+
                 {/* Percentage Badge */}
-                <Badge 
-                  variant="secondary" 
+                <Badge
+                  variant="secondary"
                   className={`text-lg py-1 px-3 font-bold ${macro.color}`}
                 >
                   {macro.percentage}%
@@ -192,7 +191,7 @@ export default function MacroDistribution({
 
               <CardContent className="space-y-4">
                 <div className="bg-white/70 rounded-lg p-4 space-y-3">
-                  
+
                   {/* Calories */}
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground font-medium">
@@ -225,7 +224,7 @@ export default function MacroDistribution({
               <h3 className="text-lg font-semibold text-primary">
                 Resumen Nutricional Diario
               </h3>
-              
+
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div className="space-y-1">
                   <p className="text-2xl font-bold text-blue-600">
@@ -249,8 +248,8 @@ export default function MacroDistribution({
 
               <div className="bg-background/50 rounded-lg p-4 mt-4">
                 <p className="text-sm text-muted-foreground">
-                  Esta distribución optimiza la pérdida de peso manteniendo una alta ingesta de proteínas 
-                  para preservar la masa muscular, mientras proporciona carbohidratos y grasas esenciales 
+                  Esta distribución optimiza la pérdida de peso manteniendo una alta ingesta de proteínas
+                  para preservar la masa muscular, mientras proporciona carbohidratos y grasas esenciales
                   para el funcionamiento óptimo del organismo.
                 </p>
               </div>
@@ -258,141 +257,121 @@ export default function MacroDistribution({
           </CardContent>
         </Card>
 
-        {/* Generated Menu Section */}
-        {showMenu && (
-          <Card className="bg-gradient-to-br from-green-50 to-blue-50 border-green-200 mb-8">
-            <CardHeader className="text-center pb-4">
-              <div className="flex items-center justify-center space-x-2 mb-2">
-                <ChefHat className="w-8 h-8 text-green-600" />
-                <CardTitle className="text-2xl text-green-700">
-                  Tu Menú Personalizado
-                </CardTitle>
-              </div>
-              {menuData && (
-                <Badge variant="outline" className="text-base py-2 px-4 bg-white/70">
-                  {menuData.nombre}
-                </Badge>
-              )}
-            </CardHeader>
+        {/* Menu Section */}
+        {isLoadingMenu && (
+          <div className="text-center py-8">
+            <div className="inline-flex items-center gap-3 text-muted-foreground">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              <span className="text-lg">Generando tu menú personalizado...</span>
+            </div>
+          </div>
+        )}
 
-            <CardContent className="space-y-6">
-              {isLoadingMenu ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-                  <p className="text-muted-foreground">Generando tu menú personalizado...</p>
+        {menuError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+            <p className="text-red-600">
+              Error al generar el menú. Intenta nuevamente más tarde.
+            </p>
+          </div>
+        )}
+
+        {menuData && !isLoadingMenu && (
+          <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-6 border-2 border-green-200 shadow-lg">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-green-700 mb-2 flex items-center justify-center gap-2">
+                <ChefHat className="w-6 h-6" />
+                Menú Personalizado
+              </h2>
+              <p className="text-green-600 font-medium">{menuData.nombre}</p>
+
+              {/* Menu Totals */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 max-w-2xl mx-auto">
+                <div className="bg-white/70 rounded-lg p-3">
+                  <div className="text-sm text-muted-foreground">Calorías</div>
+                  <div className="text-lg font-bold text-green-600">{Math.round(menuData.calorias_totales)}</div>
                 </div>
-              ) : menuData ? (
-                <>
-                  {/* Menu Overview */}
-                  <div className="bg-white/70 rounded-lg p-6 mb-6">
-                    <h3 className="text-lg font-semibold text-green-700 mb-4 flex items-center">
-                      <Target className="w-5 h-5 mr-2" />
-                      Resumen del Menú
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
-                        <div className="text-2xl font-bold text-red-600">{Math.round(menuData.calorias_totales)}</div>
-                        <div className="text-sm text-red-700">Calorías</div>
+                <div className="bg-white/70 rounded-lg p-3">
+                  <div className="text-sm text-muted-foreground">Proteínas</div>
+                  <div className="text-lg font-bold text-blue-600">{Math.round(menuData.proteina_total_gramos)}g</div>
+                </div>
+                <div className="bg-white/70 rounded-lg p-3">
+                  <div className="text-sm text-muted-foreground">Carbos</div>
+                  <div className="text-lg font-bold text-green-600">{Math.round(menuData.carbohidratos_total_gramos)}g</div>
+                </div>
+                <div className="bg-white/70 rounded-lg p-3">
+                  <div className="text-sm text-muted-foreground">Grasas</div>
+                  <div className="text-lg font-bold text-yellow-600">{Math.round(menuData.grasas_total_gramos)}g</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Meals */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {menuData.meals?.map((meal: any, index: number) => (
+                <Card key={meal.id || index} className="bg-white/80 border-2 border-white hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <span className="text-2xl">{getMealIcon(meal.tipo_comida)}</span>
+                      <span className="capitalize text-gray-700">{meal.tipo_comida}</span>
+                    </CardTitle>
+                    <div className="text-sm text-muted-foreground">
+                      {Math.round(meal.calorias_comida)} kcal
+                    </div>
+                  </CardHeader>
+
+                  <CardContent>
+                    {/* Meal Macros */}
+                    <div className="grid grid-cols-3 gap-2 mb-4 text-xs">
+                      <div className="text-center bg-blue-50 rounded p-2">
+                        <div className="font-semibold text-blue-600">{Math.round(meal.proteina_comida_gramos)}g</div>
+                        <div className="text-blue-500">Prot.</div>
                       </div>
-                      <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="text-2xl font-bold text-blue-600">{Math.round(menuData.proteina_total_gramos)}g</div>
-                        <div className="text-sm text-blue-700">Proteínas</div>
+                      <div className="text-center bg-green-50 rounded p-2">
+                        <div className="font-semibold text-green-600">{Math.round(meal.carbohidratos_comida_gramos)}g</div>
+                        <div className="text-green-500">Carbs</div>
                       </div>
-                      <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
-                        <div className="text-2xl font-bold text-green-600">{Math.round(menuData.carbohidratos_total_gramos)}g</div>
-                        <div className="text-sm text-green-700">Carbohidratos</div>
-                      </div>
-                      <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                        <div className="text-2xl font-bold text-yellow-600">{Math.round(menuData.grasas_total_gramos)}g</div>
-                        <div className="text-sm text-yellow-700">Grasas</div>
+                      <div className="text-center bg-yellow-50 rounded p-2">
+                        <div className="font-semibold text-yellow-600">{Math.round(meal.grasas_comida_gramos)}g</div>
+                        <div className="text-yellow-500">Grasas</div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Meals */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-green-700 flex items-center">
-                      <Clock className="w-5 h-5 mr-2" />
-                      Comidas del Día
-                    </h3>
-                    
-                    {menuData.meals && menuData.meals.map((meal: any, index: number) => (
-                      <Card key={meal.id} className="bg-white/50 border-green-100 hover:shadow-md transition-shadow">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <span className="text-2xl">{getMealIcon(meal.tipo_comida)}</span>
-                              <div>
-                                <h4 className="font-semibold text-lg capitalize">{meal.tipo_comida}</h4>
-                                <div className="flex space-x-4 text-sm text-muted-foreground">
-                                  <span>{Math.round(meal.calorias_comida)} kcal</span>
-                                  <span>{Math.round(meal.proteina_comida_gramos)}g prot</span>
-                                  <span>{Math.round(meal.carbohidratos_comida_gramos)}g carb</span>
-                                  <span>{Math.round(meal.grasas_comida_gramos)}g grasa</span>
-                                </div>
-                              </div>
+                    {/* Foods */}
+                    <div className="space-y-2">
+                      {meal.alimentos?.map((alimento: any, foodIndex: number) => (
+                        <div key={alimento.id || foodIndex} className="flex items-center gap-2 text-sm bg-gray-50 rounded-lg p-2">
+                          <span className="text-lg">{getCategoryIcon(alimento.categoria?.nombre || '')}</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-700">{alimento.nombre}</div>
+                            <div className="text-xs text-gray-500">
+                              {alimento.cantidad_gramos}g
+                              {alimento.medida_casera && (
+                                <span className="ml-1">({alimento.medida_casera})</span>
+                              )}
                             </div>
                           </div>
-                        </CardHeader>
-                        
-                        <CardContent className="pt-0">
-                          <div className="grid gap-3">
-                            {meal.alimentos && meal.alimentos.map((alimento: any, idx: number) => (
-                              <div key={alimento.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div className="flex items-center space-x-3">
-                                  <span className="text-xl">{getCategoryIcon(alimento.categoria.nombre)}</span>
-                                  <div>
-                                    <p className="font-medium">{alimento.nombre}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                      {alimento.cantidad_gramos}g
-                                      {alimento.medida_casera && ` (${alimento.medida_casera})`}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="text-right text-sm">
-                                  <p className="font-semibold">{Math.round(alimento.calorias)} kcal</p>
-                                  <p className="text-muted-foreground">
-                                    {Math.round(alimento.proteina_gramos)}p / {Math.round(alimento.carbohidratos_gramos)}c / {Math.round(alimento.grasas_gramos)}g
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
+                          <div className="text-xs text-right text-gray-500">
+                            <div>{Math.round(alimento.calorias)} kcal</div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-8">
-                  <Apple className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No se encontraron menús disponibles</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-4">
+        <div className="flex justify-center">
           <Button
-            onClick={onBack}
             variant="outline"
-            className="flex-1 py-3 text-lg font-semibold"
-            size="lg"
+            onClick={onBack}
+            className="flex items-center gap-2 px-6 py-3"
           >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Regresar a Categorías
-          </Button>
-          
-          <Button
-            onClick={handleGenerateMenu}
-            className="flex-1 py-3 text-lg font-semibold"
-            size="lg"
-            disabled={isLoadingMenu}
-          >
-            <ChefHat className="w-5 h-5 mr-2" />
-            {isLoadingMenu ? 'Generando...' : 'Generar Menú'}
+            <ArrowLeft className="w-4 h-4" />
+            Volver a Resultados
           </Button>
         </div>
       </div>

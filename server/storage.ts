@@ -303,20 +303,27 @@ export class DatabaseStorage implements IStorage {
       let closestMenu = null;
       let minDistance = Infinity;
 
+      console.log(`🎯 Searching for menu matching: ${calories} kcal, ${protein_g}g protein, ${carb_g}g carbs, ${fat_g}g fat`);
+      console.log(`📊 Found ${menuMap.size} menus in database`);
+
       for (const [menuId, menu] of menuMap) {
         const caloriesDiff = Math.abs(menu.calorias_totales - calories);
         const proteinDiff = Math.abs(menu.proteina_total_gramos - protein_g);
         const carbDiff = Math.abs(menu.carbohidratos_total_gramos - carb_g);
         const fatDiff = Math.abs(menu.grasas_total_gramos - fat_g);
         
-        // Weighted distance calculation
-        const distance = (caloriesDiff * 0.4) + (proteinDiff * 0.25) + (carbDiff * 0.25) + (fatDiff * 0.1);
+        // Weighted distance calculation - calorias são mais importantes
+        const distance = (caloriesDiff * 0.5) + (proteinDiff * 0.2) + (carbDiff * 0.2) + (fatDiff * 0.1);
+        
+        console.log(`📋 Menu "${menu.nombre}": ${menu.calorias_totales} kcal, distance: ${distance.toFixed(2)}`);
         
         if (distance < minDistance) {
           minDistance = distance;
           closestMenu = menu;
         }
       }
+
+      console.log(`✅ Selected menu: "${closestMenu?.nombre}" with distance: ${minDistance.toFixed(2)}`);
 
       if (closestMenu) {
         // Convert meals Map to array

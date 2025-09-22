@@ -27,11 +27,6 @@ export default function MacroDistributionPage() {
     }
   }, [navigate]);
 
-  const handleGenerateMenu = () => {
-    // Navigate to dashboard (Panel)
-    navigate('/dashboard');
-  };
-
   const handleBack = () => {
     // Go back to results page
     navigate('/results');
@@ -49,7 +44,6 @@ export default function MacroDistributionPage() {
     <MacroDistribution
       dailyCalories={macroData.dailyCalories}
       categoryName={macroData.categoryName}
-      onGenerateMenu={handleGenerateMenu}
       onBack={handleBack}
     />
   );
