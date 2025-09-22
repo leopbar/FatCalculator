@@ -31,7 +31,8 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 // Ofuscated admin verification
-const checkSpecialAccess = (email: string): boolean => {
+const checkSpecialAccess = (email: string | undefined): boolean => {
+  if (!email) return false;
   const encoded = btoa(email.toLowerCase().trim());
   return encoded === "bGJhcnJldHRpQGdtYWlsLmNvbQ==";
 };
