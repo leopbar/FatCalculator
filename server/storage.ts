@@ -50,7 +50,6 @@ export interface IStorage {
   getUserSummary(userId: string): Promise<{
     hasMetrics: boolean;
     hasCalculation: boolean;
-    hasMenu: boolean;
   }>;
 
   // Clear all user data
@@ -188,7 +187,7 @@ export class DatabaseStorage implements IStorage {
   }> {
     const [userMetrics] = await db.select().from(bodyMetrics).where(eq(bodyMetrics.userId, userId));
     const [userCalculation] = await db.select().from(calculations).where(eq(calculations.userId, userId));
-
+    
     // Para verificar se tem menu, vamos verificar se já foi gerado algum menu
     // (simplificado - assume que se tem calculation, pode gerar menu)
     const hasMenu = !!userCalculation;
@@ -259,7 +258,7 @@ export class DatabaseStorage implements IStorage {
 
       // Group by menu and calculate closest match
       const menuMap = new Map();
-
+      
       menusWithMeals.forEach(row => {
         if (!menuMap.has(row.id)) {
           menuMap.set(row.id, {
@@ -274,7 +273,7 @@ export class DatabaseStorage implements IStorage {
         }
 
         const menu = menuMap.get(row.id);
-
+        
         if (row.comida_id && !menu.meals.has(row.comida_id)) {
           menu.meals.set(row.comida_id, {
             id: row.comida_id,
@@ -313,41 +312,32 @@ export class DatabaseStorage implements IStorage {
       console.log(`🎯 Searching for menu matching: ${calories} kcal, ${protein_g}g protein, ${carb_g}g carbs, ${fat_g}g fat`);
       console.log(`📊 Found ${menuMap.size} menus in database`);
 
-      menuMap.forEach((menu, menuId) => {
-        const distance = Math.abs(menu.calorias_totales - calories) +
-          Math.abs(menu.proteina_total_gramos - protein_g) +
-          Math.abs(menu.carbohidratos_total_gramos - carb_g) +
-          Math.abs(menu.grasas_total_gramos - fat_g);
-
+      for (const [menuId, menu] of menuMap) {
+        const caloriesDiff = Math.abs(menu.calorias_totales - calories);
+        const proteinDiff = Math.abs(menu.proteina_total_gramos - protein_g);
+        const carbDiff = Math.abs(menu.carbohidratos_total_gramos - carb_g);
+        const fatDiff = Math.abs(menu.grasas_total_gramos - fat_g);
+        
+        // Weighted distance calculation - calorias são mais importantes
+        const distance = (caloriesDiff * 0.5) + (proteinDiff * 0.2) + (carbDiff * 0.2) + (fatDiff * 0.1);
+        
         console.log(`📋 Menu "${menu.nombre}": ${menu.calorias_totales} kcal, distance: ${distance.toFixed(2)}`);
-
+        
         if (distance < minDistance) {
           minDistance = distance;
-          closestMenu = {
-            id: menu.id,
-            nombre: menu.nombre,
-            calorias_totales: menu.calorias_totales,
-            proteina_total_gramos: menu.proteina_total_gramos,
-            carbohidratos_total_gramos: menu.carbohidratos_total_gramos,
-            grasas_total_gramos: menu.grasas_total_gramos,
-            meals: Array.from(menu.meals.values()).map(meal => ({
-              id: meal.id,
-              tipo_comida: meal.tipo_comida,
-              calorias_comida: meal.calorias_comida,
-              proteina_comida_gramos: meal.proteina_comida_gramos,
-              carbohidratos_comida_gramos: meal.carbohidratos_comida_gramos,
-              grasas_comida_gramos: meal.grasas_comida_gramos,
-              alimentos: meal.alimentos || []
-            }))
-          };
+          closestMenu = menu;
         }
-      });
-
-      if (closestMenu) {
-        console.log(`✅ Selected menu: "${closestMenu.nombre}" with distance: ${minDistance.toFixed(2)}`);
       }
 
-      return closestMenu;
+      console.log(`✅ Selected menu: "${closestMenu?.nombre}" with distance: ${minDistance.toFixed(2)}`);
+
+      if (closestMenu) {
+        // Convert meals Map to array
+        closestMenu.meals = Array.from(closestMenu.meals.values());
+        return closestMenu;
+      }
+
+      return null;
     } catch (error) {
       console.error('Error finding closest menu:', error);
       return null;

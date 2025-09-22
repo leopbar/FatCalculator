@@ -104,6 +104,8 @@ export default function MacroDistribution({
     enabled: dailyCalories > 0, // Executa automaticamente quando há calorias válidas
   });
 
+  
+
   const getMealIcon = (tipo: string) => {
     switch (tipo.toLowerCase()) {
       case 'desayuno':
@@ -306,7 +308,7 @@ export default function MacroDistribution({
                       <span className="capitalize text-gray-700">{meal.tipo_comida}</span>
                     </CardTitle>
                     <div className="text-sm text-muted-foreground">
-                      {Math.round(meal.calorias_comida || 0)} kcal
+                      {Math.round(meal.calorias_comida)} kcal
                     </div>
                   </CardHeader>
 

@@ -33,8 +33,8 @@ export default function ResultsPage() {
 
     if (!isLoading && (!calculation || error)) {
       toast({
-        title: "Ningún cálculo encontrado",
-        description: "Realice el cálculo primero. Redirigiendo...",
+        title: "Nenhum cálculo encontrado",
+        description: "Realize o cálculo primeiro. Redirecionando...",
         variant: "destructive",
       });
       navigate('/calculator');
@@ -60,16 +60,16 @@ export default function ResultsPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/me/summary'] });
       
       toast({
-        title: "Datos limpiados exitosamente",
-        description: "Ahora puede realizar un nuevo cálculo.",
+        title: "Dados limpos com sucesso",
+        description: "Agora você pode fazer um novo cálculo.",
       });
       
       navigate('/calculator');
     },
     onError: (error: any) => {
       toast({
-        title: "Error al limpiar datos",
-        description: "Intente nuevamente en unos momentos.",
+        title: "Erro ao limpar dados",
+        description: "Tente novamente em alguns instantes.",
         variant: "destructive",
       });
     }

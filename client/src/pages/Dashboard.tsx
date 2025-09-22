@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { Calculator, TrendingUp, Utensils, User, Play, Target, BookOpen, Pill, Brain } from "lucide-react";
-import { toast, useToast } from "@/hooks/use-toast";
 
 interface UserSummary {
   hasMetrics: boolean;
@@ -53,53 +52,6 @@ export default function Dashboard() {
       </div>
     );
   }
-
-  // Placeholder for the actual saveMetrics function
-  const saveMetrics = async () => {
-    try {
-      // Simulate saving metrics
-      await new Promise(resolve => setTimeout(resolve, 1000)); 
-      
-      toast({
-        title: "Error",
-        description: "Error al guardar métricas",
-        variant: "destructive"
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Error al guardar métricas",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Placeholder for the actual saveMenu function
-  const saveMenu = async () => {
-    try {
-      // Simulate saving menu
-      await new Promise(resolve => setTimeout(resolve, 1000)); 
-      
-      toast({
-        title: "Error",
-        description: "Error al generar menú",
-        variant: "destructive"
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Error al generar menú",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleSaveMetricsSuccess = () => {
-    toast({
-      title: "Éxito",
-      description: "¡Métricas guardadas exitosamente!"
-    });
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -264,7 +216,6 @@ export default function Dashboard() {
                   className="w-full" 
                   variant={summary?.hasMetrics ? "secondary" : "default"}
                   data-testid="button-calculator"
-                  onClick={saveMetrics} // Assuming saveMetrics is called when this button is clicked
                 >
                   {summary?.hasMetrics ? "Recalcular" : "Comenzar"}
                 </Button>
@@ -319,7 +270,6 @@ export default function Dashboard() {
                   variant={summary?.hasMenu ? "default" : "outline"}
                   disabled={!summary?.hasMenu && !isLoading}
                   data-testid="button-menu"
-                  onClick={saveMenu} // Assuming saveMenu is called when this button is clicked
                 >
                   {summary?.hasMenu ? "Ver Mi Menú" : "Generar Primero"}
                 </Button>
